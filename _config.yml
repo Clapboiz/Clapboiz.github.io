@@ -80,7 +80,7 @@ analytics:
 
 # Site Author
 author:
-  name             : "Clapboiz"
+  # name             : "Clapboiz"
   avatar           : "profile.png"
   # bio              : "Clap"
   # location         : "Location"
