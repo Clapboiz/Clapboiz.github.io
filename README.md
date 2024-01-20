@@ -20,9 +20,7 @@ Please follow the 2 links below if you need to see how to solve the problem
 https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors
 
 https://github.com/tzinfo/tzinfo/issues/144
-
 ```
-
 ### Note: Do not format html files, because the format will be corrupted (Because when formatting html files, spaces will appear, causing url and icon errors).
 
 # REFERENCE
