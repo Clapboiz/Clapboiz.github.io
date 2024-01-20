@@ -10,7 +10,17 @@ This is my blog website (Clapboiz.github.io)
 1. Make sure you have ruby-dev, bundler, and nodejs installed: `sudo apt install ruby-dev ruby-bundler nodejs` (any OS)
 1. Run `bundle clean` to clean up the directory (no need to run `--force`) [Optional]
 1. Run `bundle install` to install ruby dependencies. If you get errors, delete Gemfile.lock and try again.
-1. Run `bundle exec jekyll liveserve` to generate the HTML and serve it from `localhost:4000` the local server will automatically rebuild and refresh the pages on change.
+**Instead of using this command `jekyll serve --livereload` to run local web**
+1. Not run `bundle exec jekyll liveserve` to generate the HTML and serve it from `localhost:4000` the local server will automatically rebuild and refresh the pages on change. (Outdated versions and it doesn't work)
+
+If you get an error, please look at the gemfile I configured, and if you follow it, it will run
+
+Please follow the 2 links below if you need to see how to solve the problem
+
+https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Errors
+
+https://github.com/tzinfo/tzinfo/issues/144
+
 
 # REFERENCE
 [1] https://github.com/academicpages/academicpages.github.io
