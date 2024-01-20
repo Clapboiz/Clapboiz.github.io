@@ -21,6 +21,7 @@ https://github.com/tzinfo/tzinfo/wiki/Resolving-TZInfo::DataSourceNotFound-Error
 
 https://github.com/tzinfo/tzinfo/issues/144
 
+### Note: Do not format html files, because the format will be corrupted (Because when formatting html files, spaces will appear, causing url and icon errors).
 
 # REFERENCE
 [1] https://github.com/academicpages/academicpages.github.io
