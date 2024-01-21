@@ -70,11 +70,12 @@
    ========================================================================== */
 
 .author__avatar {
-  display: table-cell;
-  vertical-align: top;
-  width: 36px;
-  // set width only, for non-square avatars
-  // height: 36px;
+  object-fit: cover;
+  object-position: center -45px;
+  border-radius: 50%;
+  width: 170px !important;
+  height: 170px !important;
+  
 
   @include breakpoint($large) {
     display: block;
