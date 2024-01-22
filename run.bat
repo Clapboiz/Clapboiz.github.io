@@ -1,0 +1,3 @@
+@echo off
+echo Starting Jekyll server with LiveReload...
+jekyll serve --livereload

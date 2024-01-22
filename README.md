@@ -13,6 +13,14 @@ This is my blog website (Clapboiz.github.io)
 1. **Instead of using this command `jekyll serve --livereload` to run local web**
 1. Not run `bundle exec jekyll liveserve` to generate the HTML and serve it from `localhost:4000` the local server will automatically rebuild and refresh the pages on change. (Outdated versions and it doesn't work)
 
+**You can use `run.bat` instead of `jekyll serve --livereload`**
+
+```
+.\run.bat (powershell)
+  or
+run.bat (command prompt)
+```
+
 If you get an error, please look at the gemfile I configured, and if you follow it, it will run
 
 Please follow the 2 links below if you need to see how to solve the problem
