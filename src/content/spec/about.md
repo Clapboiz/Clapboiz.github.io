@@ -1,7 +1,7 @@
 # About
 This is the demo site for [Clapboiz](https://clapboiz.github.io/).
 
-::github{repo="Clapboiz/Clapboiz.github.io"}
+::github{repo="Clapboiz/Clapboiz"}
 
 > ### Sources of images used in this site
 > - [Unsplash](https://unsplash.com/)
