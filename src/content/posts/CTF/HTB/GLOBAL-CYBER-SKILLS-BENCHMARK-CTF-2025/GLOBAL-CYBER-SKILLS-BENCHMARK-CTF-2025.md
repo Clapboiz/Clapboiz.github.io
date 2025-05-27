@@ -291,9 +291,9 @@ Chợt nhớ lại lúc đầu khi ta thao tác với UI thì có request này
 
 Truy cập vào url của request này thì ta thấy như này. Tiếp tục tôi ngứa tay back lại 1 folder xem có gì hot không.
 
-![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/16.png)
-
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/17.png)
+
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/16.png)
 
 Giờ làm sao nhỉ ?? Để ý thì có thể thấy được rằng đây là 1 url liên quan đến 1 service của AWS.
 
@@ -537,7 +537,7 @@ Còn vì sao tôi biết api này thì nó nằm ở
 
 Tôi vẫn cứ có niềm tin vào cách này , và stuck 1 vòng luẩn quẩn quanh những dữ kiện này, nào là inject kid, tăng quyền scope,...
 
-Bất lực quá thì tôi lên mạng xem `https://hackernoon.com/application-authentication-aws-cognito-vs-json-web-token`, thì tôi nhận ra inject vào cognito là 1 chuyện điên rồ :, tôi chợt nhớ đến đồ án môn mật mã học mà tôi đã làm vào năm 2 và cũng có sử dụng aws cognito. Thì sơ lược qua về aws cognito nó sẽ khác so với jwt truyền thống ở chỗ là việc sử dụng AWS Cognito an toàn hơn so với tự triển khai JWT truyền thống là vì Cognito do AWS quản lý hoàn toàn, bao gồm cả việc giữ private key để ký token. Trong khi đó, với JWT tự làm, dev phải tự quản lý key, dễ mắc lỗi như lộ private key, chọn thuật toán không an toàn (ví dụ alg: none), hoặc quên validate các trường quan trọng như aud, iss, ... Vì vậy, ý tưởng này phá sản.
+Bất lực quá thì tôi lên mạng xem `https://hackernoon.com/application-authentication-aws-cognito-vs-json-web-token`, thì tôi nhận ra inject vào cognito là 1 chuyện điên rồ :")), tôi chợt nhớ đến đồ án môn mật mã học mà tôi đã làm vào năm 2 và cũng có sử dụng aws cognito (và đó cũng là lí do tôi chọn cognito thay vì jwt truyền thống). Thì sơ lược qua về aws cognito nó sẽ khác so với jwt truyền thống ở chỗ là việc sử dụng AWS Cognito an toàn hơn so với tự triển khai JWT truyền thống là vì Cognito do AWS quản lý hoàn toàn, bao gồm cả việc giữ private key để ký token. Trong khi đó, với JWT tự làm, dev phải tự quản lý key, dễ mắc lỗi như lộ private key, chọn thuật toán không an toàn (ví dụ alg: none), hoặc quên validate các trường quan trọng như aud, iss, ... Vì vậy, ý tưởng này phá sản.
 
 Nhận thấy token mà tôi nhận được khi đăng nhập qua giao diện web (được phân phối qua CloudFront) được tạo thông qua Authorization Code Flow theo tiêu chuẩn OAuth 2.0. Trong flow này, người dùng đăng nhập thông qua giao diện Hosted UI của Cognito và sau đó được redirect trở lại ứng dụng cùng với mã xác thực (authorization code), từ đó token mới được cấp. Vậy thì giờ tôi sử dụng trực tiếp qua cognito xem sao.
 
