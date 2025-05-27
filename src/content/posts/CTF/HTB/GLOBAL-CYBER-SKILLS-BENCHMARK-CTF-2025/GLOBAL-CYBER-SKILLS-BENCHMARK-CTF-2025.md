@@ -8,15 +8,19 @@ category: Writeups
 draft: false
 ---
 
+Vừa qua, tôi và team đã có cơ hội tham gia vào một trong những sự kiện CTF hấp dẫn – Global Cyber Skills Benchmark CTF: Operation Blackout. Và tôi đảm nhận mảng CLOUD/ML trong suốt event này, và trải nghiệm này thực sự thú vị hơn những gì tôi tưởng tượng (Vừa chiến đấu và vừa phải chạy những deadline của riêng mình dẫn đến hiệu suất tôi dành cho event này vẫn chưa quá cao). Trong bài viết này, tôi sẽ chia sẻ lại hành trình của tôi, những thử thách đã gặp phải, và cách tôi đã tiếp cận để giải quyết các bài tập thuộc mảng Cloud và CLOUD/ML.
+
+Chém gió vậy là đủ, tiến hành vào các thử thách mà tôi đã solve nhé ^^. Happy Reading!!!
+
 # ML
 ## Uplink Artifact
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/1.png)
 
-Đọc vào đề và file data thì ta có thể biết được đây khả năng là nó bắt chúng ta tìm outlier hoặc cũng có thể là nó hide trong ảnh, bla bla, rất nhiều ngữ cảnh mà ta đặt ra.
+Đọc vào đề và file data thì ta có thể biết được đây khả năng là nó bắt chúng ta tìm outlier hoặc cũng có thể là nó hide trong ảnh,... và cùng rất nhiều ngữ cảnh mà ta đặt ra.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/2.png)
 
-Đây là dataset mà HTB cung cấp, vì thế điều đầu tiên nảy ra trong đầu khi làm với ML/AI thì ta phải xem được data đó nó có gì, những điểm nào đặc biệt, null, hay là số lượng mỗi lớp, ... Rất nhiều thứ mà chúng ta cần phải xem, bởi vì nếu chúng ta cứ cắm đầu training mà không xem thì khả năng rất cao mô hình đó fail.
+Đây là dataset mà HTB cung cấp, vì thế điều đầu tiên nảy ra trong đầu khi làm với ML/AI thì ta phải xem được data đó nó có gì, những điểm nào đặc biệt, null, hay là số lượng mỗi lớp,... Rất nhiều thứ mà chúng ta cần phải xem, bởi vì nếu chúng ta cứ cắm đầu training mà không xem thì khả năng rất cao mô hình đó fail.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/3.png)
 
@@ -26,7 +30,7 @@ Cũng như thường lệ, tôi sẽ check các thông tin của datasets, để
 
 thì sau khi tôi check thì các tỉ lệ như trên hình, bạn đọc và cũng có thể thấy. Và tôi thấy được rằng có điểm bất thường giữa `x, y` so với `z`. là `x, y` bạn có thể thấy được là giao động từ `0-25`, còn `z` sẽ từ `0-1`.
 
-Tuy vậy nhưng tôi vẫn training :"))
+Tuy vậy nhưng tôi vẫn training 
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/5.png)
 
@@ -34,13 +38,13 @@ Tuy vậy nhưng tôi vẫn training :"))
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/7.png)
 
-Đúng như dự đoán :")), Dù có train bằng ML/DL thì nó cũng đều rất tệ.
+Đúng như dự đoán , Dù có train bằng ML/DL thì nó cũng đều rất tệ.
 
 Lúc này tôi nghĩ đến phải chuẩn hóa nó về 1 khoảng giá trị nhất định giữa các cột, tức là phải đồng nhất về giá trị chứ không phải là cột cao cột thấp.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/8.png)
 
-Sau khi chuẩn hóa thì nó vẫn thấp :")) thôi thì các cách liên quan đến train model, Anomaly Detection / Outlier đã phá sản rồi :")).
+Sau khi chuẩn hóa thì nó vẫn thấp  thôi thì các cách liên quan đến train model, Anomaly Detection / Outlier đã phá sản rồi.
 
 Ngồi nhìn lại thì lấy chỉ còn cách ảnh thôi. Như bạn được biết thì 1 bức ảnh có thể có 2 chiều hoặc 3 chiều. thì họ cho mình 3 cột tương ứng với trục x y z trong không gian 3 chiều và nó cũng sẽ tạo ra được ảnh, vì vậy ta sẽ dùng ý tưởng tạo ảnh nhé. Ảnh 2 hoặc 3 chiều nó sẽ tương ứng với trắng đen (2 chiều) hoặc rgb (3 chiều).
 
@@ -89,7 +93,7 @@ plt.show()
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/9.png)
 
-tạo ảnh thành công thì tôi lúc này khá hấp dẫn đến tôi lôi máy ra scan QR luôn :")). Và tất nhiên nó sẽ k đc.
+tạo ảnh thành công thì tôi lúc này khá hấp dẫn đến tôi lôi máy ra scan QR luôn . Và tất nhiên nó sẽ k đc.
 
 Sau khi xem xét kĩ lại thì tôi thấy nó khả năng là 1 QR code nhưng định dạng lại không giống thì liệu cái label kia có nhiễu không, cũng giống như cột z chỉ để biểu thị màu sắc nên có thể bỏ, thì liệu cột z có label nhiễu ko??
 
@@ -241,7 +245,7 @@ Cũng dùng tiếp cách này thì ta có thể lấy được các api key
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/9.png)
 
-Đây là AWS temporary credentials cấp bởi Instance Metadata Service cho EC2 instance, thông qua một IAM Role có tên: APICallerRole
+Đây là AWS temporary credentials cấp bởi Instance Metadata Service cho EC2 instance, thông qua một IAM Role có tên: `APICallerRole`
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/10.png)
 
@@ -293,7 +297,7 @@ Truy cập vào url của request này thì ta thấy như này. Tiếp tục t�
 
 Giờ làm sao nhỉ ?? Để ý thì có thể thấy được rằng đây là 1 url liên quan đến 1 service của AWS.
 
-Ta sử dụng tool awscurl, thì nó là một công cụ dòng lệnh giống như curl, nhưng có khả năng ký các HTTP request theo chuẩn AWS Signature Version 4 (SigV4), chuẩn mà các dịch vụ AWS (như API Gateway) yêu cầu để xác thực người dùng.
+Ta sử dụng `tool awscurl`, thì nó là một công cụ dòng lệnh giống như curl, nhưng có khả năng ký các HTTP request theo chuẩn `AWS Signature Version 4 (SigV4)`, chuẩn mà các dịch vụ AWS (như API Gateway) yêu cầu để xác thực người dùng.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/18.png)
 
@@ -368,7 +372,7 @@ Tiến hành vào thử response url của file này để tải nó về.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/7.png)
 
-À, nó đang ở thư mục `/vault/public` tức là hiện tại nó đang ở `vault/public/vault/private`. Ta cần dùng path traversal để back về 2 thư mục cho đúng với thư mục mà file này đang ở (chính là `vault/private`).
+À, nó đang ở thư mục `/vault/public` tức là hiện tại nó đang ở `vault/public/vault/private`. Ta cần dùng `path traversal` để back về 2 thư mục cho đúng với thư mục mà file này đang ở (chính là `vault/private`).
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/8.png)
 
@@ -499,11 +503,11 @@ Thì câu hỏi trong đầu tôi lúc này là liệu token với quyền cao h
 
 Nhìn vào dòng này ta có thể thấy được token này được phát hành bởi Amazon Cognito, và `eu-north-1` là region, `eu-north-1_55iNnZmYp	` là User Pool ID
 
-Như 1 thói quen thì tôi lại tiếp tục truy cập vào url này xem sao :"))
+Như 1 thói quen thì tôi lại tiếp tục truy cập vào url này xem sao 
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/7.png)
 
-Lỗi như trên, thì tôi tiếp tục ngứa tay, tôi lại recon :")). fuzz directory tiếp.
+Lỗi như trên, thì tôi tiếp tục ngứa tay, tôi lại recon. fuzz directory tiếp.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/8.png)
 
@@ -513,7 +517,7 @@ Lại có thêm tí thông tin.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/10.png)
 
-Hmm, lần này tôi nhận ra được là scope của tôi chỉ đang có `"scope": "openid email"`, thì ý tưởng của tôi bây giờ sẽ là fake 1 access token có quyền scope cao hơn, mà đây là cognito và còn lộ 2 file `https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_55iNnZmYp/.well-known/openid-configuration` và `https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_55iNnZmYp/.well-known/jwks.json` càng làm tôi tin vào giả thuyết này :"))
+Hmm, lần này tôi nhận ra được là scope của tôi chỉ đang có `"scope": "openid email"`, thì ý tưởng của tôi bây giờ sẽ là fake 1 access token có quyền scope cao hơn, mà đây là cognito và còn lộ 2 file `https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_55iNnZmYp/.well-known/openid-configuration` và `https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_55iNnZmYp/.well-known/jwks.json` càng làm tôi tin vào giả thuyết này 
 
 Thì tôi lao vào tạo token mới token, chuyển `alg: "HS256"` và dùng `n (public key base64) làm secret key`, để tự ký token tùy ý.
 
@@ -521,7 +525,7 @@ Lúc này tôi chỉ thay đổi thuật toán và không thay đổi bất kì 
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/11.png)
 
-Fail :"))
+Fail 
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/12.png)
 
@@ -531,9 +535,9 @@ Còn vì sao tôi biết api này thì nó nằm ở
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/13.png)
 
-Tôi vẫn cứ có niềm tin vào cách này :")), và stuck 1 vòng luẩn quẩn quanh những dữ kiện này, nào là inject kid, tăng quyền scope,... bla bla :"))
+Tôi vẫn cứ có niềm tin vào cách này , và stuck 1 vòng luẩn quẩn quanh những dữ kiện này, nào là inject kid, tăng quyền scope,...
 
-Bất lực quá thì tôi lên mạng xem `https://hackernoon.com/application-authentication-aws-cognito-vs-json-web-token`, thì tôi nhận ra inject vào cognito là 1 chuyện điên rồ ::")), tôi chợt nhớ đến 1 đồ án môn mật mã học mà tôi đã làm vào năm 2 và cũng có sử dụng aws cognito. Thì sơ lược qua về aws cognito nó sẽ khác so với jwt truyền thống ở chỗ là việc sử dụng AWS Cognito an toàn hơn so với tự triển khai JWT truyền thống là vì Cognito do AWS quản lý hoàn toàn, bao gồm cả việc giữ private key để ký token. Trong khi đó, với JWT tự làm, dev phải tự quản lý key, dễ mắc lỗi như lộ private key, chọn thuật toán không an toàn (ví dụ alg: none), hoặc quên validate các trường quan trọng như aud, iss, ... . Vì vậy, ý tưởng này phá sản.
+Bất lực quá thì tôi lên mạng xem `https://hackernoon.com/application-authentication-aws-cognito-vs-json-web-token`, thì tôi nhận ra inject vào cognito là 1 chuyện điên rồ :, tôi chợt nhớ đến đồ án môn mật mã học mà tôi đã làm vào năm 2 và cũng có sử dụng aws cognito. Thì sơ lược qua về aws cognito nó sẽ khác so với jwt truyền thống ở chỗ là việc sử dụng AWS Cognito an toàn hơn so với tự triển khai JWT truyền thống là vì Cognito do AWS quản lý hoàn toàn, bao gồm cả việc giữ private key để ký token. Trong khi đó, với JWT tự làm, dev phải tự quản lý key, dễ mắc lỗi như lộ private key, chọn thuật toán không an toàn (ví dụ alg: none), hoặc quên validate các trường quan trọng như aud, iss, ... Vì vậy, ý tưởng này phá sản.
 
 Nhận thấy token mà tôi nhận được khi đăng nhập qua giao diện web (được phân phối qua CloudFront) được tạo thông qua Authorization Code Flow theo tiêu chuẩn OAuth 2.0. Trong flow này, người dùng đăng nhập thông qua giao diện Hosted UI của Cognito và sau đó được redirect trở lại ứng dụng cùng với mã xác thực (authorization code), từ đó token mới được cấp. Vậy thì giờ tôi sử dụng trực tiếp qua cognito xem sao.
 
@@ -559,9 +563,9 @@ Token nhận được từ CLI không chỉ khác về scope mà còn có thể 
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/17.png)
 
-Chính thức stuck :")), nhìn lại request thì cũng k có thêm manh mối gì, tôi tiếp tục cắm đầu fuzz xem có thông tin gì thú vị không nhưng vẫn k ra :")).
+Chính thức stuck , nhìn lại request thì cũng k có thêm manh mối gì, tôi tiếp tục cắm đầu fuzz xem có thông tin gì thú vị không nhưng vẫn k ra.
 
-Như một thói quen tôi bật f12 lên để tìm các file js để xem :")), bất lực r, giờ ngồi tìm trong các file js xem có gì nhạy cảm không.
+Như một thói quen tôi bật f12 lên để tìm các file js để xem , bất lực r, giờ ngồi tìm trong các file js xem có gì nhạy cảm không.
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/18.png)
 
@@ -571,9 +575,9 @@ Nhưng khi tôi chuyển qua tab network thì =))
 
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/19.png)
 
-một phát hiện mới ::">, tôi liền chuyển qua burp để xem nhưng trong các request gần đây lại k thấy file này, tôi liền search trong burp thì lại có, tuy nhiên chỉ có 1 request duy nhất. :")) chợt nhớ do thằng CloudFront nó cache :">, sầu thiệt chớ, vậy mà lúc đầu đâm đầu vào tương tác với UI quá nên mình bỏ sót thông tin này.
+một phát hiện mới ::">, tôi liền chuyển qua burp để xem nhưng trong các request gần đây lại k thấy file này, tôi liền search trong burp thì lại có, tuy nhiên chỉ có 1 request duy nhất. Chợt nhớ do thằng CloudFront nó cache :">, sầu thiệt chớ, vậy mà lúc đầu đâm đầu vào tương tác với UI quá nên mình bỏ sót thông tin này.
 
-Có thể thấy rằng nó cung cấp cho ta toàn thông tin bổ ích :"))
+Có thể thấy rằng nó cung cấp cho ta toàn thông tin bổ ích 
 
 ```
 aws cognito-identity get-id \
