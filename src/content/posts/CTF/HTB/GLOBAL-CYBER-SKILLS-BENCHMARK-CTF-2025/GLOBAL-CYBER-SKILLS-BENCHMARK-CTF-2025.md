@@ -247,7 +247,7 @@ Cũng dùng tiếp cách này thì ta có thể lấy được các api key
 
 Đây là API Key tạm thời dành cho EC2 instance, dùng để gọi AWS API nếu quyền được cấp.
 
-## So sánh IAM Role vs EC2 Instance Identity Credentials
+### So sánh IAM Role vs EC2 Instance Identity Credentials
 
 | Thuộc tính            | IAM Role (`APICallerRole`)                 | EC2 Instance Identity Credentials         |
 |------------------------|--------------------------------------------|-------------------------------------------|
