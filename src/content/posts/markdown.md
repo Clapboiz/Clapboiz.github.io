@@ -1,4 +1,4 @@
----
+<!-- ---
 title: Markdown Example
 published: 2023-10-01
 description: A simple example of a Markdown blog post.
@@ -172,4 +172,4 @@ $$
 $$
 
 And note that you can backslash-escape any punctuation characters
-which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
+which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc. -->
