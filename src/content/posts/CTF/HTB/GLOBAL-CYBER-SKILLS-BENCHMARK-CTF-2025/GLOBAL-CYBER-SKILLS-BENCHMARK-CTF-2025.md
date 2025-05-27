@@ -1,6 +1,6 @@
 ---
-title: Global Cyber Skills Benchmark CTF 2025: Operation Blackout
-published: 2025-27-05
+title: "Global Cyber Skills Benchmark CTF 2025: Operation Blackout"
+published: 2025-05-27
 description: "Writeup CTF HTB"
 image: ''
 tags: ["CTF", "HTB", "CLOUD", "ML"]
@@ -10,17 +10,17 @@ draft: false
 
 # ML
 ## Uplink Artifact
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\1.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/1.png)
 
 Đọc vào đề và file data thì ta có thể biết được đây khả năng là nó bắt chúng ta tìm outlier hoặc cũng có thể là nó hide trong ảnh, bla bla, rất nhiều ngữ cảnh mà ta đặt ra.
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\2.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/2.png)
 
 Đây là dataset mà HTB cung cấp, vì thế điều đầu tiên nảy ra trong đầu khi làm với ML/AI thì ta phải xem được data đó nó có gì, những điểm nào đặc biệt, null, hay là số lượng mỗi lớp, ... Rất nhiều thứ mà chúng ta cần phải xem, bởi vì nếu chúng ta cứ cắm đầu training mà không xem thì khả năng rất cao mô hình đó fail.
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\3.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/3.png)
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\4.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/4.png)
 
 Cũng như thường lệ, tôi sẽ check các thông tin của datasets, để có cái nhìn overview nhất.
 
@@ -28,17 +28,17 @@ thì sau khi tôi check thì các tỉ lệ như trên hình, bạn đọc và c
 
 Tuy vậy nhưng tôi vẫn training :"))
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\5.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/5.png)
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\6.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/6.png)
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\7.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/7.png)
 
 Đúng như dự đoán :")), Dù có train bằng ML/DL thì nó cũng đều rất tệ.
 
 Lúc này tôi nghĩ đến phải chuẩn hóa nó về 1 khoảng giá trị nhất định giữa các cột, tức là phải đồng nhất về giá trị chứ không phải là cột cao cột thấp.
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\8.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/8.png)
 
 Sau khi chuẩn hóa thì nó vẫn thấp :")) thôi thì các cách liên quan đến train model, Anomaly Detection / Outlier đã phá sản rồi :")).
 
@@ -87,7 +87,7 @@ plt.show()
 
 ý tưởng thì giống bên trên, chỉ có ép kiểu x, y và mapping label -> màu thôi.
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\9.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/9.png)
 
 tạo ảnh thành công thì tôi lúc này khá hấp dẫn đến tôi lôi máy ra scan QR luôn :")). Và tất nhiên nó sẽ k đc.
 
@@ -111,11 +111,11 @@ plt.axis('off')
 plt.show()
 ```
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\10.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/10.png)
 
 Ngon :")).
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\11.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/11.png)
 
 Thành công
 
@@ -167,9 +167,9 @@ qr_path = r"D:\Users\Downloads\ml_uplink_artifact\qr.png"
 img_qr_like.save(qr_path)
 ```
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\12.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/12.png)
 
-![image](D:\Users\Desktop\Clapboiz.github.io\src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\ML\Uplink-Artifact\13.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/13.png)
 
 khi scan sẽ ra flag.
 
