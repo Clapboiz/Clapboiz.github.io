@@ -207,43 +207,43 @@ Vậy là xong challenge này
 
 # CLOUD
 ## Dashboarded
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\1.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/1.png)
 
 Tiến hành truy cập vào ip đó xem sao.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\2.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/2.png)
 
 Test sơ qua chức năng và đẩy qua burp thôi. Đẩy qua burp thì request/response của nó như sau
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\3.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/3.png)
 
 nhìn url thì đầu tôi nghĩ đến case ssrf.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\4.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/4.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\5.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/5.png)
 
 Đúng thật là nó bị ssrf.
 
 Tiếp theo dựa vào kinh nghiệm nghịch cloud của tôi thì `http://169.254.169.254` là địa chỉ IP đặc biệt được sử dụng trong dịch vụ Metadata của AWS, cụ thể là EC2 Instance Metadata Service (IMDS).
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\6.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/6.png)
 
 Đấy, confirm lại bằng google nhé.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\7.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/7.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\8.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/8.png)
 
 Tiếp tục truy cập vào, và sau khi đến được meta-data
 
 Cũng dùng tiếp cách này thì ta có thể lấy được các api key
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\9.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/9.png)
 
 Đây là AWS temporary credentials cấp bởi Instance Metadata Service cho EC2 instance, thông qua một IAM Role có tên: APICallerRole
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\10.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/10.png)
 
 Đây là API Key tạm thời dành cho EC2 instance, dùng để gọi AWS API nếu quyền được cấp.
 
@@ -259,15 +259,15 @@ Cũng dùng tiếp cách này thì ta có thể lấy được các api key
 
 Thì khi mà có key, thì điều đầu tiên tôi nghĩ đến khi mà tiếp xúc nhiều với cloud là set config, credential
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\11.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/11.png)
 
 sau khi set up xong thì ta sử dụng cli thôi.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\12.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/12.png)
 
 Check xem tôi đang dùng đúng danh tính và có quyền tối thiểu.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\13.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/13.png)
 
 Khi tôi làm đúng nhưng nó vẫn không có quyền :>. tôi đã thử rất nhiều lệnh khác nhau liên quan đến các hành dộng và service của AWS nhưng vẫn k được, thì tôi phải dùng qua tool `enumerate-iam`, một bộ script Python được thiết kế đặc biệt để giúp kiểm tra và liệt kê các quyền hiện có của credentials AWS.
 
@@ -281,25 +281,25 @@ Hmm, cách này không khả thi rồi, tiến hành tìm cách khác thôi.
 
 Chợt nhớ lại lúc đầu khi ta thao tác với UI thì có request này 
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\14.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/14.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\15.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/15.png)
 
 Truy cập vào url của request này thì ta thấy như này. Tiếp tục tôi ngứa tay back lại 1 folder xem có gì hot không.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\16.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/16.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\17.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/17.png)
 
 Giờ làm sao nhỉ ?? Để ý thì có thể thấy được rằng đây là 1 url liên quan đến 1 service của AWS.
 
 Ta sử dụng tool awscurl, thì nó là một công cụ dòng lệnh giống như curl, nhưng có khả năng ký các HTTP request theo chuẩn AWS Signature Version 4 (SigV4), chuẩn mà các dịch vụ AWS (như API Gateway) yêu cầu để xác thực người dùng.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\18.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/18.png)
 
 Đó bạn có thể hiểu đc chuẩn của AWS.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\19.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/19.png)
 
 Một kiến thúc cũng liên quan đến sigV4 (chỉ đóng vai trò bổ sung thêm kiến thức), nó dùng để gửi các thông tin ký trong URL, như bạn đưa ra: X-Amz-Algorithm, X-Amz-Credential, X-Amz-Signature...	Thường dùng khi chia sẻ link truy cập tạm thời, ví dụ như file PDF trên S3
 
@@ -324,19 +324,19 @@ awscurl \
   https://inyunqef0e.execute-api.us-east-2.amazonaws.com/api/private
 ```
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\20.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/20.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Dashboarded\21.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Dashboarded/21.png)
 
 Thì đã ra được flag.
 ## Vault
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\1.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/1.png)
 
 Cũng vào url xem có gì hot.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\2.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/2.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\3.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/3.png)
 
 Sau khi vào trang chủ thì ta có thể thấy 1 vài api, và cứ tiếp tục thực hiện chức năng thì ta được một vài api như trên.
 
@@ -346,7 +346,7 @@ Và api file kia thì tôi để ý output có api với các param như classif
 
 Vậy thì tìm attack surface khác thôi.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\4.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/4.png)
 
 Bạn có thể để ý là có `https://volnaya-vault.s3.eu-north-1.amazonaws.com` thì trong url này bạn có thể biết được là S3 bucket là `volnaya-vault`.
 
@@ -358,45 +358,45 @@ https://s3.eu-north-1.amazonaws.com/volnaya-vault/
 https://volnaya-vault.s3.amazonaws.com/
 ```
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\5.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/5.png)
 
 Sau khi vào thì ta thấy được rằng nó lộ các file như trên.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\6.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/6.png)
 
 Tiến hành vào thử response url của file này để tải nó về.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\7.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/7.png)
 
 À, nó đang ở thư mục `/vault/public` tức là hiện tại nó đang ở `vault/public/vault/private`. Ta cần dùng path traversal để back về 2 thư mục cho đúng với thư mục mà file này đang ở (chính là `vault/private`).
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\8.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/8.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\9.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/9.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\Vault\10.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/Vault/10.png)
 
 Vậy là thành công lấy được flag.
 ## EBS
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\1.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/1.png)
 
 Đọc vào thì có thể thấy có CloudFront. Thì sơ qua CloudFront là một dịch vụ phân phối nội dung (CDN) của AWS. Nó giúp tăng tốc độ tải nội dung như hình ảnh, video, file tĩnh (HTML, CSS, JS), và thậm chí là API, bằng cách phân phối nội dung từ các máy chủ gần người dùng nhất trên toàn cầu. Đại loại là CloudFront giúp website nhanh hơn, an toàn hơn và tiết kiệm chi phí hơn. Nếu không dùng, bạn phải tự xử lý tất cả về tốc độ, cache, bảo mật, và mở rộng hệ thống. Ngoài ra có một ưu điểm mà nó được dùng nữa là IP hoặc DNS thật của EC2/S3 dễ bị lộ nếu không cấu hình tốt. Dẫn đến nên dùng CloudFront để che dấu IP
 
 Tiếp theo vào url mà challenge cung cấp thôi.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\2.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/2.png)
 
 ```
 https://ebs-we7uo726.auth.eu-north-1.amazoncognito.com/login?redirect_uri=https%3A%2F%2Fd25vt11c4zrsnp.cloudfront.net%2Fcallback&response_type=code&client_id=1s3s6r0e517r5h7m00ab0t58ra&identity_provider=COGNITO&scope=email%20openid&state=BfnUwyLLNJcbeMmUAMunYL4gsdacXIl5&code_challenge=z-4CUgID6OVWNNoXfxYPQ8hBln0rq_plitk5aJd7fSM&code_challenge_method=S256
 ```
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\3.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/3.png)
 
 ```
 https://ebs-we7uo726.auth.eu-north-1.amazoncognito.com/signup?redirect_uri=https%3A%2F%2Fd25vt11c4zrsnp.cloudfront.net%2Fcallback&response_type=code&client_id=1s3s6r0e517r5h7m00ab0t58ra&identity_provider=COGNITO&scope=email%20openid&state=BfnUwyLLNJcbeMmUAMunYL4gsdacXIl5&code_challenge=z-4CUgID6OVWNNoXfxYPQ8hBln0rq_plitk5aJd7fSM&code_challenge_method=S256
 ```
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\4.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/4.png)
 
 Đây là UI khi tôi tạo acc và đăng nhập thành công vào cognito. Thì khi mà thấy cognito thì tôi đoán được đây là 1 challenge liên quan đến authen, authorize. Lí do tôi đoán vậy bởi vì Cognito là một dịch vụ quản lý đăng nhập của AWS. Điều này có khả năng cách khai thác hoặc lợi dụng hệ thống xác thực để truy cập thông tin nhạy cảm hoặc backend API. Cùng confirm xem giả thuyết này đúng không nhé.
 
@@ -485,9 +485,9 @@ Signature = "hhXQTpPZ02WFCyJT5gN5Avu8Ha_ttvBoE_7HVnqYh0H1lzCFFpkCZ_ITGksdqhhxJY-
 
 Đó là 3 token mà khi tôi đăng nhập thành công nó trả về, 
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\5.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/5.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\6.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/6.png)
 
 Ta cũng có thể thấy được rằng `https://suhq95e8oj.execute-api.eu-north-1.amazonaws.com/broadcasts` unauthen, và thậm chí khi tôi cung cấp token mà tôi có được bằng cách đăng nhập vào cognito thì nó show ra api như trên.
 
@@ -501,17 +501,17 @@ Nhìn vào dòng này ta có thể thấy được token này được phát hà
 
 Như 1 thói quen thì tôi lại tiếp tục truy cập vào url này xem sao :"))
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\7.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/7.png)
 
 Lỗi như trên, thì tôi tiếp tục ngứa tay, tôi lại recon :")). fuzz directory tiếp.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\8.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/8.png)
 
 Lại có thêm tí thông tin.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\9.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/9.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\10.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/10.png)
 
 Hmm, lần này tôi nhận ra được là scope của tôi chỉ đang có `"scope": "openid email"`, thì ý tưởng của tôi bây giờ sẽ là fake 1 access token có quyền scope cao hơn, mà đây là cognito và còn lộ 2 file `https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_55iNnZmYp/.well-known/openid-configuration` và `https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_55iNnZmYp/.well-known/jwks.json` càng làm tôi tin vào giả thuyết này :"))
 
@@ -519,17 +519,17 @@ Thì tôi lao vào tạo token mới token, chuyển `alg: "HS256"` và dùng `n
 
 Lúc này tôi chỉ thay đổi thuật toán và không thay đổi bất kì trường nào khác để confirm xem nó có đúng những gì nãy giờ tôi suy nghĩ không.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\11.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/11.png)
 
 Fail :"))
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\12.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/12.png)
 
 Tại nếu token hợp lệ là nó sẽ như này.
 
 Còn vì sao tôi biết api này thì nó nằm ở 
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\13.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/13.png)
 
 Tôi vẫn cứ có niềm tin vào cách này :")), và stuck 1 vòng luẩn quẩn quanh những dữ kiện này, nào là inject kid, tăng quyền scope,... bla bla :"))
 
@@ -537,9 +537,9 @@ Bất lực quá thì tôi lên mạng xem `https://hackernoon.com/application-a
 
 Nhận thấy token mà tôi nhận được khi đăng nhập qua giao diện web (được phân phối qua CloudFront) được tạo thông qua Authorization Code Flow theo tiêu chuẩn OAuth 2.0. Trong flow này, người dùng đăng nhập thông qua giao diện Hosted UI của Cognito và sau đó được redirect trở lại ứng dụng cùng với mã xác thực (authorization code), từ đó token mới được cấp. Vậy thì giờ tôi sử dụng trực tiếp qua cognito xem sao.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\14.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/14.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\15.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/15.png)
 
 ```
 aws cognito-idp initiate-auth \
@@ -553,23 +553,23 @@ Tuy nhiên, khi tôi sử dụng AWS CLI và đẩy trực tiếp USERNAME và P
 
 Token nhận được từ CLI không chỉ khác về scope mà còn có thể được dùng để gọi các API quản trị như get-user, điều mà token từ Authorization Code Flow không làm được. Tóm lại, cách đăng nhập vào Cognito (flow nào, từ đâu) sẽ ảnh hưởng trực tiếp đến quyền hạn của token.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\16.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/16.png)
 
 Đã sử dụng token với scope cao hơn nhưng vẫn không được ?
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\17.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/17.png)
 
 Chính thức stuck :")), nhìn lại request thì cũng k có thêm manh mối gì, tôi tiếp tục cắm đầu fuzz xem có thông tin gì thú vị không nhưng vẫn k ra :")).
 
 Như một thói quen tôi bật f12 lên để tìm các file js để xem :")), bất lực r, giờ ngồi tìm trong các file js xem có gì nhạy cảm không.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\18.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/18.png)
 
 Nhưng nó vẫn không có.
 
 Nhưng khi tôi chuyển qua tab network thì =))
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\19.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/19.png)
 
 một phát hiện mới ::">, tôi liền chuyển qua burp để xem nhưng trong các request gần đây lại k thấy file này, tôi liền search trong burp thì lại có, tuy nhiên chỉ có 1 request duy nhất. :")) chợt nhớ do thằng CloudFront nó cache :">, sầu thiệt chớ, vậy mà lúc đầu đâm đầu vào tương tác với UI quá nên mình bỏ sót thông tin này.
 
@@ -582,11 +582,11 @@ aws cognito-identity get-id \
   --region eu-north-1
 ```
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\20.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/20.png)
 
 Ngon lành luôn, giờ set up env của aws cli.
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\21.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/21.png)
 
 Với credentials này, thử truy cập các AWS services:
 
@@ -597,7 +597,7 @@ DynamoDB: aws dynamodb list-tables
 API Gateway: aws apigateway get-rest-apis
 ```
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\22.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/22.png)
 
 ```
 aws dynamodb describe-table --table-name ebs-broadcastsTable-2866166 --region eu-north-1
@@ -607,9 +607,9 @@ aws dynamodb scan --table-name ebs-broadcastsTable-2866166 --region eu-north-1
 -> Lấy toàn bộ dữ liệu bên trong bảng, quét tất cả các bản ghi.
 ```
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\23.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/23.png)
 
-![image](src\content\posts\CTF\HTB\GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025\CLOUD\EBS\24.png)
+![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/CLOUD/EBS/24.png)
 
 Vậy là đã giải xong challenge này.
 
