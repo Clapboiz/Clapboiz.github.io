@@ -1,5 +1,5 @@
 # About
-This is the demo site for [Clapboiz](https://github.com/Clapboiz).
+This is the site of [Clapboiz](https://github.com/Clapboiz).
 
 ::github{repo="Clapboiz/Clapboiz.github.io"}
 
