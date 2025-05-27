@@ -8,8 +8,8 @@ category: Writeups
 draft: false
 ---
 
-# ML
-## Uplink Artifact
+## ML
+### Uplink Artifact
 ![image](src/content/posts/CTF/HTB/GLOBAL-CYBER-SKILLS-BENCHMARK-CTF-2025/ML/Uplink-Artifact/1.png)
 
 Đọc vào đề và file data thì ta có thể biết được đây khả năng là nó bắt chúng ta tìm outlier hoặc cũng có thể là nó hide trong ảnh, bla bla, rất nhiều ngữ cảnh mà ta đặt ra.
@@ -24,7 +24,7 @@ draft: false
 
 Cũng như thường lệ, tôi sẽ check các thông tin của datasets, để có cái nhìn overview nhất.
 
-thì sau khi tôi check thì các tỉ lệ như trên hình, bạn đọc và cũng có thể thấy. Và tôi thấy được rằng có điểm bất thường giữa `x, y` so với `z. là `x, y` bạn có thể thấy được là giao động từ `0-25`, còn `z` sẽ từ `0-1`.
+thì sau khi tôi check thì các tỉ lệ như trên hình, bạn đọc và cũng có thể thấy. Và tôi thấy được rằng có điểm bất thường giữa `x, y` so với `z`. là `x, y` bạn có thể thấy được là giao động từ `0-25`, còn `z` sẽ từ `0-1`.
 
 Tuy vậy nhưng tôi vẫn training :"))
 
