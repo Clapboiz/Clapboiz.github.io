@@ -8,7 +8,7 @@ category: Writeups
 draft: false
 ---
 
-Vừa qua, tôi và team đã có cơ hội tham gia vào một trong những sự kiện CTF hấp dẫn – Global Cyber Skills Benchmark CTF: Operation Blackout. Và tôi đảm nhận mảng CLOUD/ML trong suốt event này, và trải nghiệm này thực sự thú vị hơn những gì tôi tưởng tượng (Vừa chiến đấu và vừa phải chạy những deadline của riêng mình dẫn đến hiệu suất tôi dành cho event này vẫn chưa quá cao). Trong bài viết này, tôi sẽ chia sẻ lại hành trình của tôi, những thử thách đã gặp phải, và cách tôi đã tiếp cận để giải quyết các bài tập thuộc mảng Cloud và CLOUD/ML.
+Vừa qua, tôi và team đã có cơ hội tham gia vào một trong những sự kiện CTF của HTB tổ chức – Global Cyber Skills Benchmark CTF: Operation Blackout. Và tôi đảm nhận mảng CLOUD/ML trong suốt sự kiện này, trải nghiệm này thực sự thú vị hơn những gì tôi tưởng tượng (Vừa chiến đấu và vừa phải chạy những deadline của riêng mình dẫn đến hiệu suất tôi dành cho sự kiện này vẫn chưa quá cao). Trong bài viết này, tôi sẽ chia sẻ lại hành trình của tôi, những thử thách đã gặp phải, và cách tôi đã tiếp cận để giải quyết các bài tập thuộc mảng Cloud và ML.
 
 Chém gió vậy là đủ, tiến hành vào các thử thách mà tôi đã solve nhé ^^. Happy Reading!!!
 
