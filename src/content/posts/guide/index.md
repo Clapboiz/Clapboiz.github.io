@@ -1,9 +1,9 @@
 ---
-title: Simple Guides for Clapboiz
+title: Simple Guides for Fuwari
 published: 2024-04-01
 description: "How to use this blog template."
 image: "./cover.jpeg"
-tags: ["Clapboiz", "Blogging", "Customization"]
+tags: ["Fuwari", "Blogging", "Customization"]
 category: Guides
 draft: false
 ---

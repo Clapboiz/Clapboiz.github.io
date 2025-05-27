@@ -1,14 +1,15 @@
 ---
 title: Markdown Extended Features
 published: 2024-05-01
-description: 'Read more about Markdown features in Clapboiz'
+updated: 2024-11-29
+description: 'Read more about Markdown features in Fuwari'
 image: ''
-tags: [Demo, Example, Markdown, Clapboiz]
+tags: [Demo, Example, Markdown, Fuwari]
 category: 'Examples'
 draft: false 
 ---
 
-## GitHub repository cards
+## GitHub Repository Cards
 You can add dynamic cards that link to GitHub repositories, on page load, the repository information is pulled from the GitHub API. 
 
 ::github{repo="Fabrizz/MMM-OnSpotify"}
@@ -16,7 +17,7 @@ You can add dynamic cards that link to GitHub repositories, on page load, the re
 Create a GitHub repository card with the code `::github{repo="<owner>/<repo>"}`.
 
 ```markdown
-::github{repo="Clapboiz/Clapboiz.github.io"}
+::github{repo="saicaca/fuwari"}
 ```
 
 ## Admonitions
@@ -43,6 +44,8 @@ Critical content demanding immediate user attention due to potential risks.
 Negative potential consequences of an action.
 :::
 
+### Basic Syntax
+
 ```markdown
 :::note
 Highlights information that users should take into account, even when skimming.
@@ -52,6 +55,8 @@ Highlights information that users should take into account, even when skimming.
 Optional information to help a user be more successful.
 :::
 ```
+
+### Custom Titles
 
 The title of the admonition can be customized.
 
@@ -64,6 +69,8 @@ This is a note with a custom title.
 This is a note with a custom title.
 :::
 ```
+
+### GitHub Syntax
 
 > [!TIP]
 > [The GitHub syntax](https://github.com/orgs/community/discussions/16925) is also supported.
