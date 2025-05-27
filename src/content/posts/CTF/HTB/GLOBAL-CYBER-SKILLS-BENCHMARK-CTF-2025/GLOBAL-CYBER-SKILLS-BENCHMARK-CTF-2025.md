@@ -1,6 +1,6 @@
 ---
 title: Global Cyber Skills Benchmark CTF 2025: Operation Blackout
-published: 2025-27-05
+published: 2025-05-27
 description: "Writeup CTF HTB"
 tags: ["CTF", "HTB", "CLOUD", "ML"]
 category: Writeups
