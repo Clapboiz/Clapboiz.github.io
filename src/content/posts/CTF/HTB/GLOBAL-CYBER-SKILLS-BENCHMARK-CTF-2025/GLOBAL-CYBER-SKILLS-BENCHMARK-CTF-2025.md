@@ -95,9 +95,9 @@ plt.show()
 
 tạo ảnh thành công thì tôi lúc này khá hấp dẫn đến tôi lôi máy ra scan QR luôn . Và tất nhiên nó sẽ k đc.
 
-Sau khi xem xét kĩ lại thì tôi thấy nó khả năng là 1 QR code nhưng định dạng lại không giống thì liệu cái label kia có nhiễu không, cũng giống như cột z chỉ để biểu thị màu sắc nên có thể bỏ, thì liệu cột z có label nhiễu ko??
+Sau khi xem xét kĩ lại thì tôi thấy nó khả năng là 1 QR code nhưng định dạng lại không giống thì liệu cái label kia có nhiễu không, cũng giống như cột z chỉ để biểu thị màu sắc nên có thể bỏ, thì liệu cột label có data nhiễu ko??
 
-Tôi tiếp tục giảm bớt, chỉ giảm còn 2 label trắng và đen, không còn xám hay nhạt j hết.
+Tôi tiếp tục giảm bớt, chỉ giảm còn 2 label trắng và đen, không còn xám hay nhạt gì hết.
 
 tiếp tục với ý tưởng đó thì ta sẽ cắt bớt và tạo thành ảnh khác chỉ có trắng và đen.
 
