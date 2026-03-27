@@ -18,5 +18,7 @@
     "quickfix.biome": "always",
     "source.organizeImports.biome": "always"
   },
-  "frontMatter.dashboard.openOnStart": false
+  "frontMatter.dashboard.openOnStart": false,
+  "snyk.advanced.organization": "330329f2-f942-43cd-a76c-d1da4aeb66c6",
+  "snyk.advanced.autoSelectOrganization": true
 }

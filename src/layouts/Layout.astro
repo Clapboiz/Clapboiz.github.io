@@ -42,8 +42,11 @@ if (!banner || typeof banner !== "string" || banner.trim() === "") {
 	banner = siteConfig.banner.src;
 }
 
-// TODO don't use post cover as banner for now
-banner = siteConfig.banner.src;
+// `banner` is also used for social preview (og:image/twitter:image) so we keep
+// the per-page image when provided by the page/layout.
+const ogImageUrl = banner.startsWith("http")
+	? banner
+	: new URL(banner, Astro.site).toString();
 
 const enableBanner = siteConfig.banner.enable;
 
@@ -93,6 +96,8 @@ const bannerOffset =
         ) : (
         <meta property="og:type" content="website" />
         )}
+		<meta property="og:image" content={ogImageUrl} />
+		<meta name="twitter:image" content={ogImageUrl} />
 
 		<meta name="twitter:card" content="summary_large_image">
 		<meta property="twitter:url" content={Astro.url}>
