@@ -18,7 +18,7 @@ entries:
 
   - title: "test"
     feature: "test"
-    date: "2026-04-28"
+    date: "2025-05-27"
     journal: "test"
     doi: "test"
     abstract: |
