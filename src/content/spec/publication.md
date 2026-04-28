@@ -5,9 +5,9 @@ journal: "Expert Systems With Applications (Elsevier)"
 doi: "https://doi.org/10.1016/j.eswa.2026.132546"
 ---
 
-# AutoWAFuzzer: An adaptive framework for web application firewall penetration testing with multi-agent system and RAG-enabled reinforcement learning
+# [Q1 (Highest) – Top 5 AI Journals] AutoWAFuzzer: An adaptive framework for web application firewall penetration testing with multi-agent system and RAG-enabled reinforcement learning
 
-**Expert Systems With Applications (Elsevier)** · Apr 28, 2026  
+**Expert Systems With Applications (Elsevier)** · August 25, 2026  
 **DOI:** [10.1016/j.eswa.2026.132546](https://doi.org/10.1016/j.eswa.2026.132546)
 
 Web Application Firewalls (WAFs) are crucial in mitigating web-based threats such as SQLi and XSS, yet the evolving complexity of WAF detection mechanisms poses significant challenges for penetration testing (pentest) tools.
@@ -17,3 +17,12 @@ Existing ML- and RL-based fuzzers often suffer from three main limitations: (1) 
 To address these challenges, we propose AutoWAFuzzer, an adaptive multi-agent framework that integrates Large Language Models (LLM), Reinforcement Learning (RL), and Retrieval-Augmented Generation (RAG). AutoWAFuzzer decomposes the testing process into modular agents: a generative LLM agent, an RL-based policy optimizer, a Reward Model agent simulating WAF feedback, and a RAG agent that continuously retrieves threat context from structured sources like MISP.
 
 This design enables parallel strategy exploration, semantic conditioning of payloads, and continuous policy refinement in a closed feedback loop. Experimental evaluations across rule-based and ML-based WAFs—including ModSecurity, Naxsi, WAF-Brain, and CloudGuard—demonstrate that AutoWAFuzzer significantly outperforms prior approaches in bypass rate, adaptability, and generalization, advancing the state-of-the-art in automated WAF penetration testing.
+
+---
+
+# test
+
+**test** · test  
+**DOI:** [test](test)
+
+test
