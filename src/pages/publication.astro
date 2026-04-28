@@ -1,0 +1,15 @@
+---
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+---
+<MainGridLayout title={i18n(I18nKey.publication)} description={i18n(I18nKey.publication)}>
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+        <div class="card-base z-10 px-9 py-6 relative w-full ">
+            <h1 class="text-4xl font-bold">{i18n(I18nKey.publication)}</h1>
+            <p class="mt-4 text-base leading-8 text-[var(--text-muted)]">
+                This page is for your publications and research output. Update it with your papers, talks, or projects.
+            </p>
+        </div>
+    </div>
+</MainGridLayout>
