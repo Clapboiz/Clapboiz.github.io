@@ -1,7 +1,15 @@
 ---
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { getEntry, render } from "astro:content";
+import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+
+const publicationPost = await getEntry("spec", "publication");
+if (!publicationPost) {
+    throw new Error("Publication page content not found");
+}
+const { Content } = await render(publicationPost);
 ---
 <MainGridLayout title={i18n(I18nKey.publication)} description={i18n(I18nKey.publication)}>
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
@@ -13,45 +21,9 @@ import { i18n } from "../i18n/translation";
         </div>
     </div>
 
-    <div class="mt-8 grid gap-6">
-        <article class="card-base border border-[var(--border)] p-8 rounded-[var(--radius-large)] shadow-sm">
-            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div class="space-y-3">
-                    <div class="inline-flex items-center rounded-full bg-[var(--primary)/10] px-3 py-1 text-sm font-semibold text-[var(--primary)]">
-                        Q1 (Highest) – Top 5 AI Journals
-                    </div>
-                    <h2 class="text-2xl font-bold leading-tight">
-                        AutoWAFuzzer: An adaptive framework for web application firewall penetration testing with multi-agent system and RAG-enabled reinforcement learning
-                    </h2>
-                    <div class="flex flex-wrap gap-3 text-sm text-[var(--text-muted)]">
-                        <span>Expert Systems With Applications (Elsevier)</span>
-                        <span>· Apr 28, 2026</span>
-                        <a href="https://doi.org/10.1016/j.eswa.2026.132546" target="_blank" rel="noopener noreferrer" class="text-[var(--primary)] hover:underline">
-                            DOI: 10.1016/j.eswa.2026.132546
-                        </a>
-                    </div>
-                </div>
-                <div class="flex items-center md:justify-end">
-                    <a href="https://doi.org/10.1016/j.eswa.2026.132546" target="_blank" rel="noopener noreferrer" class="btn-primary rounded-full px-6 py-3 text-sm font-semibold">
-                        View DOI
-                    </a>
-                </div>
-            </div>
-
-            <div class="mt-6 space-y-4 text-base leading-7 text-[var(--text-muted)]">
-                <p>
-                    Web Application Firewalls (WAFs) are crucial in mitigating web-based threats such as SQLi and XSS, yet the evolving complexity of WAF detection mechanisms poses significant challenges for penetration testing tools.
-                </p>
-                <p>
-                    Existing ML- and RL-based fuzzers often suffer from three main limitations: (1) reliance on static training datasets, making them unflexible to new WAF rules; (2) monolithic single-agent architectures, which hinder diverse strategy exploration; and (3) lack of contextual awareness due to missing integration with real-world threat intelligence.
-                </p>
-                <p>
-                    To address these challenges, we propose AutoWAFuzzer, an adaptive multi-agent framework that integrates Large Language Models (LLM), Reinforcement Learning (RL), and Retrieval-Augmented Generation (RAG). AutoWAFuzzer decomposes the testing process into modular agents: a generative LLM agent, an RL-based policy optimizer, a Reward Model agent simulating WAF feedback, and a RAG agent that continuously retrieves threat context from structured sources like MISP.
-                </p>
-                <p>
-                    This design enables parallel strategy exploration, semantic conditioning of payloads, and continuous policy refinement in a closed feedback loop. Experimental evaluations across rule-based and ML-based WAFs–including ModSecurity, Naxsi, WAF-Brain, and CloudGuard–demonstrate that AutoWAFuzzer significantly outperforms prior approaches in bypass rate, adaptability, and generalization, advancing the state-of-the-art in automated WAF penetration testing.
-                </p>
-            </div>
-        </article>
+    <div class="mt-6">
+        <Markdown class="mt-6">
+            <Content />
+        </Markdown>
     </div>
 </MainGridLayout>
