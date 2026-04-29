@@ -79,6 +79,9 @@ function doiLabel(doi: string) {
                                 <div class="text-lg font-bold text-75 leading-snug">
                                     {entry.title}
                                 </div>
+                                {entry.ranking ? (
+                                    <div class="mt-2 text-sm text-[var(--primary)] font-medium">{entry.ranking}</div>
+                                ) : null}
                                 <div class="mt-2 text-sm text-[var(--text-muted)]">{entry.journal ?? entry.feature}</div>
                                 <div class="mt-1 text-sm text-[var(--text-muted)]">DOI: {doiLabel(entry.doi)}</div>
                             </div>
