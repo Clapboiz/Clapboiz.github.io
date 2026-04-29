@@ -14,6 +14,7 @@ entries:
     date: "2025-05-27"
     journal: "test"
     doi: "test"
+    star: false
 ---
 
 This page lists my latest publications, research articles, and selected academic work.
