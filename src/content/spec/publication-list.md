@@ -7,6 +7,7 @@ entries:
     date: "2026-04-28"
     journal: "Expert Systems With Applications (Elsevier)"
     doi: "https://doi.org/10.1016/j.eswa.2026.132546"
+    star: true
 
   - title: "test"
     ranking: "test"

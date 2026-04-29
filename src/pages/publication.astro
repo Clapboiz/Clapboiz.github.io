@@ -3,12 +3,17 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getEntry } from "astro:content";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import { Icon } from "astro-icon/components";
 
 const publicationPost = await getEntry("spec", "publication-list");
 if (!publicationPost) {
     throw new Error("Publication page content not found");
 }
 const entries = publicationPost.data.entries ?? [];
+
+const starredEntries = entries
+    .filter((entry: any) => entry.star || entry.isStar || entry.featured)
+    .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 const groups: { year: number; entries: typeof entries }[] = (() => {
     const grouped: { [year: number]: typeof entries } = {};
@@ -41,6 +46,58 @@ function doiLabel(doi: string) {
 ---
 <MainGridLayout title={i18n(I18nKey.publication)} description={publicationPost.data.description ?? i18n(I18nKey.publication)}>
     <div class="card-base px-8 py-6">
+        {starredEntries.length > 0 && (
+            <div class="mb-8">
+                <div class="flex flex-row w-full items-center h-[3.75rem]">
+                    <div class="w-[15%] md:w-[10%] transition text-2xl font-bold text-right text-75 flex justify-end items-center">
+                        <Icon name="material-symbols:star-rounded" class="text-[2rem] text-[var(--primary)]" />
+                    </div>
+                    <div class="w-[15%] md:w-[10%]">
+                        <div class="h-3 w-3 bg-none rounded-full outline outline-[var(--primary)] mx-auto -outline-offset-[2px] z-50 outline-3"></div>
+                    </div>
+                    <div class="w-[70%] md:w-[80%] transition text-left text-2xl font-bold text-75">Top Publications</div>
+                </div>
+                {starredEntries.map((entry: any) => (
+                    <a
+                        href={entry.doi}
+                        aria-label={entry.title}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="group btn-plain !block w-full rounded-lg hover:text-[initial] py-3"
+                    >
+                        <div class="flex flex-row justify-start items-start">
+                            <!-- date -->
+                            <div class="w-[15%] md:w-[10%] transition text-sm text-right text-50">
+                                {formatDate(entry.date)}
+                            </div>
+                            <!-- dot and line -->
+                            <div class="w-[15%] md:w-[10%] relative dash-line h-full flex items-center">
+                                <div class="transition-all mx-auto w-1 h-1 rounded group-hover:h-5
+                                bg-[oklch(0.5_0.05_var(--hue))] group-hover:bg-[var(--primary)]
+                                outline outline-4 z-50
+                                outline-[var(--card-bg)]
+                                group-hover:outline-[var(--btn-plain-bg-hover)]
+                                group-active:outline-[var(--btn-plain-bg-active)]
+                                "
+                                ></div>
+                            </div>
+                            <!-- title -->
+                            <div class="w-[70%] md:w-[80%] pr-8">
+                                <div class="text-lg font-bold text-75 leading-snug">
+                                    {entry.title}
+                                </div>
+                                {entry.ranking ? (
+                                    <div class="mt-2 text-sm text-[var(--primary)] font-medium">Ranking: {entry.ranking}</div>
+                                ) : null}
+                                <div class="mt-2 text-sm text-[var(--text-muted)]">Journal: {entry.journal ?? entry.feature}</div>
+                                <div class="mt-1 text-sm text-[var(--text-muted)]">Doi: {doiLabel(entry.doi)}</div>
+                            </div>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        )}
+
         {groups.map((group) => (
             <div>
                 <div class="flex flex-row w-full items-center h-[3.75rem]">
@@ -82,7 +139,7 @@ function doiLabel(doi: string) {
                                 {entry.ranking ? (
                                     <div class="mt-2 text-sm text-[var(--primary)] font-medium">Ranking: {entry.ranking}</div>
                                 ) : null}
-                                <div class="mt-1 text-sm text-[var(--text-muted)]">Journal: {entry.journal ?? entry.feature}</div>
+                                <div class="mt-2 text-sm text-[var(--text-muted)]">Journal: {entry.journal ?? entry.feature}</div>
                                 <div class="mt-1 text-sm text-[var(--text-muted)]">Doi: {doiLabel(entry.doi)}</div>
                             </div>
                         </div>
