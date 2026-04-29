@@ -3,7 +3,7 @@ title: "Publications"
 description: "Latest publications, research articles, and selected academic work."
 entries:
   - title: "AutoWAFuzzer: An adaptive framework for web application firewall penetration testing with multi-agent system and RAG-enabled reinforcement learning"
-    ranking: "Q1 (Highest) – Top 5 AI Journals"
+    ranking: "Q1 (Highest) - Ranked among the top 5 journals in artificial intelligence worldwide"
     date: "2026-08-25"
     journal: "Expert Systems With Applications (Elsevier)"
     doi: "https://doi.org/10.1016/j.eswa.2026.132546"
