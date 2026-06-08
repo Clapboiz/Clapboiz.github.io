@@ -26,7 +26,7 @@ Nghe có vẻ khó tin, nhưng các lỗi kiểu này hoàn toàn có thật và
 
 ## 1. Một Vài Khái Niệm Cần Biết Trước Khi Bắt Đầu
 
-### Fault, Error và Failure
+### 1.1. Fault, Error và Failure
 
 Trong lĩnh vực hệ thống chịu lỗi (*Fault-Tolerant Systems*), ba thuật ngữ **Fault**, **Error** và **Failure** mô tả ba giai đoạn khác nhau của một sự cố.
 
@@ -52,7 +52,7 @@ Failure
 
 Điều quan trọng là không phải mọi *Fault* đều dẫn tới *Failure*. Nhiều cơ chế chịu lỗi hiện đại được thiết kế để phát hiện và xử lý lỗi trước khi chúng ảnh hưởng đến kết quả cuối cùng của hệ thống.
 
-### Soft Error và Hard Error
+### 1.2. Soft Error và Hard Error
 
 Không phải mọi lỗi phần cứng đều giống nhau.
 
@@ -78,7 +78,7 @@ Khi nghĩ đến lỗi phần cứng, nhiều người thường hình dung đ�
 
 Nghe có vẻ giống khoa học viễn tưởng, nhưng đây là một hiện tượng hoàn toàn có thật. Các hạt năng lượng cao được sinh ra từ những sự kiện trong vũ trụ như bùng phát Mặt Trời hoặc các vụ nổ sao siêu mới. Khi đi vào khí quyển Trái Đất, chúng va chạm với các phân tử không khí và tạo ra nhiều hạt thứ cấp khác nhau, trong đó neutron năng lượng cao là một trong những tác nhân chính gây ra lỗi cho các hệ thống điện tử hiện đại.
 
-### Single Event Upset (SEU) là gì?
+### 2.1. Single Event Upset (SEU) là gì?
 
 Một trong những dạng lỗi phổ biến nhất do bức xạ gây ra được gọi là **Single Event Upset (SEU)**.
 
@@ -88,7 +88,7 @@ SEU là hiện tượng trạng thái logic của một phần tử lưu trữ b
 
 Tuy nhiên, hậu quả của nó không hề nhỏ nếu bit bị thay đổi nằm trong dữ liệu quan trọng, thanh ghi điều khiển hoặc các cấu trúc lưu trữ quan trọng của hệ thống.
 
-### Tia vũ trụ tác động tới transistor như thế nào?
+### 2.2. Tia vũ trụ tác động tới transistor như thế nào?
 
 Để hiểu SEU xảy ra như thế nào, chúng ta cần nhìn vào thế giới bên trong chip bán dẫn.
 
@@ -113,7 +113,7 @@ Nói cách khác, một hiện tượng vật lý ở cấp độ nguyên tử c
 
 Điều đáng chú ý là hiện tượng này không chỉ xảy ra trong vệ tinh hoặc tàu vũ trụ. Các nghiên cứu đã chỉ ra rằng soft error do bức xạ vẫn có thể xuất hiện ngay tại mặt đất, đặc biệt trong các hệ thống máy chủ có dung lượng bộ nhớ lớn và hoạt động liên tục.
 
-### Vì sao transistor càng nhỏ càng dễ gặp Soft Error?
+### 2.3. Vì sao transistor càng nhỏ càng dễ gặp Soft Error?
 
 Trực giác thông thường có thể khiến chúng ta nghĩ rằng công nghệ càng hiện đại thì càng đáng tin cậy hơn. Tuy nhiên, thực tế lại phức tạp hơn.
 
@@ -131,7 +131,7 @@ Nói cách khác:
 
 > Các transistor hiện đại nhanh hơn và tiết kiệm điện hơn, nhưng đồng thời cũng dễ bị ảnh hưởng bởi hiện tượng bit flip hơn trước.
 
-### Single-Bit Upset và Multiple-Bit Upset
+### 2.4. Single-Bit Upset và Multiple-Bit Upset
 
 Trong các thế hệ phần cứng trước đây, một sự kiện bức xạ thường chỉ ảnh hưởng đến một ô nhớ duy nhất.
 
@@ -183,7 +183,7 @@ mà là:
 
 Trong Reliability Engineering, đây chính là giai đoạn mà một *Error* có thể bị phát hiện, được sửa chữa hoặc tiếp tục lan truyền cho đến khi trở thành *Failure*.
 
-### Silent Data Corruption (SDC)
+### 3.1. Silent Data Corruption (SDC)
 
 Một trong những kịch bản nguy hiểm nhất được gọi là **Silent Data Corruption (SDC)**.
 
@@ -213,7 +213,7 @@ Kết quả cuối cùng có thể sai, nhưng không ai biết rằng lỗi đ�
 
 Trong nhiều trường hợp, SDC còn nguy hiểm hơn cả việc hệ thống dừng hoạt động vì dữ liệu sai vẫn tiếp tục được sử dụng và lan truyền sang các thành phần khác.
 
-### Detected Unrecoverable Error (DUE)
+### 3.2. Detected Unrecoverable Error (DUE)
 
 Ngược lại với SDC là **Detected Unrecoverable Error (DUE)**.
 
@@ -240,7 +240,7 @@ Khi đó hệ thống có thể:
 
 Mặc dù gây gián đoạn hoạt động, DUE vẫn thường được xem là tốt hơn SDC vì ít nhất hệ thống biết rằng dữ liệu đã bị lỗi.
 
-### Error Propagation
+### 3.3. Error Propagation
 
 Một bit flip ban đầu thường không đứng yên.
 
@@ -290,7 +290,7 @@ Toàn bộ cơ chế này được xây dựng dựa trên nền tảng toán h�
 
 ---
 
-### Tại Sao Chỉ Lưu Dữ Liệu Là Chưa Đủ?
+### 4.1. Tại Sao Chỉ Lưu Dữ Liệu Là Chưa Đủ?
 
 Giả sử ta lưu một byte:
 
@@ -310,7 +310,7 @@ Vì vậy, cần thêm thông tin để kiểm tra tính toàn vẹn dữ liệu
 
 ---
 
-### Parity Bit: Cơ Chế Phát Hiện Lỗi Đơn Giản Nhất
+### 4.2. Parity Bit: Cơ Chế Phát Hiện Lỗi Đơn Giản Nhất
 
 Cách đơn giản nhất là **Parity Bit**.
 
@@ -340,7 +340,7 @@ Vì vậy, parity chỉ là cơ chế **Error Detection**, không phải Error C
 
 ---
 
-### Hamming Distance: Nền Tảng Của ECC
+### 4.3. Hamming Distance: Nền Tảng Của ECC
 
 Để đi xa hơn, ta cần khái niệm **Hamming Distance** — số bit khác nhau giữa hai chuỗi nhị phân.
 
@@ -366,7 +366,7 @@ Khoảng cách càng lớn, khả năng phát hiện và sửa lỗi càng mạn
 
 ---
 
-### Syndrome Decoding: Xác Định Bit Bị Lỗi
+### 4.4. Syndrome Decoding: Xác Định Bit Bị Lỗi
 
 Ý tưởng của ECC không chỉ là phát hiện lỗi, mà còn xác định chính xác vị trí lỗi.
 
@@ -394,7 +394,7 @@ Toàn bộ quá trình này diễn ra ở phần cứng và gần như không �
 
 ---
 
-### SECDED: Chuẩn ECC Trong Bộ Nhớ Hiện Đại
+### 4.5. SECDED: Chuẩn ECC Trong Bộ Nhớ Hiện Đại
 
 Trong thực tế, phổ biến nhất là **SECDED (Single Error Correction, Double Error Detection)**.
 
@@ -413,7 +413,7 @@ nhưng không thể sửa lỗi khi có nhiều hơn 1 bit bị sai.
 
 ---
 
-### Từ 64-bit Thành 72-bit
+### 4.6. Từ 64-bit Thành 72-bit
 
 Một hệ thống ECC điển hình không chỉ lưu dữ liệu gốc.
 
@@ -441,7 +441,7 @@ Chính 8 bit dư này cho phép phát hiện và sửa lỗi khi đọc dữ li�
 
 ---
 
-### ECC Không Nằm Trong DRAM
+### 4.7. ECC Không Nằm Trong DRAM
 
 Một điểm quan trọng: ECC thường **không nằm trong chip DRAM**.
 
@@ -463,7 +463,7 @@ Quá trình phát hiện và sửa lỗi xảy ra hoàn toàn trước khi dữ 
 
 ---
 
-### Khi ECC Không Đủ
+### 4.8. Khi ECC Không Đủ
 
 ECC hoạt động tốt khi lỗi chỉ ảnh hưởng một bit. Nhưng khi nhiều bit bị lỗi đồng thời, hệ thống bắt đầu gặp giới hạn.
 
@@ -519,7 +519,7 @@ mà trở thành:
 
 ---
 
-### Vì Sao ECC Không Còn Đủ?
+### 5.1. Vì Sao ECC Không Còn Đủ?
 
 SECDED hoạt động tốt khi lỗi mang tính cục bộ:
 
@@ -553,7 +553,7 @@ Trong các trường hợp này, số lượng bit lỗi có thể vượt quá 
 
 ---
 
-### Ý Tưởng Cốt Lõi Của Chipkill
+### 5.2. Ý Tưởng Cốt Lõi Của Chipkill
 
 Chipkill được thiết kế với một mục tiêu rõ ràng:
 
@@ -565,7 +565,7 @@ Thay vì lưu toàn bộ dữ liệu trong một chip, dữ liệu được **ph
 
 ---
 
-### Data Striping Trên DRAM
+### 5.3. Data Striping Trên DRAM
 
 Trong ECC truyền thống, một khối dữ liệu có thể nằm gần như trọn vẹn trong một vùng nhớ.
 
@@ -591,7 +591,7 @@ Thay vào đó, mỗi codeword chỉ mất một phần nhỏ dữ liệu.
 
 ---
 
-### Từ Bit-Level Sang Symbol-Level
+### 5.4. Từ Bit-Level Sang Symbol-Level
 
 ECC truyền thống (như Hamming Code) hoạt động ở mức **bit**.
 
@@ -615,7 +615,7 @@ Chipkill đặt câu hỏi:
 
 ---
 
-### Reed-Solomon: Nền Tảng Toán Học Của Chipkill
+### 5.5. Reed-Solomon: Nền Tảng Toán Học Của Chipkill
 
 Để xử lý lỗi ở mức symbol, Chipkill thường dựa trên **Reed-Solomon Code**.
 
@@ -628,7 +628,7 @@ Khác với Hamming Code:
 
 ---
 
-### Symbol Reconstruction
+### 5.6. Symbol Reconstruction
 
 Giả sử dữ liệu được chia thành các symbol:
 
@@ -650,7 +650,7 @@ Về mặt toán học, đây là bài toán giải hệ phương trình trên t
 
 ---
 
-### Khi Một DRAM Chip Bị Lỗi Hoàn Toàn
+### 5.7. Khi Một DRAM Chip Bị Lỗi Hoàn Toàn
 
 Điểm quan trọng nhất của Chipkill là khả năng chịu lỗi ở cấp chip.
 
@@ -686,7 +686,7 @@ No Visible Corruption
 
 ---
 
-### Vì Sao Chipkill Quan Trọng Trong Datacenter?
+### 5.8. Vì Sao Chipkill Quan Trọng Trong Datacenter?
 
 Ở quy mô nhỏ (ví dụ một máy tính cá nhân), lỗi DRAM là hiếm.
 
@@ -712,7 +712,7 @@ Trong bối cảnh đó, Chipkill đóng vai trò như một lớp bảo vệ đ
 
 ---
 
-### Sang Hướng Khác: Từ Bộ Nhớ Đến Bộ Xử Lý
+### 5.9. Sang Hướng Khác: Từ Bộ Nhớ Đến Bộ Xử Lý
 
 Chipkill giải quyết bài toán lỗi trong **bộ nhớ**.
 
@@ -754,7 +754,7 @@ Thay vào đó, các hệ thống yêu cầu độ tin cậy rất cao như vệ
 
 ---
 
-### Ý Tưởng Cốt Lõi: Nhân Ba Và So Sánh
+### 6.1. Ý Tưởng Cốt Lõi: Nhân Ba Và So Sánh
 
 TMR không cố gắng sửa lỗi. Nó **che giấu lỗi bằng sự đồng thuận**.
 
@@ -794,7 +794,7 @@ TMR hoạt động dựa trên một nguyên tắc đơn giản:
 
 ---
 
-### Majority Voter: Logic Cốt Lõi
+### 6.2. Majority Voter: Logic Cốt Lõi
 
 Với tín hiệu 1-bit, bộ voter có thể được biểu diễn bằng:
 
@@ -813,7 +813,7 @@ Về mặt phần cứng, đây là một mạch logic đơn giản. Nhưng về
 
 ---
 
-### Độ Tin Cậy Của TMR
+### 6.3. Độ Tin Cậy Của TMR
 
 TMR không loại bỏ lỗi — nó giảm xác suất lỗi ảnh hưởng đến đầu ra.
 
@@ -844,7 +844,7 @@ TMR biến lỗi hiếm thành cực kỳ hiếm — nhưng không miễn nhiễ
 
 ---
 
-### Khi Nhiều Module Cùng Sai
+### 6.4. Khi Nhiều Module Cùng Sai
 
 TMR dựa trên một giả định quan trọng:
 
@@ -873,7 +873,7 @@ Nguyên nhân có thể đến từ:
 
 ---
 
-### Vấn Đề Thực Sự: Không Phải “Có 3 Bản Sao”
+### 6.5. Vấn Đề Thực Sự: Không Phải “Có 3 Bản Sao”
 
 Một hiểu lầm phổ biến là:
 
@@ -893,7 +893,7 @@ C = wrong
 
 ---
 
-### Voter: Điểm Yếu Của TMR
+### 6.6. Voter: Điểm Yếu Của TMR
 
 TMR chỉ hiệu quả nếu voter đáng tin cậy.
 
@@ -916,7 +916,7 @@ Vì vậy trong thực tế:
 
 ---
 
-### Ý Nghĩa Cốt Lõi Của TMR
+### 6.7. Ý Nghĩa Cốt Lõi Của TMR
 
 TMR không phải là một kỹ thuật sửa lỗi.
 
@@ -959,7 +959,7 @@ Trong các hệ thống an toàn cao (*safety-critical systems*), đôi khi vấ
 
 ---
 
-### Detection Thay Vì Correction
+### 7.1. Detection Thay Vì Correction
 
 Khác với ECC (sửa dữ liệu) hay TMR (bỏ phiếu kết quả), Lockstep không cố gắng khôi phục trạng thái đúng.
 
@@ -998,7 +998,7 @@ CPU A != CPU B
 
 ---
 
-### Dual-Core Lockstep
+### 7.2. Dual-Core Lockstep
 
 Cấu hình phổ biến nhất là **Dual-Core Lockstep (DCLS)**:
 
@@ -1040,7 +1040,7 @@ Comparator phát hiện mismatch ngay lập tức.
 
 ---
 
-### Delayed Lockstep
+### 7.3. Delayed Lockstep
 
 Trong thực tế, nhiều hệ thống sử dụng biến thể **Delayed Lockstep** thay vì đồng bộ tuyệt đối.
 
@@ -1069,7 +1069,7 @@ CPU B not yet at same execution point
 
 ---
 
-### Comparator: Điểm Quan Trọng Nhất
+### 7.4. Comparator: Điểm Quan Trọng Nhất
 
 Trái tim của Lockstep là **Comparator**, không phải CPU.
 
@@ -1097,7 +1097,7 @@ Quan trọng hơn: quá trình này diễn ra ở **hardware level**, độc l�
 
 ---
 
-### Bài Toán Đồng Bộ Hóa
+### 7.5. Bài Toán Đồng Bộ Hóa
 
 Một yêu cầu cốt lõi của Lockstep là:
 
@@ -1114,7 +1114,7 @@ Nếu không đảm bảo các điều kiện này, divergence sẽ xảy ra li�
 
 ---
 
-### Fault Detection Trong Thời Gian Thực
+### 7.6. Fault Detection Trong Thời Gian Thực
 
 Điểm khác biệt lớn nhất của Lockstep so với ECC và TMR nằm ở thời điểm phát hiện lỗi:
 
@@ -1139,7 +1139,7 @@ nơi việc biết “có lỗi xảy ra” quan trọng hơn việc “cố g�
 
 ---
 
-### Chiến Lược Xử Lý Sau Khi Phát Hiện Lỗi
+### 7.7. Chiến Lược Xử Lý Sau Khi Phát Hiện Lỗi
 
 Lockstep không định nghĩa cách sửa lỗi — nó chỉ phát hiện.
 
@@ -1165,7 +1165,7 @@ Fault → Controlled shutdown → Safe state
 
 ---
 
-### Safe State Transition
+### 7.8. Safe State Transition
 
 Trong hệ thống safety-critical, mục tiêu không phải là “luôn chạy đúng”, mà là:
 
@@ -1188,7 +1188,7 @@ Safe state
 
 ---
 
-### Tổng Kết Vai Trò
+### 7.9. Tổng Kết Vai Trò
 
 Lockstep không thay thế ECC hay TMR.
 
