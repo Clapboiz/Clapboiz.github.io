@@ -1,5 +1,5 @@
 ---
-title: "From Bit Flips to Fault Injection: ECC, TMR và Lockstep trong Kiến trúc Chịu lỗi Hiện đại"
+title: "Từ Bit Flip đến Fault Injection: ECC, TMR và Lockstep trong Bảo mật Phần cứng Hiện đại"
 published: 2026-06-05
 description: "Hardware Security & Computer Architecture"
 image: './banner.png'
