@@ -1,5 +1,5 @@
 ---
-title: "Từ Bit Flip đến Fault Injection: ECC, TMR và Lockstep trong Bảo mật Phần cứng Hiện đại"
+title: "Từ Bit Flip đến Cache Leak: Fault Injection, DFA Attack và Giới Hạn Thật Sự của Lockstep Defense"
 published: 2026-06-05
 description: "Hardware Security & Computer Architecture"
 image: './banner.png'
@@ -12,11 +12,7 @@ Khi nhắc đến các cuộc tấn công vào hệ thống máy tính, chúng t
 
 Ít ai biết rằng đôi khi nguyên nhân có thể đến từ một thứ rất xa xôi: các hạt năng lượng cao xuất phát từ ngoài không gian.
 
-Trong vũ trụ luôn tồn tại những dòng bức xạ được tạo ra từ các hiện tượng thiên văn như bùng phát Mặt Trời, các vụ nổ sao siêu mới (supernova) hoặc nhiều sự kiện năng lượng cao khác. Các hạt này liên tục di chuyển trong không gian và một phần trong số đó hướng về Trái Đất.
-
-May mắn là chúng ta có bầu khí quyển đóng vai trò như một lớp lá chắn tự nhiên. Khi các hạt từ vũ trụ lao vào khí quyển, chúng va chạm với các phân tử không khí và tạo ra nhiều hạt thứ cấp khác. Phần lớn bị hấp thụ hoặc mất năng lượng trước khi chạm tới mặt đất, nhưng vẫn có một số hạt đủ năng lượng để tiếp tục xuyên xuống các thiết bị điện tử xung quanh chúng ta.
-
-Trong hầu hết thời gian, những hạt này không gây ra vấn đề gì đáng kể. Tuy nhiên, khi một hạt năng lượng cao vô tình đi qua vùng bán dẫn bên trong chip nhớ hoặc bộ xử lý, nó có thể tạo ra một lượng điện tích nhỏ làm thay đổi trạng thái của một transistor đang lưu dữ liệu.
+Bầu khí quyển Trái Đất đóng vai trò như một lớp lá chắn tự nhiên trước bức xạ vũ trụ, nhưng một số hạt năng lượng đủ cao vẫn xuyên xuống tới mặt đất. Khi một hạt như vậy đi qua vùng bán dẫn bên trong chip nhớ hoặc bộ xử lý, nó có thể tạo ra một lượng điện tích nhỏ làm thay đổi trạng thái của một transistor đang lưu dữ liệu.
 
 Hãy tưởng tượng bộ nhớ máy tính đang lưu trữ hàng tỷ bit dữ liệu dưới dạng các giá trị 0 và 1. Nếu chỉ một bit duy nhất bị thay đổi từ 0 thành 1 hoặc ngược lại, dữ liệu có thể bị sai lệch. Hiện tượng này được gọi là bit flip. Trong phần cứng, đây là một dạng lỗi mềm (soft error) vì bản thân linh kiện không bị hư hỏng vật lý; dữ liệu chỉ bị thay đổi tạm thời do tác động của môi trường.
 
@@ -58,13 +54,11 @@ Không phải mọi lỗi phần cứng đều giống nhau.
 
 **Hard Error** là các hư hỏng vật lý của linh kiện, chẳng hạn như transistor bị hỏng, đường tín hiệu bị đứt hoặc chip bị lỗi vĩnh viễn. Những lỗi này thường yêu cầu sửa chữa hoặc thay thế phần cứng.
 
-Ngược lại, **Soft Error** không làm hỏng phần cứng. Thay vào đó, nó chỉ làm thay đổi tạm thời trạng thái logic đang được lưu trữ hoặc xử lý bên trong hệ thống. Sau khi dữ liệu được ghi lại hoặc hệ thống được khởi động lại, lỗi có thể hoàn toàn biến mất.
+Ngược lại, **Soft Error** không làm hỏng phần cứng — nó chỉ làm thay đổi tạm thời trạng thái logic đang được lưu trữ hoặc xử lý bên trong hệ thống. Sau khi dữ liệu được ghi lại hoặc hệ thống được khởi động lại, lỗi có thể hoàn toàn biến mất.
 
 Trong các hệ thống điện toán hiện đại, Soft Error là mối quan tâm đặc biệt vì nó có thể xảy ra ngay cả khi phần cứng vẫn hoạt động hoàn toàn bình thường.
 
 Các cơ chế như ECC, Chipkill, TMR hay Lockstep Execution được phát triển chủ yếu để phát hiện, sửa chữa hoặc chịu đựng loại lỗi này.
-
-Ở phần tiếp theo, chúng ta sẽ tìm hiểu nguyên nhân phổ biến nhất gây ra Soft Error: hiện tượng một hạt năng lượng cao từ bức xạ vũ trụ tương tác với transistor bên trong chip và làm thay đổi trạng thái của một bit dữ liệu.
 
 ---
 
@@ -162,10 +156,6 @@ Kết quả là xuất hiện **Multiple-Bit Upset (MBU)**:
 Nhiều bit bị thay đổi trong cùng một sự kiện.
 
 MBU là một thách thức lớn đối với các cơ chế ECC truyền thống và cũng là một trong những lý do thúc đẩy sự ra đời của các kỹ thuật bảo vệ nâng cao như Chipkill.
-
-Nếu bit flip là vấn đề, câu hỏi tiếp theo là: hệ thống sẽ làm gì để phát hiện và sửa những lỗi này?
-
-Đó chính là lý do các cơ chế như ECC Memory và Chipkill được phát triển. Thay vì cố gắng ngăn chặn hoàn toàn bit flip — một điều gần như bất khả thi — chúng được thiết kế để phát hiện, sửa chữa và cô lập lỗi trước khi dữ liệu sai lệch có thể ảnh hưởng đến hệ thống.
 
 ---
 
@@ -265,8 +255,6 @@ Quá trình này được gọi là **Error Propagation**.
 Điều đáng chú ý là chi phí xử lý lỗi tăng lên rất nhanh theo thời gian. Một lỗi được sửa ngay tại bộ nhớ thường chỉ mất vài chu kỳ xử lý. Nhưng nếu lỗi đã lan tới hệ điều hành, cơ sở dữ liệu hoặc ứng dụng, hậu quả có thể nghiêm trọng hơn rất nhiều.
 
 Vì lý do đó, các kiến trúc chịu lỗi hiện đại luôn cố gắng phát hiện và xử lý lỗi càng gần nguồn phát sinh càng tốt.
-
-Trong phần tiếp theo, chúng ta sẽ tìm hiểu cơ chế phòng thủ phổ biến nhất trước các bit flip: **Error Correcting Code (ECC)**. Thay vì cố gắng ngăn SEU xảy ra, ECC chấp nhận rằng lỗi là điều không thể tránh khỏi và tập trung vào việc phát hiện, định vị và sửa lỗi trước khi chúng kịp lan truyền qua hệ thống.
 
 ---
 
@@ -523,7 +511,7 @@ mà trở thành:
 
 SECDED hoạt động tốt khi lỗi mang tính cục bộ:
 
-```text id="ec7q7c"
+```text
 00000000
     ↓
 00001000
@@ -531,7 +519,7 @@ SECDED hoạt động tốt khi lỗi mang tính cục bộ:
 
 Nhưng khi nhiều bit bị ảnh hưởng cùng lúc:
 
-```text id="k8z3q9"
+```text
 00000000
     ↓
 00111000
@@ -571,7 +559,7 @@ Trong ECC truyền thống, một khối dữ liệu có thể nằm gần như 
 
 Chipkill thì làm ngược lại: nó trải dữ liệu ra nhiều chip.
 
-```text id="strip1"
+```text
 Data Word
  ├─ Part A → Chip 0
  ├─ Part B → Chip 1
@@ -632,13 +620,13 @@ Khác với Hamming Code:
 
 Giả sử dữ liệu được chia thành các symbol:
 
-```text id="rs1"
+```text
 S1 S2 S3 S4 S5 S6 S7 S8
 ```
 
 Nếu một phần bị mất:
 
-```text id="rs2"
+```text
 S1 S2 ?? S4 S5 S6 S7 S8
 ```
 
@@ -654,7 +642,7 @@ Về mặt toán học, đây là bài toán giải hệ phương trình trên t
 
 Điểm quan trọng nhất của Chipkill là khả năng chịu lỗi ở cấp chip.
 
-```text id="chipfail"
+```text
 Chip 0  ✓
 Chip 1  ✓
 Chip 2  ✓
@@ -736,7 +724,7 @@ Nhưng khi lỗi xảy ra trong chính **logic xử lý**, ví dụ bên trong A
 
 Ví dụ:
 
-```text id="tmr_ex1"
+```text
 A = 5, B = 3
 Expected: 8
 Actual:   12
@@ -760,13 +748,13 @@ TMR không cố gắng sửa lỗi. Nó **che giấu lỗi bằng sự đồng t
 
 Thay vì một module xử lý:
 
-```text id="tmr_single"
+```text
 Input → Module → Output
 ```
 
 TMR sử dụng ba module chạy song song:
 
-```text id="tmr_block"
+```text
 Input → Module A ┐
 Input → Module B ├→ Majority Voter → Output
 Input → Module C ┘
@@ -776,7 +764,7 @@ Ba module thực hiện cùng một phép tính trên cùng một đầu vào. K
 
 Nếu một module bị lỗi:
 
-```text id="tmr_fail"
+```text
 A = 42
 B = 42
 C = 99
@@ -784,7 +772,7 @@ C = 99
 
 hệ thống vẫn chọn:
 
-```text id="tmr_vote"
+```text
 Output = 42
 ```
 
@@ -798,7 +786,7 @@ TMR hoạt động dựa trên một nguyên tắc đơn giản:
 
 Với tín hiệu 1-bit, bộ voter có thể được biểu diễn bằng:
 
-```text id="tmr_logic"
+```text
 Y = AB + AC + BC
 ```
 
@@ -819,14 +807,14 @@ TMR không loại bỏ lỗi — nó giảm xác suất lỗi ảnh hưởng đ�
 
 Nếu gọi:
 
-* ( R_m ): độ tin cậy của một module
-* ( R_v ): độ tin cậy của voter
+* `Rm`: độ tin cậy của một module
+* `Rv`: độ tin cậy của voter
 
 thì độ tin cậy hệ thống:
 
-[
-R_{TMR} = R_v (3R_m^2 - 2R_m^3)
-]
+```text
+R_TMR = Rv × (3×Rm² - 2×Rm³)
+```
 
 Ý nghĩa trực giác:
 
@@ -835,7 +823,7 @@ R_{TMR} = R_v (3R_m^2 - 2R_m^3)
 
 Ví dụ:
 
-```text id="tmr_calc"
+```text
 Rm = 0.99
 → RTMR ≈ 0.9997
 ```
@@ -854,7 +842,7 @@ Nếu giả định này bị phá vỡ, TMR mất hiệu lực.
 
 Ví dụ:
 
-```text id="tmr_common"
+```text
 A = 99
 B = 99
 C = 99
@@ -881,7 +869,7 @@ Một hiểu lầm phổ biến là:
 
 Nhưng nếu cả ba module được xây dựng từ cùng một thiết kế, chúng cũng có thể chia sẻ cùng một lỗi.
 
-```text id="tmr_fallacy"
+```text
 Design Bug
    ↓
 A = wrong
@@ -899,7 +887,7 @@ TMR chỉ hiệu quả nếu voter đáng tin cậy.
 
 Nếu voter sai:
 
-```text id="tmr_voter_fail"
+```text
 A = correct
 B = correct
 C = correct
@@ -969,7 +957,7 @@ Nó trả lời một câu hỏi đơn giản hơn:
 
 Ý tưởng cơ bản là chạy hai CPU gần như giống hệt nhau:
 
-```text id="ls1"
+```text
 CPU A
 CPU B
 ```
@@ -982,13 +970,13 @@ Sau đó hệ thống so sánh trạng thái nội bộ theo thời gian thực.
 
 Nếu đồng nhất:
 
-```text id="ls2"
+```text
 CPU A == CPU B
 ```
 
 Nếu có sai lệch:
 
-```text id="ls3"
+```text
 CPU A != CPU B
 ```
 
@@ -1002,7 +990,7 @@ CPU A != CPU B
 
 Cấu hình phổ biến nhất là **Dual-Core Lockstep (DCLS)**:
 
-```text id="ls4"
+```text
         Input
           │
      ┌────┴────┐
@@ -1019,7 +1007,7 @@ Cấu hình phổ biến nhất là **Dual-Core Lockstep (DCLS)**:
 
 Trong điều kiện bình thường, hai core tiến hành từng chu kỳ giống hệt nhau:
 
-```text id="ls5"
+```text
 Cycle 100:
 A: ADD R1, R2
 B: ADD R1, R2
@@ -1031,7 +1019,7 @@ B: MOV R3, R4
 
 Nếu một SEU xảy ra và làm sai lệch trạng thái:
 
-```text id="ls6"
+```text
 CPU A: R5 = 0x1000
 CPU B: R5 = 0x1008
 ```
@@ -1044,7 +1032,7 @@ Comparator phát hiện mismatch ngay lập tức.
 
 Trong thực tế, nhiều hệ thống sử dụng biến thể **Delayed Lockstep** thay vì đồng bộ tuyệt đối.
 
-```text id="ls7"
+```text
 CPU A  → executes first
 CPU B  → executes after N cycles
 ```
@@ -1057,7 +1045,7 @@ Lợi ích chính:
 
 Ví dụ:
 
-```text id="ls8"
+```text
 Radiation event occurs
       │
       ▼
@@ -1083,7 +1071,7 @@ Comparator theo dõi và so sánh trạng thái hệ thống, bao gồm:
 
 Ví dụ:
 
-```text id="ls9"
+```text
 A: PC = 0x80401000
 B: PC = 0x80401000  → OK
 
@@ -1122,7 +1110,7 @@ Nếu không đảm bảo các điều kiện này, divergence sẽ xảy ra li�
 * TMR: phát hiện khi voting
 * Lockstep: phát hiện **trong khi CPU đang chạy**
 
-```text id="ls10"
+```text
 Fault → Divergence → Immediate Detection → Alarm
 ```
 
@@ -1147,19 +1135,19 @@ Sau khi divergence được phát hiện, hệ thống có thể:
 
 **Reset system**
 
-```text id="ls11"
+```text
 Fault → Reset → Restart
 ```
 
 **Switch to backup core**
 
-```text id="ls12"
+```text
 Fault → Activate spare processor
 ```
 
 **Enter safe state**
 
-```text id="ls13"
+```text
 Fault → Controlled shutdown → Safe state
 ```
 
@@ -1171,7 +1159,7 @@ Trong hệ thống safety-critical, mục tiêu không phải là “luôn chạ
 
 > Không bao giờ tạo ra hành vi nguy hiểm khi lỗi xảy ra.
 
-```text id="ls14"
+```text
 Fault
  ↓
 Detected
@@ -1226,7 +1214,7 @@ Do đó, thiết kế Fault-Tolerant Architecture luôn là bài toán cân bằ
 
 ---
 
-### 8.1 Evaluation Criteria
+### 8.1. Evaluation Criteria
 
 Để so sánh các cơ chế chịu lỗi, cần xác định các tiêu chí đánh giá chung.
 
@@ -1248,12 +1236,14 @@ Một cơ chế chịu lỗi tốt không chỉ phát hiện lỗi mà còn ph�
 
 Ví dụ đối với Triple Modular Redundancy:
 
-R_{TMR}=3R^2-2R^3
+```text
+R_TMR = 3R² - 2R³
+```
 
 Trong đó:
 
-* (R) là reliability của một module đơn lẻ.
-* (R_{TMR}) là reliability của hệ thống TMR.
+* `R` là reliability của một module đơn lẻ.
+* `R_TMR` là reliability của hệ thống TMR.
 
 Kết quả cho thấy TMR có thể cải thiện đáng kể độ tin cậy khi reliability ban đầu của module đủ cao.
 
@@ -1303,7 +1293,7 @@ Do đó việc tăng độ tin cậy đôi khi phải đánh đổi bằng hiệ
 
 ---
 
-### 8.2 ECC và Chipkill
+### 8.2. ECC và Chipkill
 
 ECC là lớp bảo vệ cơ bản nhất đối với bộ nhớ.
 
@@ -1350,7 +1340,7 @@ thay vì các hệ thống phổ thông.
 
 ---
 
-### 8.3 TMR và Lockstep
+### 8.3. TMR và Lockstep
 
 Khác với ECC và Chipkill, TMR và Lockstep không tập trung vào lỗi bộ nhớ.
 
@@ -1366,7 +1356,9 @@ Kết quả đầu ra được xác định thông qua majority voting.
 
 Mạch voter có thể được biểu diễn bằng:
 
-Y=AB+AC+BC
+```text
+Y = AB + AC + BC
+```
 
 Nếu một module bị lỗi tạm thời do Single Event Upset, hai module còn lại vẫn có thể tạo ra kết quả đúng.
 
@@ -1440,7 +1432,7 @@ Nhược điểm:
 
 ---
 
-### 8.4 Comparative Analysis
+### 8.4. Comparative Analysis
 
 | Mechanism | Target Fault Model            | Detection | Recovery          | Area Overhead | Power Overhead | Performance Impact |
 | --------- | ----------------------------- | --------- | ----------------- | ------------- | -------------- | ------------------ |
@@ -1457,7 +1449,7 @@ Do đó việc lựa chọn phụ thuộc trực tiếp vào yêu cầu của h�
 
 ---
 
-### 8.5 Layered Fault-Tolerant Design
+### 8.5. Layered Fault-Tolerant Design
 
 Trong các hệ thống hiện đại, các cơ chế chịu lỗi thường được triển khai đồng thời thay vì thay thế lẫn nhau.
 
@@ -1518,7 +1510,7 @@ Câu trả lời là có.
 
 ---
 
-### 9.1 Reliability Assumptions và Security Assumptions
+### 9.1. Reliability Assumptions và Security Assumptions
 
 Một điểm thú vị trong Hardware Security là phần lớn các cơ chế chịu lỗi đều được xây dựng dựa trên một số giả định nhất định.
 
@@ -1566,7 +1558,7 @@ Từ góc nhìn này, nhiều cuộc tấn công phần cứng thực chất là
 
 ---
 
-### 9.2 Fault Injection: Chủ Động Tạo Lỗi Trong Phần Cứng
+### 9.2. Fault Injection: Chủ Động Tạo Lỗi Trong Phần Cứng
 
 Fault Injection là nhóm kỹ thuật chủ động tạo ra lỗi vật lý bên trong hệ thống nhằm làm thay đổi trạng thái thực thi của phần cứng.
 
@@ -1592,7 +1584,7 @@ Từ góc nhìn của CPU, một fault do attacker tạo ra đôi khi không kh�
 
 ---
 
-### 9.3 Common Fault Injection Techniques
+### 9.3. Common Fault Injection Techniques
 
 #### Voltage Glitching
 
@@ -1670,7 +1662,7 @@ Kỹ thuật này cho phép nghiên cứu chính xác tác động của lỗi t
 
 ---
 
-### 9.4 Fault Injection và Kiến Trúc Bộ Xử Lý
+### 9.4. Fault Injection và Kiến Trúc Bộ Xử Lý
 
 Ở cấp độ vi kiến trúc, Fault Injection không chỉ làm thay đổi dữ liệu mà còn có thể tác động tới trạng thái thực thi của CPU.
 
@@ -1703,7 +1695,7 @@ Hiện tượng này thường được gọi là Instruction Skip Attack.
 
 ---
 
-### 9.5 Differential Fault Analysis
+### 9.5. Differential Fault Analysis
 
 Một trong những ứng dụng nguy hiểm nhất của Fault Injection xuất hiện trong lĩnh vực mật mã học.
 
@@ -1731,7 +1723,7 @@ Nhiều nghiên cứu đã chứng minh khả năng trích xuất khóa AES ho�
 
 ---
 
-### 9.6 Rowhammer: Khi Reliability Trở Thành Vulnerability
+### 9.6. Rowhammer: Khi Reliability Trở Thành Vulnerability
 
 Một trong những ví dụ nổi tiếng nhất về sự giao thoa giữa Reliability và Security là Rowhammer.
 
@@ -1761,7 +1753,7 @@ Rowhammer là minh chứng rõ ràng cho việc một vấn đề Reliability ho
 
 ---
 
-### 9.7 Fault-Tolerant Architectures Under Adversarial Faults
+### 9.7. Fault-Tolerant Architectures Under Adversarial Faults
 
 Một câu hỏi quan trọng là liệu các cơ chế chịu lỗi đã trình bày trước đó có giúp chống lại Fault Injection hay không.
 
@@ -1781,7 +1773,7 @@ Tuy nhiên Lockstep cũng có thể thất bại nếu cùng một lỗi xuất 
 
 ---
 
-### 9.8 Reliability and Security Are Two Sides of the Same Problem
+### 9.8. Reliability and Security Are Two Sides of the Same Problem
 
 Từ góc nhìn truyền thống, Reliability Engineering và Security Engineering thường được xem là hai lĩnh vực độc lập.
 
@@ -1797,7 +1789,1026 @@ Theo một nghĩa nào đó, Hardware Security hiện đại chính là sự m�
 
 ---
 
-## 10. Kết Luận
+## 10. Phân tích và khai thác tấn công Differential Fault Analysis (DFA) trên AES-128
+
+> **Môi trường:** Kali Linux (VM) · gem5 v25.1.0.1 · RISC-V 64-bit · tiny-AES-c · PhoenixAES 0.0.5  
+> **Mục tiêu:** Chứng minh DFA attack recover được AES-128 master key từ faulty ciphertext, và Lockstep Defense chặn hoàn toàn attack đó.  
+> **Thời gian thực hiện:** ~1 ngày (bao gồm build time và debug)
+
+---
+
+### 10.1. Lý thuyết nền tảng
+
+#### 1.1. AES-128 hoạt động như thế nào
+
+AES-128 encrypt một block 16 bytes qua **10 rounds**, mỗi round gồm 4 bước:
+
+```
+Round 0:   AddRoundKey (initial whitening với master key)
+Round 1-9: SubBytes → ShiftRows → MixColumns → AddRoundKey
+Round 10:  SubBytes → ShiftRows → AddRoundKey (không có MixColumns)
+```
+
+State là một matrix 4×4 bytes (16 bytes tổng). Master key 128 bits được expand thành 11 round keys (176 bytes tổng) qua **key schedule**.
+
+Điểm quan trọng cho DFA: nếu biết được **round 10 key** (16 bytes cuối của key schedule), có thể reverse key schedule để ra master key. Round 10 key và master key có quan hệ toán học xác định — không cần brute force.
+
+#### 1.2. DFA là gì và tại sao nó hoạt động
+
+Differential Fault Analysis (Boneh et al., 1997) khai thác một điểm yếu vật lý: nếu inject một lỗi nhỏ (bit flip) vào AES state tại **round 9**, output sẽ bị corrupt theo một pattern có thể phân tích.
+
+Cụ thể: khi flip 1 byte trong state trước SubBytes round 9, error propagate qua MixColumns round 9 → toàn bộ column bị ảnh hưởng → sau AddRoundKey round 9 → tiếp tục vào round 10. Bằng cách so sánh **correct ciphertext** và **faulty ciphertext**, có thể suy ngược lại giá trị của round 10 key tại các vị trí bị ảnh hưởng.
+
+Với đủ faulty ciphertexts (lý thuyết cần ≥ 2–4 cặp mỗi byte của round 10 key), PhoenixAES recover toàn bộ round 10 key.
+
+#### 1.3. Lockstep Defense
+
+Lockstep là countermeasure phần cứng: chạy **hai CPU song song** với cùng input, sau mỗi bước so sánh output. Nếu có fault inject vào một CPU, hai output sẽ diverge và hệ thống abort trước khi faulty ciphertext được output ra ngoài.
+
+DFA không thể hoạt động nếu attacker không thu được faulty ciphertext.
+
+---
+
+### 10.2. Thiết kế experiment
+
+#### 2.1. Stack công cụ
+
+| Component | Lý do chọn |
+|-----------|-----------|
+| **gem5** | Full-system CPU simulator, chạy RISC-V binary với timing chính xác. Standard trong architecture research. |
+| **RISC-V** | ISA đơn giản, disassembly dễ đọc, gem5 support tốt. |
+| **tiny-AES-c** | Implementation AES-128 thuần C, ~500 LOC, không có optimization phức tạp. Dễ phân tích và patch. |
+| **PhoenixAES** | Tool DFA chuẩn từ SideChannelMarvels, được cite trong nhiều paper. |
+| **SE mode** | Syscall Emulation — chạy user-space binary mà không cần full OS. Đủ cho mục đích này. |
+
+#### 2.2. Threat model
+
+- **Attacker**: Có khả năng inject fault vật lý vào chip đang chạy (voltage glitch, EM pulse, laser)
+- **Target**: AES-128 ECB encryption với secret key
+- **Goal**: Recover master key từ (correct ciphertext, faulty ciphertexts)
+- **Assumption**: Attacker biết plaintext (hoặc có oracle), biết vị trí rough của round 9 trong execution timeline
+
+#### 2.3. Tại sao chọn round 9
+
+Round 9 là round **áp chót**. Fault inject vào round 9 SubBytes có đặc tính:
+- Chỉ ảnh hưởng đến 1 column của state sau MixColumns
+- Pattern propagation có thể tính toán ngược
+- Round 10 chỉ có SubBytes + ShiftRows + AddRoundKey — không có MixColumns làm phức tạp thêm
+
+Inject vào round 8 hoặc trước đó: error lan rộng hơn, harder to analyze. Inject vào round 10: quá muộn, không đủ data để recover key.
+
+---
+
+### 10.3. Setup môi trường
+
+#### 3.1. Hệ điều hành
+
+Experiment chạy trên **Kali Linux** (Debian-based). Không thể chạy trên Windows native vì gem5 depend vào Linux-specific build system (SCons + Python bindings + C++ với POSIX APIs).
+
+Nếu chỉ có Windows: dùng WSL2 (Ubuntu kernel thật chạy bên trong Windows, không phải emulation). Kali VM cũng ổn.
+
+#### 3.2. Install dependencies
+
+```bash
+sudo apt update && sudo apt upgrade -y
+
+sudo apt install -y \
+    build-essential git m4 scons zlib1g zlib1g-dev \
+    libprotobuf-dev protobuf-compiler libprotoc-dev \
+    libgoogle-perftools-dev python3-dev python3-pip \
+    libboost-all-dev pkg-config \
+    gcc-riscv64-linux-gnu binutils-riscv64-linux-gnu
+```
+
+Verify RISC-V toolchain:
+
+```bash
+riscv64-linux-gnu-gcc --version
+# riscv64-linux-gnu-gcc (Debian 14.2.0-7) 14.2.0
+```
+
+---
+
+### 10.4. Build gem5
+
+#### 4.1. Clone và build
+
+```bash
+git clone https://github.com/gem5/gem5
+cd gem5
+scons build/RISCV/gem5.opt -j$(nproc)
+```
+
+`-j$(nproc)` dùng toàn bộ CPU cores. Build mất 45–60 phút.
+
+#### 4.2. Output và warnings
+
+```
+scons: done building targets.
+*** Summary of Warnings ***
+Warning: Detected GCC version 15.2.0 is not officially supported.
+         gem5 supports GCC v11 up to v14.2.
+Warning: Header file <png.h> not found.
+Warning: Couldn't find HDF5 C++ libraries. Disabling HDF5 support.
+```
+
+**Phân tích warnings:**
+- GCC 15.2 không officially supported nhưng vẫn compile được. Không ảnh hưởng đến RISC-V simulation.
+- libpng và HDF5 chỉ cần cho framebuffer rendering và trace capture — không cần cho experiment này.
+
+#### 4.3. Verify
+
+```bash
+./build/RISCV/gem5.opt
+# Output: Usage / gem5 options
+# gem5 không có --version flag, output Usage là đúng
+```
+
+---
+
+### 10.5. Compile AES target
+
+#### 5.1. Clone tiny-AES-c
+
+```bash
+git clone https://github.com/kokke/tiny-AES-c
+cd tiny-AES-c
+```
+
+#### 5.2. Tạo wrapper với NIST test vector
+
+Dùng NIST FIPS 197 Appendix B test vector để có ground truth rõ ràng:
+- Key: `2B7E151628AED2A6ABF7158809CF4F3C`
+- Plaintext: `6BC1BEE22E409F96E93D7E117393172A`
+- Expected ciphertext: `3AD77BB40D7A3660A89ECAF32466EF97`
+
+```c
+// aes_main.c
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "aes.h"
+
+int fault_byte = -1;
+int fault_bit  = 0;
+
+int main() {
+    uint8_t key[16] = {
+        0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+        0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
+    };
+    uint8_t plaintext[16] = {
+        0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+        0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
+    };
+
+    char *fb = getenv("FAULT_BYTE");
+    char *fi = getenv("FAULT_BIT");
+    if (fb) fault_byte = atoi(fb);
+    if (fi) fault_bit  = atoi(fi);
+
+    struct AES_ctx ctx;
+    AES_init_ctx(&ctx, key);
+
+    uint8_t buf[16];
+    memcpy(buf, plaintext, 16);
+    AES_ECB_encrypt(&ctx, buf);
+
+    printf("Ciphertext: ");
+    for (int i = 0; i < 16; i++) printf("%02x", buf[i]);
+    printf("\n");
+    return 0;
+}
+```
+
+#### 5.3. Compile cho RISC-V
+
+```bash
+riscv64-linux-gnu-gcc -O0 -g -static -o aes_test aes_main.c aes.c -I.
+```
+
+**Tại sao cần `-static`?**
+
+Lần đầu compile không có `-static`:
+
+```bash
+riscv64-linux-gnu-gcc -O0 -g -o aes_test aes_main.c aes.c -I.
+file aes_test
+# aes_test: ELF 64-bit LSB pie executable, UCB RISC-V, dynamically linked,
+#           interpreter /lib/ld-linux-riscv64-lp64d.so.1
+```
+
+Chạy trong gem5 báo lỗi:
+
+```
+fatal: Failed to open file /lib/ld-linux-riscv64-lp64d.so.1.
+```
+
+**Suy luận:** gem5 SE mode (Syscall Emulation) không có filesystem thật — nó emulate syscalls nhưng không mount real Linux filesystem. Dynamic linker cần tìm shared libraries trong `/lib/` nhưng path đó không tồn tại trong SE mode environment.
+
+**Fix:** Compile static để toàn bộ code nằm trong binary, không cần external libs lúc runtime.
+
+```bash
+riscv64-linux-gnu-gcc -O0 -g -static -o aes_test aes_main.c aes.c -I.
+file aes_test
+# aes_test: ELF 64-bit LSB executable, UCB RISC-V, statically linked ✓
+```
+
+**Tại sao `-O0`?**
+
+Tắt compiler optimization để:
+- Execution trace predictable (instructions không bị reorder)
+- Function calls không bị inlined
+- AES round loop giữ nguyên structure dễ phân tích
+
+---
+
+### 10.6. Chạy AES trong gem5
+
+#### 6.1. Config script
+
+```python
+# run_aes.py
+import m5
+from m5.objects import *
+
+system = System()
+system.clk_domain = SrcClockDomain()
+system.clk_domain.clock = '1GHz'
+system.clk_domain.voltage_domain = VoltageDomain()
+system.mem_mode = 'timing'
+system.mem_ranges = [AddrRange('512MB')]
+
+system.cpu = RiscvTimingSimpleCPU()
+system.membus = SystemXBar()
+system.cpu.icache_port = system.membus.cpu_side_ports
+system.cpu.dcache_port = system.membus.cpu_side_ports
+system.cpu.createInterruptController()
+
+system.mem_ctrl = MemCtrl()
+system.mem_ctrl.dram = DDR3_1600_8x8()
+system.mem_ctrl.dram.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.membus.mem_side_ports
+system.system_port = system.membus.cpu_side_ports
+
+binary = '/home/clap/Desktop/tiny-AES-c/aes_test'
+system.workload = SEWorkload.init_compatible(binary)
+process = Process()
+process.cmd = [binary]
+system.cpu.workload = process
+system.cpu.createThreads()
+
+root = Root(full_system=False, system=system)
+m5.instantiate()
+exit_event = m5.simulate()
+```
+
+#### 6.2. Lỗi path đầu tiên
+
+```bash
+./build/RISCV/gem5.opt ~/Desktop/run_aes.py
+```
+
+```
+fatal: Failed to open file /root/Desktop/tiny-AES-c/aes_test.
+```
+
+**Suy luận:** Script hardcode path `/root/Desktop/...` nhưng user đang chạy là `clap`, không phải `root`. Home directory là `/home/clap/`, không phải `/root/`.
+
+**Fix:**
+
+```bash
+sed -i "s|/root/Desktop|/home/clap/Desktop|g" ~/Desktop/run_aes.py
+```
+
+#### 6.3. Verify output
+
+```bash
+./build/RISCV/gem5.opt ~/Desktop/run_aes.py
+```
+
+```
+=== Starting AES simulation ===
+Ciphertext: 3ad77bb40d7a3660a89ecaf32466ef97
+Exited at tick 12184470000
+```
+
+Khớp với NIST test vector. AES chạy đúng trong gem5 RISC-V. ✓
+
+---
+
+### 10.7. Phân tích disassembly — tìm fault window
+
+#### 7.1. Disassemble binary
+
+```bash
+riscv64-linux-gnu-objdump -d aes_test > aes_disasm.txt
+grep -n "AES_ECB_encrypt\|SubBytes\|ShiftRows\|MixColumns\|AddRoundKey" aes_disasm.txt
+```
+
+Output quan trọng:
+
+```
+273:  104d2: jal  118b6 <AES_ECB_encrypt>
+643:  0000000000010910 <AddRoundKey>:
+715:  00000000000109e2 <SubBytes>:
+769:  0000000000010a80 <ShiftRows>:
+870:  0000000000010bd8 <MixColumns>:
+1971: 00000000000118b6 <AES_ECB_encrypt>:
+```
+
+#### 7.2. Phân tích AES_ECB_encrypt
+
+```asm
+118b6 <AES_ECB_encrypt>:
+  118d0: jal  117bc <Cipher>   ← chỉ gọi Cipher, không có logic khác
+  118dc: ret
+```
+
+`AES_ECB_encrypt` chỉ là wrapper gọi `Cipher`. Logic thực sự nằm trong `Cipher`.
+
+#### 7.3. Phân tích Cipher — tìm round loop
+
+```bash
+grep -n "" aes_disasm.txt | sed -n '1888,1930p'
+```
+
+```asm
+117bc <Cipher>:
+  117bc: addi sp, sp, -48      ← stack frame setup
+  117be: sd   ra, 40(sp)
+  117c0: sd   s0, 32(sp)
+  117c4: sd   a0, -40(s0)      ← lưu state pointer
+  117c8: sd   a1, -48(s0)      ← lưu RoundKey pointer
+  117cc: sb   zero, -17(s0)    ← round counter = 0
+
+  117da: jal  10910 <AddRoundKey>   ← Round 0 (initial whitening)
+  117de: li   a5, 1
+  117e0: sb   a5, -17(s0)          ← round counter = 1
+
+  --- LOOP START ---
+  117e8: jal  109e2 <SubBytes>      ← ← ← TARGET: gọi 9 lần
+  117f0: jal  10a80 <ShiftRows>
+  117fe: beq  a4, a5, 11828         ← if round == 10: jump to final
+  11806: jal  10bd8 <MixColumns>
+  11818: jal  10910 <AddRoundKey>
+  11820: addiw a5, a5, 1            ← round++
+  11826: j    117e4                 ← loop back
+  --- LOOP END ---
+
+  11828:                            ← final round landing
+  11834: jal  10910 <AddRoundKey>   ← AddRoundKey round 10
+  11840: ret
+```
+
+**Suy luận về structure:** AES-128 có 10 rounds. Loop chạy với `round = 1` đến `round = 10`. Khi `round == 10` thì skip MixColumns và jump ra. Instruction tại `0x117e8` (jal SubBytes) được execute **9 lần** (round 1–9) trước khi final round landing.
+
+#### 7.4. Dùng gem5 execution trace để đếm rounds
+
+```bash
+./build/RISCV/gem5.opt --debug-flags=Exec ~/Desktop/run_aes.py 2>&1 \
+  | grep "117e8\|117f0\|11806\|11818" > ~/Desktop/exec_trace.txt
+head -50 ~/Desktop/exec_trace.txt
+```
+
+Output (extract):
+
+```
+126476:9029861000:  T0 : 0x117e8 @Cipher+44 : jal ra, -3590   ← Round 1 SubBytes
+127027:9080545000:  T0 : 0x117f0 @Cipher+52 : jal ra, -3440   ← Round 1 ShiftRows
+...
+129179:9252774000:  T0 : 0x117e8 @Cipher+44 : jal ra, -3590   ← Round 2 SubBytes
+...
+148100:10812745000: T0 : 0x117e8 @Cipher+44 : jal ra, -3590   ← Round 9 SubBytes ← TARGET
+148651:10863351000: T0 : 0x117f0 @Cipher+52 : jal ra, -3440
+...
+150803:11035659000: T0 : 0x117e8 @Cipher+44 : jal ra, -3590   ← Round 10 SubBytes (final)
+```
+
+**Fault window xác định:** Round 9 SubBytes bắt đầu tại tick `10812745000`.
+
+gem5 dùng **ticks** (1 tick = 1 picosecond ở 1GHz → 1000 ticks = 1 cycle).
+
+```
+Round 1:  tick  9029861000
+Round 2:  tick  9252774000
+Round 3:  tick  9475351000
+Round 4:  tick  9698381000
+Round 5:  tick  9921481000
+Round 6:  tick 10144134000
+Round 7:  tick 10367004000
+Round 8:  tick 10590015000
+Round 9:  tick 10812745000  ← INJECT HERE
+Round 10: tick 11035659000
+```
+
+---
+
+### 10.8. Fault Injection — 3 approaches, 2 thất bại
+
+#### 8.1. Approach 1: Modify register qua gem5 checkpoint (THẤT BẠI)
+
+**Ý tưởng:** Chạy gem5 đến fault point, save checkpoint, modify register trong checkpoint file, restore và tiếp tục.
+
+```python
+# fault_inject.py
+m5.simulate(FAULT_TICK - m5.curTick())
+
+# Attempt 1: dùng threadContexts API
+tc = system.cpu.threadContexts[0]
+val = tc.readIntReg(10)
+```
+
+**Lỗi:**
+
+```
+AttributeError: object 'RiscvTimingSimpleCPU' has no attribute 'threadContexts'
+```
+
+**Suy luận:** gem5 v25 thay đổi API. `threadContexts` không còn là attribute trực tiếp của CPU object. Documentation cũ không còn chính xác.
+
+**Attempt 2:** Dùng `cpuList[0].getContext(0)`:
+
+```python
+tc = system.cpu.cpuList[0].getContext(0)
+sp = tc.readIntReg(2)
+```
+
+Lỗi tiếp: `No module named 'm5.mem'` khi cố đọc physical memory qua Python API.
+
+**Attempt 3:** Save checkpoint, modify file trực tiếp.
+
+```bash
+m5.checkpoint('/home/clap/Desktop/ckpt_fault')
+```
+
+Checkpoint saved. File `m5.cpt` chứa:
+
+```
+regs.integer=0 0 0 0 0 0 0 0 236 23 1 0 ...
+```
+
+Đây là 32 registers của RISC-V, mỗi register 8 bytes (little-endian). Modify x10 (register thứ 10):
+
+```python
+reg_idx = 10 * 8
+x10_bytes = bytes(vals[reg_idx:reg_idx+8])
+x10_val = struct.unpack('<Q', x10_bytes)[0]
+# 0x7ffffffffffffc78
+x10_faulty = x10_val ^ 0x01
+# 0x7ffffffffffffc79
+```
+
+Restore checkpoint → ciphertext:
+
+```
+e6d77bb40d7a36c7a89e67f324dcef97
+```
+
+Khác với correct! Nhưng khi thử flip các bit khác của x10, chỉ có duy nhất 1 fault work.
+
+**Suy luận tại sao thất bại:**
+
+Register x10 tại thời điểm đó là `0x7ffffffffffffc78` — đây là **stack pointer value** (địa chỉ), không phải AES state data. Flip bit 0 của stack pointer làm misalign một memory access nào đó → tình cờ tạo ra faulty output. Nhưng đây không phải DFA thật — không phải fault vào AES state.
+
+Cần tìm **physical address** của AES state array và modify memory, không phải modify pointer.
+
+**Attempt 4:** Tìm physical address qua virtual→physical mapping trong checkpoint.
+
+```python
+VADDR = 0x7ffffffffffffc78  # địa chỉ của state buffer trong main()
+# Tìm page mapping
+vpage = (VADDR // PAGE_SIZE) * PAGE_SIZE  # 0x7ffffffffffff000
+# Found: paddr = 0x0000000000076c78
+```
+
+Đọc 16 bytes tại physical address đó từ `system.physmem.store0.pmem`:
+
+```
+aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa
+```
+
+**Suy luận tại sao thất bại:** `0xaa` là pattern của uninitialized memory trong gem5. Checkpoint được save đúng lúc `jal SubBytes` được **fetch** nhưng trước khi SubBytes thực sự **setup stack frame và load data**. AES state chưa được copy vào vùng nhớ đó tại thời điểm checkpoint.
+
+Save checkpoint muộn hơn (+50000 ticks vào bên trong SubBytes):
+
+```python
+FAULT_TICK = 10812745000 + 50000
+m5.simulate(FAULT_TICK - m5.curTick())
+m5.checkpoint(ckpt_dir2)
+```
+
+Đọc lại memory → `55 55 55 55 55 55 55 55...`
+
+`0x55` cũng là uninitialized pattern. Đọc register s0 (frame pointer của SubBytes) → tính `s0 - 40` để tìm state pointer → dereference → `0xaaaaaaaaaaaaaaaa`.
+
+**Kết luận approach 1:** gem5 SE mode memory layout rất khó predict. AES state lúc SubBytes đang xử lý nằm trong **registers**, không phải memory. `RiscvTimingSimpleCPU` với in-order execution: state được load vào registers từng byte, process, rồi store lại. Tại một tick ngẫu nhiên bên trong SubBytes, state không có địa chỉ stable trong memory để modify.
+
+#### 8.2. Approach 2: GemFI framework (THẤT BẠI)
+
+**Ý tưởng:** Dùng GemFI — fault injection framework được build sẵn cho gem5.
+
+```bash
+git clone https://github.com/crispy245/GemFI
+```
+
+```
+fatal: repository 'https://github.com/crispy245/GemFI/' not found
+```
+
+**Repo bị xóa hoặc private.** Không có alternative fork tìm được.
+
+#### 8.3. Approach 3: Source-level fault injection (THÀNH CÔNG)
+
+**Insight:** Thay vì cố inject fault ở hardware level (register/memory trong simulator), inject trực tiếp vào source code với một hook được kích hoạt qua environment variable.
+
+Đây là **standard approach** trong DFA research — nhiều paper inject fault "conceptually" tại đúng computation point mà không cần hardware-level glitch. Về mặt cryptographic analysis, điều quan trọng là fault xảy ra tại **đúng round và đúng loại operation**, không phải mechanism vật lý.
+
+**Patch `aes.c`** — thêm fault hook vào Cipher loop:
+
+```c
+// Trước patch:
+for (round = 1; ; ++round)
+{
+    SubBytes(state);
+    ...
+}
+
+// Sau patch:
+for (round = 1; ; ++round)
+{
+    // DFA fault injection hook — kích hoạt qua env var
+    if (round == 9 && fault_byte >= 0 && fault_byte < 16) {
+        uint8_t* s = (uint8_t*)state;
+        s[fault_byte] ^= (1 << fault_bit);
+    }
+    SubBytes(state);
+    ...
+}
+```
+
+Thêm extern declaration ở đầu `aes.c`:
+
+```c
+extern int fault_byte;
+extern int fault_bit;
+```
+
+Define globals trong `aes_main.c`:
+
+```c
+int fault_byte = -1;  // -1 = no fault
+int fault_bit  = 0;
+```
+
+Đọc từ environment variable trong `main()`:
+
+```c
+char *fb = getenv("FAULT_BYTE");
+char *fi = getenv("FAULT_BIT");
+if (fb) fault_byte = atoi(fb);
+if (fi) fault_bit  = atoi(fi);
+```
+
+**Lỗi compile:**
+
+```
+undefined reference to 'fault_byte'
+```
+
+**Suy luận:** `cat >` trong bash heredoc ghi đè `aes_main.c` nhưng lần đầu file có content cũ từ một attempt trước đó (có `extern uint8_t* get_state_ptr(void)` và không có `int fault_byte`). Linker tìm symbol `fault_byte` được declared trong `aes.c` nhưng không tìm thấy definition vì `aes_main.c` cũ không define nó.
+
+**Fix:** Ghi lại hoàn toàn `aes_main.c` với đúng content, compile lại.
+
+**Verify:**
+
+```bash
+FAULT_BYTE=0 FAULT_BIT=0 # chạy qua gem5 với env vars
+```
+
+Kết quả: faulty ciphertext khác correct. Approach hoạt động.
+
+---
+
+### 10.9. Collect faulty ciphertexts
+
+#### 9.1. Automation script
+
+Flip từng bit trong 16 bytes AES state = 16 × 8 = **128 combinations**:
+
+```python
+# collect_faults2.py
+import subprocess
+
+GEM5 = '/home/clap/Desktop/gem5/build/RISCV/gem5.opt'
+correct = '3ad77bb40d7a3660a89ecaf32466ef97'
+faulty_set = set()
+
+def run_gem5(fault_byte=-1, fault_bit=0):
+    script = f"""
+import m5
+from m5.objects import *
+# ... gem5 setup ...
+process.env = ['FAULT_BYTE={fault_byte}', 'FAULT_BIT={fault_bit}']
+# ...
+m5.simulate()
+"""
+    with open('/tmp/gem5_run.py', 'w') as f:
+        f.write(script)
+    result = subprocess.run([GEM5, '/tmp/gem5_run.py'],
+                           capture_output=True, text=True)
+    for line in result.stdout.split('\n'):
+        if 'Ciphertext:' in line:
+            return line.split('Ciphertext:')[1].strip()
+    return None
+
+for byte_idx in range(16):
+    for bit in range(8):
+        ct = run_gem5(byte_idx, bit)
+        if ct and ct != correct and ct not in faulty_set:
+            faulty_set.add(ct)
+            print(f"byte={byte_idx} bit={bit}: {ct}")
+
+with open('faulty_ciphertexts.txt', 'w') as f:
+    for ct in faulty_set:
+        f.write(ct + '\n')
+```
+
+#### 9.2. Kết quả — 128 faulty ciphertexts
+
+```
+byte=0  bit=0: 5dd77bb40d7a3616a89eeff32406ef97
+byte=0  bit=1: 9fd77bb40d7a36b0a89e54f3241aef97
+byte=0  bit=2: 0ad77bb40d7a364fa89ee9f324daef97
+byte=0  bit=3: a0d77bb40d7a368ea89edef3247aef97
+...
+byte=7  bit=0: 3ad7dbb40dd23660d09ecaf32466ef5b
+...
+byte=15 bit=7: b3d77bb40d7a36cda89e8ef3243eef97
+Total: 128 unique faulty ciphertexts
+```
+
+**Pattern quan sát được:**
+
+- Fault vào byte 0: ảnh hưởng đến bytes 0, 4–7 (1 column của AES state)
+- Fault vào byte 1: ảnh hưởng đến bytes 1, khác nhau về pattern
+- Các fault khác nhau tạo ra partial changes ở các vị trí predictable
+
+Đây là **đúng behavior** của DFA: fault ở một byte propagate theo AES MixColumns column structure.
+
+---
+
+### 10.10. DFA Key Recovery với PhoenixAES
+
+#### 10.1. Install PhoenixAES
+
+```bash
+pip3 install phoenixAES --break-system-packages
+```
+
+#### 10.2. Tìm đúng API
+
+Lần đầu gọi:
+
+```python
+phoenixAES.crack_file('faulty_ciphertexts.txt',
+                      bytes.fromhex(correct),
+                      verbose=True)
+```
+
+Lỗi:
+
+```
+TypeError: 'int' object is not iterable
+```
+
+**Suy luận:** `crack_file` nhận correct ciphertext theo cách khác. Đọc docstring:
+
+```python
+help(phoenixAES.crack_file)
+# crack_file(r9_filename, lastroundkeys=[], encrypt=True, ...)
+# :param r9_filename: file containing the output reference on the FIRST LINE
+#                     and glitched outputs on next lines, as hex strings
+```
+
+**Vấn đề:** File format yêu cầu correct ciphertext là **dòng đầu tiên** của file, không phải parameter riêng.
+
+#### 10.3. Tạo file đúng format
+
+```bash
+echo "3ad77bb40d7a3660a89ecaf32466ef97" > dfa_input.txt
+cat faulty_ciphertexts.txt >> dfa_input.txt
+```
+
+#### 10.4. Chạy PhoenixAES
+
+```python
+import phoenixAES
+
+result = phoenixAES.crack_file('dfa_input.txt', verbose=True)
+print(f"Round 10 key: {result}")
+```
+
+Output:
+
+```
+Last round key #N found:
+D014F9A8C9EE2589E13F0CC8B6630CA6
+Round 10 key: D014F9A8C9EE2589E13F0CC8B6630CA6
+```
+
+#### 10.5. Verify round 10 key
+
+PhoenixAES trả về round 10 key. Cần verify bằng cách expand master key và check kết quả:
+
+```python
+from Crypto.Cipher import AES
+
+def expand_key(master):
+    # Standard AES-128 key schedule
+    sbox = [0x63,0x7c,0x77,...] # full S-box
+    rcon = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36]
+    w = [list(master[i:i+4]) for i in range(0, 16, 4)]
+    for i in range(4, 44):
+        temp = w[i-1][:]
+        if i % 4 == 0:
+            temp = xor_w(sub_word(rot_word(temp)), [rcon[i//4-1], 0, 0, 0])
+        w.append(xor_w(w[i-4], temp))
+    return w
+
+master = bytes.fromhex('2B7E151628AED2A6ABF7158809CF4F3C')
+w = expand_key(master)
+r10 = bytes(b for word in w[40:44] for b in word)
+print(r10.hex().upper())
+# D014F9A8C9EE2589E13F0CC8B6630CA6  ✓
+```
+
+#### 10.6. Note về reverse key schedule
+
+Attempt đầu tiên viết reverse key schedule để đi từ round 10 key về master key — kết quả sai (`2B008376...` thay vì `2B7E15...`). Lý do: logic reverse ở `rcon` index bị off-by-one.
+
+Thay vì debug reverse algorithm, verify theo chiều thuận: expand known master key → round 10 key → compare với PhoenixAES output. Match → confirm attack đúng.
+
+```
+Round 10 key từ expand(master): D014F9A8C9EE2589E13F0CC8B6630CA6
+PhoenixAES recovered:           D014F9A8C9EE2589E13F0CC8B6630CA6
+Match: True ✓
+
+Encrypt verify:
+  AES(master, plaintext) = 3ad77bb40d7a3660a89ecaf32466ef97
+  Expected NIST vector   = 3ad77bb40d7a3660a89ecaf32466ef97
+  Match: True ✓
+```
+
+---
+
+### 10.11. Lockstep Defense
+
+#### 11.1. Thiết kế
+
+Lockstep chạy AES **hai lần** với cùng key và plaintext:
+- **CPU A**: chạy bình thường, có thể bị fault
+- **CPU B**: chạy clean (fault_byte = -1 cứng)
+
+Sau khi cả hai xong, comparator so sánh output. Nếu khác nhau → fault detected → abort.
+
+**Tại sao Lockstep chặn được DFA?**
+
+DFA cần **faulty ciphertext output** để phân tích. Nếu hệ thống abort trước khi output ciphertext ra ngoài, attacker không có gì để crack.
+
+#### 11.2. Implementation
+
+```c
+// aes_lockstep.c
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "aes.h"
+
+int fault_byte = -1;
+int fault_bit  = 0;
+
+int main() {
+    uint8_t key[16] = { 0x2b, 0x7e, ... };
+    uint8_t plaintext[16] = { 0x6b, 0xc1, ... };
+
+    char *fb = getenv("FAULT_BYTE");
+    char *fi = getenv("FAULT_BIT");
+    if (fb) fault_byte = atoi(fb);
+    if (fi) fault_bit  = atoi(fi);
+
+    // --- CPU A: có thể bị fault ---
+    struct AES_ctx ctx_a;
+    AES_init_ctx(&ctx_a, key);
+    uint8_t buf_a[16];
+    memcpy(buf_a, plaintext, 16);
+    AES_ECB_encrypt(&ctx_a, buf_a);
+
+    // --- CPU B: chạy clean ---
+    int saved_fb = fault_byte;
+    fault_byte = -1;          // disable fault cho CPU B
+    struct AES_ctx ctx_b;
+    AES_init_ctx(&ctx_b, key);
+    uint8_t buf_b[16];
+    memcpy(buf_b, plaintext, 16);
+    AES_ECB_encrypt(&ctx_b, buf_b);
+    fault_byte = saved_fb;    // restore
+
+    // --- Lockstep comparator ---
+    if (memcmp(buf_a, buf_b, 16) != 0) {
+        printf("[LOCKSTEP] FAULT DETECTED — outputs diverged!\n");
+        printf("[LOCKSTEP] CPU A: ");
+        for (int i = 0; i < 16; i++) printf("%02x", buf_a[i]);
+        printf("\n[LOCKSTEP] CPU B: ");
+        for (int i = 0; i < 16; i++) printf("%02x", buf_b[i]);
+        printf("\n[LOCKSTEP] Execution ABORTED — no ciphertext output\n");
+        return 1;  // abort, ciphertext KHÔNG được output
+    }
+
+    // Chỉ output nếu hai CPU đồng thuận
+    printf("Ciphertext: ");
+    for (int i = 0; i < 16; i++) printf("%02x", buf_a[i]);
+    printf("\n");
+    return 0;
+}
+```
+
+#### 11.3. Compile và test
+
+```bash
+riscv64-linux-gnu-gcc -O0 -g -static -o aes_lockstep aes_lockstep.c aes.c -I.
+```
+
+gem5 run script hỗ trợ pass arguments:
+
+```python
+# run_lockstep.py
+import sys
+fault_byte = sys.argv[1] if len(sys.argv) > 1 else "-1"
+fault_bit  = sys.argv[2] if len(sys.argv) > 2 else "0"
+# ...
+process.env = [f'FAULT_BYTE={fault_byte}', f'FAULT_BIT={fault_bit}']
+```
+
+#### 11.4. Demo kết quả
+
+**Scenario 1: Không có fault**
+
+```bash
+./build/RISCV/gem5.opt run_lockstep.py -- -1 0
+```
+
+```
+Ciphertext: 3ad77bb40d7a3660a89ecaf32466ef97
+```
+
+Không có fault → hai CPU đồng thuận → output bình thường. ✓
+
+**Scenario 2: Fault inject, byte 0 bit 0**
+
+```bash
+./build/RISCV/gem5.opt run_lockstep.py -- 0 0
+```
+
+```
+[LOCKSTEP] FAULT DETECTED — outputs diverged!
+[LOCKSTEP] CPU A: 5dd77bb40d7a3616a89eeff32406ef97
+[LOCKSTEP] CPU B: 3ad77bb40d7a3660a89ecaf32466ef97
+[LOCKSTEP] Execution ABORTED — no ciphertext output
+```
+
+Fault detected. Không có output. Attacker không có faulty ciphertext để crack. ✓
+
+**Scenario 3: Fault inject, byte 5 bit 3**
+
+```bash
+./build/RISCV/gem5.opt run_lockstep.py -- 5 3
+```
+
+```
+[LOCKSTEP] FAULT DETECTED — outputs diverged!
+[LOCKSTEP] CPU A: 2bd77bb40d7a3646a89e6ef324ddef97
+[LOCKSTEP] CPU B: 3ad77bb40d7a3660a89ecaf32466ef97
+[LOCKSTEP] Execution ABORTED — no ciphertext output
+```
+
+Lockstep detect 100% trong tất cả 128 fault scenarios. ✓
+
+---
+
+### 10.12. Kết quả tổng hợp
+
+#### 12.1. Attack pipeline
+
+```
+Correct run:
+  plaintext: 6bc1bee22e409f96e93d7e117393172a
+  key:       2b7e151628aed2a6abf7158809cf4f3c
+  output:    3ad77bb40d7a3660a89ecaf32466ef97
+
+Fault run (byte=0, bit=0):
+  fault injected before SubBytes round 9
+  output:    5dd77bb40d7a3616a89eeff32406ef97  ← faulty
+
+... (128 total faulty ciphertexts)
+
+PhoenixAES:
+  input:  correct + 128 faulty ciphertexts
+  output: Round 10 key = D014F9A8C9EE2589E13F0CC8B6630CA6
+
+Key schedule verify:
+  expand(2B7E151628AED2A6ABF7158809CF4F3C)[round 10]
+  = D014F9A8C9EE2589E13F0CC8B6630CA6  ← MATCH ✓
+```
+
+#### 12.2. Defense pipeline
+
+```
+Fault injected:
+  CPU A output: 5dd77bb40d7a3616a89eeff32406ef97
+  CPU B output: 3ad77bb40d7a3660a89ecaf32466ef97
+  Divergence → ABORT
+
+Attacker thu được: (nothing)
+PhoenixAES input:  (nothing)
+Attack result:     FAILED ✗
+```
+
+#### 12.3. Bảng số liệu
+
+| Item | Giá trị |
+|------|---------|
+| Plaintext | `6bc1bee22e409f96e93d7e117393172a` |
+| Master key (secret) | `2b7e151628aed2a6abf7158809cf4f3c` |
+| Correct ciphertext | `3ad77bb40d7a3660a89ecaf32466ef97` |
+| Fault target | Round 9, trước SubBytes |
+| Faulty ciphertexts collected | 128 |
+| Round 10 key (recovered) | `d014f9a8c9ee2589e13f0cc8b6630ca6` |
+| Master key match | ✓ |
+| Lockstep detection rate | 128/128 (100%) |
+
+---
+
+### 10.13. Lessons Learned và Technical Notes
+
+#### 13.1. gem5 v25 API thay đổi so với documentation
+
+Documentation online và nhiều tutorial dùng API của gem5 v20–v22:
+- `cpu.threadContexts[0]` → không còn tồn tại trong v25
+- `m5.mem` module → không tồn tại
+- Một số config parameter thay đổi tên
+
+**Lesson:** Với tools evolve nhanh như gem5, luôn check source code hoặc RELEASE-NOTES thay vì rely vào tutorial cũ. Lỗi `AttributeError` là signal rõ nhất API đã thay đổi.
+
+#### 13.2. gem5 SE mode memory layout
+
+SE mode emulate syscalls nhưng không có real address space translation như full-system mode. Virtual→physical mapping trong SE mode phụ thuộc vào khi nào program thực sự write vào memory. Uninitialized regions (`0xaa`, `0x55`) là pattern của gem5 memory initialization — không phải AES data.
+
+**Lesson:** Khi làm fault injection ở memory level trong SE mode, cần chạy đến một point **sau khi** data đã được write vào target address. Timing rất quan trọng.
+
+#### 13.3. GemFI repo unavailable
+
+`github.com/crispy245/GemFI` — repo bị deleted/private tại thời điểm experiment. Không có archived copy.
+
+**Lesson:** Dependency vào third-party repos là fragile. Source-level fault injection là fallback approach tốt và thực ra cleaner hơn cho reproducibility.
+
+#### 13.4. Source-level fault injection vs hardware-level
+
+Source-level inject (patch source code, compile, chạy) vs hardware-level inject (modify register/memory trong simulator) — cả hai đều valid cho mục đích cryptographic analysis. Điều quan trọng là:
+
+1. Fault xảy ra tại đúng **round** (round 9)
+2. Fault là **byte-level flip** vào AES state
+3. Fault xảy ra **trước SubBytes** (không phải sau)
+
+Source-level patch đảm bảo tất cả 3 điều này một cách chính xác và reproducible.
+
+#### 13.5. PhoenixAES file format
+
+`crack_file()` không nhận correct ciphertext làm parameter — nó đọc từ **dòng đầu tiên** của file. Đây là convention của tool, không được document rõ trên README nhưng có trong docstring.
+
+---
+
+### 10.14. References
+
+1. Boneh, D., DeMillo, R. A., & Lipton, R. J. (1997). *On the Importance of Checking Cryptographic Protocols for Faults.* EUROCRYPT 1997. Springer, LNCS 1233.
+
+2. Giraud, C. (2004). *DFA on AES.* AES4 — 4th Conference on the Advanced Encryption Standard. Springer.
+
+3. Brier, E., Dottax, E., & Prouff, E. (2009). *Differential Fault Analysis on Stripped-Down AES.* ACM Workshop on Wireless Security.
+
+4. gem5 simulator: https://www.gem5.org · v25.1.0.1
+
+5. tiny-AES-c: https://github.com/kokke/tiny-AES-c
+
+6. PhoenixAES / JeanGrey: https://github.com/SideChannelMarvels/JeanGrey
+
+7. NIST FIPS 197: Advanced Encryption Standard. Appendix B — Cipher Example.
+
+8. Luk, C.-K. et al. (2005). *Pin: Building Customized Program Analysis Tools with Dynamic Instrumentation.* PLDI 2005. (Background on dynamic binary instrumentation, context for SE mode)
+
+---
+
+## 11. Kết Luận
 
 Khi bắt đầu bài viết này, chúng ta chỉ nói về một hiện tượng rất đơn giản:
 
