@@ -22,15 +22,15 @@ draft: false
 2. [Setup môi trường gem5](#2-setup-môi-trường-gem5)
 3. [Compile AES cho RISC-V](#3-compile-aes-cho-risc-v)
 4. [Chạy AES trong gem5 SE Mode](#4-chạy-aes-trong-gem5-se-mode)
-5. [Phân tích disassembly — tìm fault window](#5-phân-tích-disassembly--tìm-fault-window)
+5. [Phân tích disassembly  - tìm fault window](#5-phân-tích-disassembly--tìm-fault-window)
 6. [Xác định cycle range của round 9](#6-xác-định-cycle-range-của-round-9)
 7. [Approach 1: Checkpoint-based fault injection](#7-approach-1-checkpoint-based-fault-injection)
-8. [Vấn đề với checkpoint approach — debug quá trình](#8-vấn-đề-với-checkpoint-approach--debug-quá-trình)
+8. [Vấn đề với checkpoint approach  - debug quá trình](#8-vấn-đề-với-checkpoint-approach--debug-quá-trình)
 9. [Approach 2: Source-level fault injection](#9-approach-2-source-level-fault-injection)
 10. [Collect 128 faulty ciphertexts](#10-collect-128-faulty-ciphertexts)
 11. [PhoenixAES recover round 10 key](#11-phoenixaes-recover-round-10-key)
 12. [Recover master key bằng reverse key schedule](#12-recover-master-key-bằng-reverse-key-schedule)
-13. [Lockstep Defense — implement và verify](#13-lockstep-defense--implement-và-verify)
+13. [Lockstep Defense  - implement và verify](#13-lockstep-defense--implement-và-verify)
 14. [Tổng kết và bài học](#14-tổng-kết-và-bài-học)
 
 ---
@@ -59,7 +59,7 @@ Nếu fault xảy ra quá sớm, ví dụ Round 1-7, sai khác đi qua nhiều l
 - Attacker phải đọc được cả ciphertext đúng và ciphertext lỗi.
 - Fault model cần đủ sạch, thường là single-byte hoặc single-bit fault trong AES state.
 
-Đây là lý do gem5 simulator phù hợp để demonstrate attack này — ta có thể quan sát instruction trace, xác định mốc thời gian của từng round AES, rồi kiểm chứng fault model trong môi trường RISC-V mô phỏng.
+Đây là lý do gem5 simulator phù hợp để demonstrate attack này  - ta có thể quan sát instruction trace, xác định mốc thời gian của từng round AES, rồi kiểm chứng fault model trong môi trường RISC-V mô phỏng.
 
 ---
 
@@ -103,10 +103,10 @@ Trong log này ta dùng `gem5.opt` vì nó cân bằng giữa tốc độ và kh
 
 ### Chọn AES implementation
 
-Ta dùng [tiny-AES-c](https://github.com/kokke/tiny-AES-c) — một AES implementation thuần C, single-file, không dependency. Lý do:
+Ta dùng [tiny-AES-c](https://github.com/kokke/tiny-AES-c)  - một AES implementation thuần C, single-file, không dependency. Lý do:
 
 - Code đơn giản, dễ audit và patch
-- Không có hardware acceleration (AES-NI) — quan trọng vì ta cần AES chạy như software thật, không phải opcode đặc biệt
+- Không có hardware acceleration (AES-NI)  - quan trọng vì ta cần AES chạy như software thật, không phải opcode đặc biệt
 - Compile sạch trên cross-compiler RISC-V
 - Được dùng rộng rãi trong embedded/IoT research
 
@@ -316,7 +316,7 @@ m5.instantiate()
 print("=== Starting AES simulation ===")
 exit_event = m5.simulate()
 
-print(f"Exited at tick {m5.curTick()} — reason: {exit_event.getCause()}")
+print(f"Exited at tick {m5.curTick()}  - reason: {exit_event.getCause()}")
 ```
 
 Trong log, lần chạy đầu tiên dùng nhầm path `/root/Desktop/tiny-AES-c/aes_test`, trong khi user thật là `clap`. gem5 báo:
@@ -418,7 +418,7 @@ Cần lưu ý rằng đây là thời gian của hệ thống mô phỏng theo t
 
 ---
 
-## 5. Phân tích Disassembly — Xác định Fault Window
+## 5. Phân tích Disassembly  - Xác định Fault Window
 
 Sau khi AES chạy đúng trong gem5, câu hỏi tiếp theo là: **Round 9 nằm ở đâu trong execution?** Muốn trả lời câu này, ta cần nhìn xuống disassembly của RISC-V binary.
 
@@ -795,7 +795,7 @@ Vì vậy checkpoint-based injection được giữ lại trong bài như một 
 
 ---
 
-## 8. Vấn đề với checkpoint approach — debug quá trình
+## 8. Vấn đề với checkpoint approach  - debug quá trình
 
 ### Attempt 1: Modify register x10 trực tiếp
 
@@ -915,7 +915,7 @@ Tóm lại:
 - Faulty ciphertexts được sinh ra bởi execution thật của binary, không viết tay.
 - Phương pháp này chứng minh attack math và defense behavior, nhưng không chứng minh khả năng glitch phần cứng vật lý.
 
-### Patch aes.c — thêm fault hook
+### Patch aes.c  - thêm fault hook
 
 Đọc source của Cipher function trong `aes.c`:
 
@@ -1036,7 +1036,7 @@ for byte_idx in range(16):
             print(f"byte={byte_idx} bit={bit}: {ct}")
 ```
 
-### Kết quả — 128 faulty ciphertexts
+### Kết quả  - 128 faulty ciphertexts
 
 Script chạy 128 iterations, mỗi lần đổi `FAULT_BYTE` và `FAULT_BIT`, rồi parse dòng `Ciphertext:` từ stdout của gem5. Output dưới đây là trích đoạn:
 
@@ -1079,7 +1079,7 @@ Fault tại byte 1:
 3a d7 7b 43 0d 7a ff 60 a8 9d ca f3 33 66 ef 97  (bit 0)
 ```
 
-Bytes thay đổi: `[3, 6, 9, 12]` — column khác.
+Bytes thay đổi: `[3, 6, 9, 12]`  - column khác.
 
 Đây là signature chuẩn của Round 9 DFA: mỗi fault tại một byte state ảnh hưởng đến một nhóm 4 byte ciphertext. Các dependency do MixColumns tạo ra chính là thứ PhoenixAES khai thác để lọc candidate round key.
 
@@ -1276,7 +1276,7 @@ Expected:       3ad77bb40d7a3660a89ecaf32466ef97
 
 ---
 
-## 13. Lockstep Defense — implement và verify
+## 13. Lockstep Defense  - implement và verify
 
 ### Concept
 
@@ -1312,12 +1312,12 @@ int main() {
 
     // Lockstep comparator
     if (memcmp(buf_a, buf_b, 16) != 0) {
-        printf("[LOCKSTEP] FAULT DETECTED — outputs diverged!\n");
+        printf("[LOCKSTEP] FAULT DETECTED  - outputs diverged!\n");
         printf("[LOCKSTEP] CPU A: ");
         for (int i = 0; i < 16; i++) printf("%02x", buf_a[i]);
         printf("\n[LOCKSTEP] CPU B: ");
         for (int i = 0; i < 16; i++) printf("%02x", buf_b[i]);
-        printf("\n[LOCKSTEP] Execution ABORTED — no ciphertext output\n");
+        printf("\n[LOCKSTEP] Execution ABORTED  - no ciphertext output\n");
         return 1;  // abort, không output gì thêm
     }
 
@@ -1371,10 +1371,10 @@ Không có fault → cả hai CPU đồng ý → ciphertext output bình thườ
 ```
 
 ```
-[LOCKSTEP] FAULT DETECTED — outputs diverged!
+[LOCKSTEP] FAULT DETECTED  - outputs diverged!
 [LOCKSTEP] CPU A: 5dd77bb40d7a3616a89eeff32406ef97
 [LOCKSTEP] CPU B: 3ad77bb40d7a3660a89ecaf32466ef97
-[LOCKSTEP] Execution ABORTED — no ciphertext output
+[LOCKSTEP] Execution ABORTED  - no ciphertext output
 ```
 
 Fault detected! CPU A bị corrupt (`5d...`), CPU B clean (`3a...`). Comparator detect divergence → abort, không output faulty ciphertext. Attacker không nhận được gì. ✓
@@ -1387,10 +1387,10 @@ Fault detected! CPU A bị corrupt (`5d...`), CPU B clean (`3a...`). Comparator 
 ```
 
 ```
-[LOCKSTEP] FAULT DETECTED — outputs diverged!
+[LOCKSTEP] FAULT DETECTED  - outputs diverged!
 [LOCKSTEP] CPU A: 2bd77bb40d7a3646a89e6ef324ddef97
 [LOCKSTEP] CPU B: 3ad77bb40d7a3660a89ecaf32466ef97
-[LOCKSTEP] Execution ABORTED — no ciphertext output
+[LOCKSTEP] Execution ABORTED  - no ciphertext output
 ```
 
 Fault khác vị trí, cũng bị detect thành công. ✓
@@ -1410,7 +1410,7 @@ Cần lưu ý một số điều mà implementation này chưa cover:
 
 **2. Comparator bypass:** Nếu attacker inject fault vào chính comparator logic (không phải AES execution), comparator có thể bị forced để output "no fault" kể cả khi có divergence. Defense in depth: cần harden comparator riêng.
 
-**3. Differential power analysis:** Lockstep không protect against power analysis attacks — ta chỉ chạy AES hai lần, làm power trace dài gấp đôi nhưng không che đi information.
+**3. Differential power analysis:** Lockstep không protect against power analysis attacks  - ta chỉ chạy AES hai lần, làm power trace dài gấp đôi nhưng không che đi information.
 
 **4. Timing overhead:** Chạy AES hai lần → 2× computational cost. Trong embedded systems với power constraints, đây là tradeoff quan trọng.
 
@@ -1449,7 +1449,7 @@ Cần lưu ý một số điều mà implementation này chưa cover:
 
 ### Về friction trong research
 
-Project này gặp nhiều issues: GemFI repo bị xóa (404), gem5 v25 API thay đổi, checkpoint memory chứa uninitialized data thay vì AES state, linker error do compile order. Không có gì trong số này là "thất bại" — đây là friction bình thường của systems research với tools đang actively develop.
+Project này gặp nhiều issues: GemFI repo bị xóa (404), gem5 v25 API thay đổi, checkpoint memory chứa uninitialized data thay vì AES state, linker error do compile order. Không có gì trong số này là "thất bại"  - đây là friction bình thường của systems research với tools đang actively develop.
 
 Quan trọng là biết cách debug: đọc error message, trace ngược lại source, thử alternative approach, không fix symptom mà fix root cause.
 
@@ -1468,7 +1468,3 @@ Quan trọng là biết cách debug: đọc error message, trace ngược lại 
 **Về tooling:**
 - Build custom gem5 module để automate fault injection ở hardware level (không cần patch source)
 - Integrate với TVLA (Test Vector Leakage Assessment) để measure information leakage
-
----
-
-*Log đầy đủ của quá trình thực hiện có trong session transcript. Tất cả code và scripts đều reproduce được từ log trên một machine có gem5 v25, riscv64-linux-gnu-gcc, và Python 3.13.*

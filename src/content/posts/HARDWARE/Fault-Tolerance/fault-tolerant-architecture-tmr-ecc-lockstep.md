@@ -25,7 +25,7 @@ Hãy tưởng tượng bộ nhớ máy tính đang lưu trữ hàng tỷ bit d�
 
 Nghe có vẻ khó tin, nhưng các lỗi kiểu này hoàn toàn có thật và đã được ghi nhận trong nhiều hệ thống từ máy chủ dữ liệu, thiết bị hàng không cho đến vệ tinh ngoài không gian. Khi kích thước transistor ngày càng thu nhỏ, lượng điện tích cần thiết để làm thay đổi trạng thái của một bit cũng giảm theo, khiến các hệ thống hiện đại trở nên nhạy cảm hơn với hiện tượng này.
 
-Đó cũng chính là lý do các cơ chế như ECC Memory, Chipkill, Triple Modular Redundancy (TMR) hay Lockstep Execution được phát triển. Thay vì cố gắng ngăn chặn hoàn toàn các tác động từ môi trường — điều gần như bất khả thi — các kiến trúc này được thiết kế để phát hiện, sửa chữa hoặc chịu đựng lỗi khi chúng xảy ra, qua đó đảm bảo hệ thống vẫn hoạt động chính xác và đáng tin cậy.
+Đó cũng chính là lý do các cơ chế như ECC Memory, Chipkill, Triple Modular Redundancy (TMR) hay Lockstep Execution được phát triển. Thay vì cố gắng ngăn chặn hoàn toàn các tác động từ môi trường  - điều gần như bất khả thi  - các kiến trúc này được thiết kế để phát hiện, sửa chữa hoặc chịu đựng lỗi khi chúng xảy ra, qua đó đảm bảo hệ thống vẫn hoạt động chính xác và đáng tin cậy.
 
 ## 1. Một Vài Khái Niệm Cần Biết Trước Khi Bắt Đầu
 
@@ -61,7 +61,7 @@ Không phải mọi lỗi phần cứng đều giống nhau.
 
 **Hard Error** là các hư hỏng vật lý của linh kiện, chẳng hạn như transistor bị hỏng, đường tín hiệu bị đứt hoặc chip bị lỗi vĩnh viễn. Những lỗi này thường yêu cầu sửa chữa hoặc thay thế phần cứng.
 
-Ngược lại, **Soft Error** không làm hỏng phần cứng — nó chỉ làm thay đổi tạm thời trạng thái logic đang được lưu trữ hoặc xử lý bên trong hệ thống. Sau khi dữ liệu được ghi lại hoặc hệ thống được khởi động lại, lỗi có thể hoàn toàn biến mất.
+Ngược lại, **Soft Error** không làm hỏng phần cứng  - nó chỉ làm thay đổi tạm thời trạng thái logic đang được lưu trữ hoặc xử lý bên trong hệ thống. Sau khi dữ liệu được ghi lại hoặc hệ thống được khởi động lại, lỗi có thể hoàn toàn biến mất.
 
 Trong các hệ thống điện toán hiện đại, Soft Error là mối quan tâm đặc biệt vì nó có thể xảy ra ngay cả khi phần cứng vẫn hoạt động hoàn toàn bình thường.
 
@@ -337,7 +337,7 @@ Vì vậy, parity chỉ là cơ chế **Error Detection**, không phải Error C
 
 ### 4.3. Hamming Distance: Nền Tảng Của ECC
 
-Để đi xa hơn, ta cần khái niệm **Hamming Distance** — số bit khác nhau giữa hai chuỗi nhị phân.
+Để đi xa hơn, ta cần khái niệm **Hamming Distance**  - số bit khác nhau giữa hai chuỗi nhị phân.
 
 Ví dụ:
 
@@ -490,7 +490,7 @@ Khi mật độ transistor ngày càng cao, dạng lỗi này trở nên phổ b
 
 ---
 
-ECC vì vậy không phải là giới hạn cuối cùng của khả năng chịu lỗi. Khi số bit lỗi vượt quá khả năng sửa của SECDED, cần đến các cơ chế mạnh hơn — và đó chính là lý do xuất hiện **Chipkill**, chủ đề của phần tiếp theo.
+ECC vì vậy không phải là giới hạn cuối cùng của khả năng chịu lỗi. Khi số bit lỗi vượt quá khả năng sửa của SECDED, cần đến các cơ chế mạnh hơn  - và đó chính là lý do xuất hiện **Chipkill**, chủ đề của phần tiếp theo.
 
 ---
 
@@ -743,7 +743,7 @@ Dữ liệu trong bộ nhớ vẫn đúng, nhưng phép tính đã sai.
 
 Thay vào đó, các hệ thống yêu cầu độ tin cậy rất cao như vệ tinh, hàng không hay hệ thống điều khiển an toàn thường sử dụng một chiến lược khác:
 
-> Không giả định phần cứng đúng. Giả định rằng lỗi chắc chắn sẽ xảy ra — và hệ thống phải tự bảo vệ mình.
+> Không giả định phần cứng đúng. Giả định rằng lỗi chắc chắn sẽ xảy ra  - và hệ thống phải tự bảo vệ mình.
 
 Đó chính là ý tưởng của **Triple Modular Redundancy (TMR)**.
 
@@ -810,7 +810,7 @@ Về mặt phần cứng, đây là một mạch logic đơn giản. Nhưng về
 
 ### 6.3. Độ Tin Cậy Của TMR
 
-TMR không loại bỏ lỗi — nó giảm xác suất lỗi ảnh hưởng đến đầu ra.
+TMR không loại bỏ lỗi  - nó giảm xác suất lỗi ảnh hưởng đến đầu ra.
 
 Nếu gọi:
 
@@ -835,7 +835,7 @@ Rm = 0.99
 → RTMR ≈ 0.9997
 ```
 
-TMR biến lỗi hiếm thành cực kỳ hiếm — nhưng không miễn nhiễm hoàn toàn.
+TMR biến lỗi hiếm thành cực kỳ hiếm  - nhưng không miễn nhiễm hoàn toàn.
 
 ---
 
@@ -948,7 +948,7 @@ Nhưng giả định này không phải lúc nào cũng đúng.
 
 Trong các hệ thống an toàn cao (*safety-critical systems*), đôi khi vấn đề không phải là sửa lỗi hay tiếp tục chạy, mà là:
 
-> Làm sao để biết hệ thống có còn đang hoạt động đúng hay không — càng sớm càng tốt.
+> Làm sao để biết hệ thống có còn đang hoạt động đúng hay không  - càng sớm càng tốt.
 
 Đó là nền tảng của **Lockstep Execution**.
 
@@ -1136,7 +1136,7 @@ nơi việc biết “có lỗi xảy ra” quan trọng hơn việc “cố g�
 
 ### 7.7. Chiến Lược Xử Lý Sau Khi Phát Hiện Lỗi
 
-Lockstep không định nghĩa cách sửa lỗi — nó chỉ phát hiện.
+Lockstep không định nghĩa cách sửa lỗi  - nó chỉ phát hiện.
 
 Sau khi divergence được phát hiện, hệ thống có thể:
 
