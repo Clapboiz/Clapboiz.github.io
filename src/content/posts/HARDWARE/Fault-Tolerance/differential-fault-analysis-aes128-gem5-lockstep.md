@@ -1,7 +1,18 @@
-# Hướng 1: Classic DFA Attack trên AES-128 trong gem5 RISC-V Simulator
+---
+title: "[Phần 2 - Tấn công I] Tấn Công AES-128 Bằng Differential Fault Analysis Trên gem5 và Cơ Chế Phòng Vệ Lockstep"
+published: 2026-06-20
+description: "Hardware Security & Computer Architecture"
+image: './banner1.png'
+tags: ["HARDWARE", "SECURITY", "COMPUTER-ARCHITECTURE"]
+category: "Hardware-Security"
+draft: false
+---
 
-> **Stack:** gem5 · tiny-AES-c · PhoenixAES · riscv64-linux-gnu-gcc  
-> **Mục tiêu:** Inject fault vào AES round 9 → collect faulty ciphertexts → recover master key bằng DFA → verify Lockstep Defense chặn được attack
+# Hướng 1: Classic DFA Attack trên AES-128 trong gem5 RISC-V
+
+> **Stack dùng trong pipeline cuối:** gem5 · tiny-AES-c · PhoenixAES · riscv64-linux-gnu-gcc  
+> **Mục tiêu:** gây lỗi tại AES Round 9, thu faulty ciphertexts, dùng PhoenixAES recover last round key, rồi kiểm tra Lockstep Defense có chặn ciphertext lỗi trước khi output ra ngoài hay không.  
+> **Lưu ý về GemFI:** GemFI/hardware-level injection là hướng ban đầu, nhưng trong log không đi được đến pipeline chạy ổn định. Phần attack cuối cùng dùng source-level fault hook trong `aes.c`, sau đó compile thành RISC-V binary và chạy trong gem5 để sinh ciphertext lỗi.
 
 ---
 
@@ -26,27 +37,29 @@
 
 ## 1. Tổng quan về DFA Attack
 
-Differential Fault Analysis (DFA) là một dạng side-channel attack thuộc nhóm *fault injection attacks*. Thay vì phân tích power trace hay timing, DFA chủ động gây ra lỗi trong quá trình thực thi của target algorithm, sau đó so sánh faulty output với correct output để suy ra thông tin về khóa bí mật.
+Differential Fault Analysis (DFA) là một kiểu tấn công dựa trên lỗi chủ động. Thay vì chỉ quan sát hệ thống như power analysis hay timing attack, attacker cố tình làm chương trình tính sai tại một thời điểm có kiểm soát. Sau đó attacker so sánh output đúng với output bị lỗi để suy ra thông tin về khóa bí mật.
 
-Với AES-128, idea cốt lõi là:
+Với AES-128, ý tưởng cốt lõi là:
 
 AES-128 gồm 10 rounds. Mỗi round thực hiện 4 phép biến đổi theo thứ tự: SubBytes → ShiftRows → MixColumns → AddRoundKey. Round cuối (round 10) bỏ qua MixColumns.
 
-Nếu ta inject fault vào đúng **sau round 8, trước SubBytes của round 9** — tức là flip một bit trong AES state tại thời điểm đó — thì faulty ciphertext sẽ khác correct ciphertext theo một pattern hoàn toàn predictable về mặt toán học. Pattern này phụ thuộc vào round 10 key (cũng gọi là last round key).
+Nếu lỗi được đưa vào đúng **sau Round 8, trước SubBytes của Round 9**, tức là flip một bit trong AES state ở đầu vòng áp chót, sai khác đó sẽ lan truyền ra ciphertext cuối theo một cấu trúc toán học đặc biệt. Cấu trúc này phụ thuộc vào round 10 key, hay còn gọi là last round key.
 
-Bằng cách thu thập đủ nhiều cặp (correct ciphertext, faulty ciphertext) với các bit flip tại các byte khác nhau của state, ta có thể dùng thuật toán của PhoenixAES để brute-force round 10 key. Từ round 10 key, chạy reverse key schedule sẽ cho ra master key.
+Bằng cách thu thập nhiều cặp `(correct ciphertext, faulty ciphertext)` với fault đặt tại các byte/bit khác nhau trong state, PhoenixAES có thể lọc các candidate key byte và recover round 10 key. Với AES-128, round 10 key là kết quả của key schedule từ master key, nên có thể dùng key schedule ngược để đi từ round 10 key về master key.
 
 **Tại sao round 9?**
 
-Vì fault tại round 9 lan truyền qua đúng một lần MixColumns và một lần AddRoundKey trước khi ra ciphertext. Sự lan truyền này đủ "shallow" để toán DFA có thể reverse, nhưng cũng đủ "deep" để không bị trivially detected. Fault ở round sớm hơn (round 1-7) sẽ qua quá nhiều MixColumns, làm explosion combinatorial quá lớn. Fault ở round 10 thì quá nông, không qua MixColumns nào, pattern quá đơn giản.
+Vì fault ở đầu Round 9 chỉ đi qua **một lần MixColumns** nữa trước khi vào final round. Đây là điểm rất vừa vặn: sai khác đủ lan rộng để tạo pattern trên 4 byte ciphertext, nhưng chưa bị trộn qua quá nhiều vòng đến mức bài toán trở nên khó kiểm soát.
+
+Nếu fault xảy ra quá sớm, ví dụ Round 1-7, sai khác đi qua nhiều lần MixColumns và lan ra quá rộng. Nếu fault xảy ra quá muộn, ví dụ Round 10, nó không đi qua MixColumns nữa nên không tạo đúng cấu trúc mà PhoenixAES mong đợi cho classic DFA trên AES.
 
 **Điều kiện cần để DFA thành công:**
 
-- Attacker có thể control timing của fault injection với độ chính xác đủ để target đúng round 9
-- Attacker có thể đọc được ciphertext output (faulty và correct)
-- Fault chỉ ảnh hưởng đúng một byte của AES state (single-byte fault model)
+- Attacker phải đặt fault đúng vùng thời gian Round 9.
+- Attacker phải đọc được cả ciphertext đúng và ciphertext lỗi.
+- Fault model cần đủ sạch, thường là single-byte hoặc single-bit fault trong AES state.
 
-Đây là lý do gem5 simulator phù hợp để demonstrate attack này — ta có toàn quyền control cycle-level timing và có thể inject fault vào chính xác bất kỳ thời điểm nào.
+Đây là lý do gem5 simulator phù hợp để demonstrate attack này — ta có thể quan sát instruction trace, xác định mốc thời gian của từng round AES, rồi kiểm chứng fault model trong môi trường RISC-V mô phỏng.
 
 ---
 
@@ -54,7 +67,9 @@ Vì fault tại round 9 lan truyền qua đúng một lần MixColumns và một
 
 ### gem5 là gì?
 
-gem5 là một cycle-accurate architectural simulator, cho phép chạy binary code của một kiến trúc (RISC-V, ARM, x86, ...) trên một máy tính host khác mà không cần hardware thật. Mỗi instruction, mỗi memory access đều được simulate chính xác đến từng clock cycle. Điều này làm gem5 trở thành công cụ lý tưởng cho fault injection research: ta biết chính xác instruction nào đang chạy ở cycle nào, và có thể pause, modify state, rồi resume.
+gem5 là một architectural simulator: nó cho phép chạy binary của một kiến trúc như RISC-V, ARM hoặc x86 trên máy host mà không cần phần cứng thật. Tùy CPU model, gem5 có thể mô phỏng ở các mức chi tiết khác nhau.
+
+Trong bài này, ta dùng `RiscvTimingSimpleCPU`. Đây không phải mô hình vi kiến trúc cycle-accurate tuyệt đối như một CPU thật, nhưng đủ tốt cho mục tiêu của bài: chạy AES RISC-V binary, lấy execution trace ổn định, xác định marker của Round 9, rồi kiểm chứng fault model.
 
 Trong project này, ta dùng gem5 phiên bản 25.1.0.1 với RISC-V backend.
 
@@ -70,7 +85,7 @@ Output:
 gem5.opt: error: no such option: --version
 ```
 
-Đây là output bình thường. gem5 không có `--version` flag — binary chạy được nghĩa là compile thành công. Nếu binary bị corrupt hoặc thiếu dependency thì sẽ crash ngay với error khác.
+Đây là output bình thường trong log. `gem5.opt` không nhận `--version` như một option hợp lệ, nhưng việc nó in được usage message cho thấy binary đã khởi động được. Bước này chỉ xác nhận gem5 executable không bị lỗi cơ bản; workload AES vẫn cần được kiểm chứng riêng ở các bước sau.
 
 ### Cấu trúc gem5 RISC-V build
 
@@ -80,7 +95,7 @@ build/RISCV/gem5.debug ← debug build, slower nhưng có thêm assertions
 build/RISCV/gem5.fast  ← fastest build, bỏ hết assertions
 ```
 
-Với fault injection research, ta dùng `gem5.opt` — đủ fast để chạy 128 iterations trong thời gian hợp lý (khoảng 15-20 phút), và vẫn có đủ debug info.
+Trong log này ta dùng `gem5.opt` vì nó cân bằng giữa tốc độ và khả năng debug. Khi phải chạy hàng trăm lần để thu faulty ciphertexts, dùng bản optimized sẽ thực tế hơn `gem5.debug`.
 
 ---
 
@@ -105,7 +120,7 @@ cd tiny-AES-c
 
 ### Tạo wrapper với NIST test vector
 
-Trước khi tiến hành mô phỏng trên gem5, cần xác minh tính đúng đắn của AES implementation nhằm đảm bảo rằng mọi kết quả đánh giá hiệu năng đều được thực hiện trên một chương trình hoạt động chính xác. Để thực hiện bước kiểm chứng này, nghiên cứu sử dụng bộ kiểm thử chuẩn (test vector) được công bố trong NIST FIPS 197 Appendix B. Đây là bộ dữ liệu tham chiếu chính thức của chuẩn AES-128 và được sử dụng rộng rãi để xác nhận tính đúng đắn của các triển khai AES.
+Trước khi inject fault, cần có một baseline đúng. Nếu AES implementation hoặc cross-compile đã sai từ đầu, mọi ciphertext lỗi thu được sau đó sẽ không còn ý nghĩa. Vì vậy bước đầu tiên là chạy AES với một test vector chuẩn của NIST FIPS 197 Appendix B.
 
 ```
 Key:       2B7E151628AED2A6ABF7158809CF4F3C
@@ -128,9 +143,9 @@ print(ct.hex().upper())
 # 3AD77BB40D7A3660A89ECAF32466EF97
 ```
 
-Kết quả thu được hoàn toàn khớp với ciphertext chuẩn của NIST, qua đó xác nhận giá trị ground truth được sử dụng trong các bước kiểm thử tiếp theo.
+Kết quả này là ground truth của toàn bộ thí nghiệm: ciphertext đúng phải là `3ad77bb40d7a3660a89ecaf32466ef97`.
 
-Tiếp theo, một chương trình wrapper tối giản (`aes_main.c`) được xây dựng nhằm gọi trực tiếp các hàm của thư viện AES và thực hiện mã hóa một khối dữ liệu 128 bit ở chế độ ECB. Wrapper này đóng vai trò chương trình đầu vào cho quá trình biên dịch và mô phỏng trên gem5.
+Tiếp theo, ta tạo wrapper tối giản (`aes_main.c`) để gọi trực tiếp `AES_ECB_encrypt()` của tiny-AES-c. Chương trình này chỉ mã hóa đúng một block 16 byte, in ciphertext ra stdout, và được dùng làm workload cho gem5.
 
 ```c
 cat > aes_main.c << 'EOF'
@@ -170,11 +185,11 @@ Tiêu chí xác nhận tính đúng đắn là ciphertext được sinh ra phả
 3ad77bb40d7a3660a89ecaf32466ef97
 ```
 
-Nếu kết quả đầu ra khác với giá trị trên, implementation được xem là chưa chính xác và không được sử dụng trong các thí nghiệm đo lường hiệu năng trên gem5. Chỉ sau khi vượt qua bước kiểm thử này, chương trình mới được biên dịch sang kiến trúc RISC-V và đưa vào môi trường mô phỏng để thu thập các chỉ số như số chu kỳ thực thi (cycles), CPI và IPC.
+Nếu ciphertext khác giá trị này, phải dừng lại để sửa AES wrapper hoặc toolchain trước khi làm fault injection. DFA cần so sánh giữa correct output và faulty output; correct output sai thì toàn bộ phân tích phía sau sai theo.
 
 ### Biên dịch chương trình AES cho kiến trúc RISC-V
 
-Sau khi xác nhận tính đúng đắn của chương trình AES bằng NIST test vector, bước tiếp theo là biên dịch chương trình sang kiến trúc RISC-V để thực hiện mô phỏng trên gem5.
+Sau khi có wrapper, bước tiếp theo là biên dịch chương trình sang RISC-V để gem5 có thể chạy được.
 
 Ban đầu, chương trình được biên dịch bằng bộ công cụ cross-compiler RISC-V:
 
@@ -184,7 +199,7 @@ Ban đầu, chương trình được biên dịch bằng bộ công cụ cross-c
 riscv64-linux-gnu-gcc -O0 -g -o aes_test aes_main.c aes.c -I.
 ```
 
-Trong đó, tùy chọn `-O0` được sử dụng để vô hiệu hóa các tối ưu hóa của trình biên dịch. Mục tiêu là giữ nguyên cấu trúc thực thi của thuật toán AES trong mã máy sinh ra, giúp việc phân tích luồng lệnh, kiểm tra disassembly và đánh giá ảnh hưởng của các tối ưu hóa phần cứng trở nên dễ dàng hơn. Nếu sử dụng các mức tối ưu hóa cao hơn (ví dụ `-O2` hoặc `-O3`), trình biên dịch có thể thực hiện inline function, loại bỏ mã dư thừa hoặc sắp xếp lại lệnh, làm thay đổi đáng kể cấu trúc chương trình gốc.
+Tùy chọn `-O0` được dùng để hạn chế compiler tối ưu hóa quá mạnh. Điều này giúp disassembly giữ được cấu trúc gần với source hơn: `Cipher()`, `SubBytes()`, `ShiftRows()`, `MixColumns()` và `AddRoundKey()` vẫn hiện rõ, thuận tiện cho việc tìm fault window. Nếu dùng `-O2` hoặc `-O3`, compiler có thể inline hoặc sắp xếp lại code, làm trace khó đọc hơn.
 
 Sau khi biên dịch, loại binary được kiểm tra bằng lệnh:
 
@@ -201,7 +216,7 @@ interpreter /lib/ld-linux-riscv64-lp64d.so.1
 ...
 ```
 
-Thông tin trên xác nhận chương trình đã được biên dịch thành công cho kiến trúc RISC-V. Tuy nhiên, binary được tạo ra là **dynamically linked executable**.
+Thông tin này xác nhận binary đúng kiến trúc RISC-V. Nhưng nó cũng cho thấy một vấn đề: file đang là **dynamically linked executable**.
 
 ### Vấn đề với dynamic linking trong gem5 SE mode
 
@@ -212,7 +227,7 @@ gem5 hỗ trợ hai chế độ mô phỏng chính:
 * **Full System (FS) mode**: mô phỏng toàn bộ hệ thống bao gồm hệ điều hành, trình điều khiển thiết bị và các thành phần phần cứng liên quan.
 * **Syscall Emulation (SE) mode**: chỉ mô phỏng tiến trình người dùng và các lời gọi hệ thống (system calls), không mô phỏng toàn bộ hệ điều hành.
 
-Trong nghiên cứu này, chế độ **SE mode** được lựa chọn vì thời gian mô phỏng ngắn hơn đáng kể và phù hợp với các thí nghiệm đánh giá hiệu năng ở mức ứng dụng.
+Trong log này, ta dùng **SE mode** vì workload chỉ là một userspace program nhỏ. SE mode nhẹ hơn Full System mode và phù hợp khi cần chạy lại workload nhiều lần để collect faulty ciphertexts.
 
 Tuy nhiên, SE mode không cung cấp đầy đủ môi trường thực thi của hệ điều hành Linux, đặc biệt là không hỗ trợ cơ chế nạp thư viện động (dynamic linking). Do đó, khi chạy binary được liên kết động, gem5 báo lỗi:
 
@@ -220,7 +235,7 @@ Tuy nhiên, SE mode không cung cấp đầy đủ môi trường thực thi c�
 fatal: Failed to open file /lib/ld-linux-riscv64-lp64d.so.1
 ```
 
-Lỗi này xuất hiện vì chương trình yêu cầu dynamic linker (`ld-linux-riscv64-lp64d.so.1`) để nạp các thư viện cần thiết trong thời gian chạy, trong khi thành phần này không tồn tại trong môi trường SE mode.
+Lỗi này không phải do AES sai. Binary RISC-V được compile dạng dynamic nên khi chạy nó cần dynamic linker `ld-linux-riscv64-lp64d.so.1`. Trong SE mode hiện tại, gem5 không có root filesystem RISC-V đầy đủ để tìm file đó, nên simulator dừng trước khi chương trình AES chạy.
 
 ![alt text](Image/Screenshot_291.png)
 
@@ -244,7 +259,7 @@ statically linked,
 ...
 ```
 
-Thuộc tính *statically linked* cho thấy toàn bộ mã thư viện cần thiết đã được liên kết trực tiếp vào file thực thi. Nhờ đó, chương trình không còn phụ thuộc vào dynamic linker tại thời gian chạy và có thể thực thi trực tiếp trong môi trường gem5 SE mode.
+Thuộc tính *statically linked* cho thấy các thư viện cần thiết đã được liên kết trực tiếp vào binary. Nhờ đó, gem5 SE mode không cần tìm dynamic linker nữa và có thể chạy workload AES trực tiếp.
 
 ---
 
@@ -252,7 +267,7 @@ Thuộc tính *statically linked* cho thấy toàn bộ mã thư viện cần th
 
 ### Config script cho gem5
 
-gem5 sử dụng Python scripts để cấu hình hệ thống mô phỏng. Đối với thí nghiệm này, một cấu hình tối giản được sử dụng để chạy chương trình AES trên kiến trúc RISC-V trong chế độ Syscall Emulation (SE Mode) với bộ nhớ DDR3:
+gem5 dùng Python script để mô tả system cần mô phỏng: clock, CPU model, memory, bus, workload và process arguments. Với workload AES nhỏ này, cấu hình tối giản là đủ:
 
 ```python
 # run_aes.py
@@ -304,6 +319,14 @@ exit_event = m5.simulate()
 print(f"Exited at tick {m5.curTick()} — reason: {exit_event.getCause()}")
 ```
 
+Trong log, lần chạy đầu tiên dùng nhầm path `/root/Desktop/tiny-AES-c/aes_test`, trong khi user thật là `clap`. gem5 báo:
+
+```text
+Failed to open file /root/Desktop/tiny-AES-c/aes_test
+```
+
+Đây là lỗi path, không phải lỗi simulator. Sau khi sửa binary path thành `/home/clap/Desktop/tiny-AES-c/aes_test`, chương trình mới đi tiếp đến lỗi dynamic linker đã xử lý ở phần trước.
+
 ### Tại sao sử dụng TimingSimpleCPU?
 
 gem5 cung cấp nhiều CPU model với các mức độ chi tiết khác nhau:
@@ -312,9 +335,9 @@ gem5 cung cấp nhiều CPU model với các mức độ chi tiết khác nhau:
 * `TimingSimpleCPU`: mô hình hóa timing của hệ thống nhớ và thực thi tuần tự từng instruction.
 * `O3CPU`: mô hình out-of-order chi tiết, hỗ trợ pipeline, speculation và nhiều đặc điểm vi kiến trúc khác.
 
-Trong nghiên cứu này, `TimingSimpleCPU` được lựa chọn vì đây là sự cân bằng hợp lý giữa tốc độ mô phỏng và độ chi tiết. So với O3CPU, TimingSimpleCPU cho thời gian mô phỏng ngắn hơn đáng kể, phù hợp khi cần thực hiện nhiều lần fault injection. Đồng thời, CPU model này vẫn duy trì timing behavior xác định (deterministic timing behavior), cho phép xác định khoảng thời gian thực thi của các giai đoạn trong AES để lựa chọn fault injection window.
+Trong nghiên cứu này, `TimingSimpleCPU` được chọn vì cân bằng giữa tốc độ và khả năng quan sát timing. So với O3CPU, nó đơn giản hơn và chạy nhanh hơn, phù hợp khi phải lặp lại mô phỏng nhiều lần. Đồng thời execution trace của nó đủ ổn định để đếm các lần gọi `SubBytes` và xác định Round 9.
 
-Mặc dù TimingSimpleCPU không phải là mô hình cycle-accurate ở mức vi kiến trúc, nó vẫn đủ chính xác cho các thí nghiệm DFA được thực hiện trong nghiên cứu này.
+Điểm cần nói rõ: TimingSimpleCPU không chứng minh một glitch vật lý ở mức silicon. Nó được dùng ở đây để tạo môi trường RISC-V có timing trace nhất quán, phục vụ việc dựng và kiểm chứng fault model.
 
 ### Chạy chương trình AES trong gem5
 
@@ -334,13 +357,14 @@ Ciphertext thu được là:
 3ad77bb40d7a3660a89ecaf32466ef97
 ```
 
-Giá trị này hoàn toàn trùng khớp với AES-128 Known Answer Test (KAT) của NIST đối với plaintext và khóa được sử dụng trong thí nghiệm.
+Giá trị này trùng khớp với AES-128 Known Answer Test (KAT) của NIST đối với plaintext và khóa đang dùng.
 
 Kết quả này xác nhận rằng:
 
 * Mã nguồn tiny-AES-c được biên dịch chính xác sang kiến trúc RISC-V.
 * Binary RISC-V được thực thi đúng trong môi trường gem5.
-* Hệ thống mô phỏng hoạt động chính xác và có thể sử dụng cho các thí nghiệm fault injection tiếp theo.
+* gem5 SE mode chạy được workload AES đến khi chương trình exit bình thường.
+* Ta có correct ciphertext để làm reference cho DFA.
 
 #### Remote GDB Stub
 
@@ -369,10 +393,10 @@ Thông báo này cho biết gem5 tự động mở rộng vùng stack của ti�
 
 ### Thời gian mô phỏng
 
-Mô phỏng kết thúc tại:
+Theo log thực nghiệm, mô phỏng kết thúc tại:
 
 ```text
-12234075000 ticks
+12184470000 ticks
 ```
 
 Trong gem5, mặc định:
@@ -384,19 +408,19 @@ Trong gem5, mặc định:
 Do đó:
 
 ```text
-12234075000 ticks
-≈ 12.23 ms simulated time
+12184470000 ticks
+≈ 12.18 ms simulated time
 ```
 
 Cần lưu ý rằng đây là thời gian của hệ thống mô phỏng theo thang thời gian nội bộ của gem5, không phải thời gian thực thi thực tế trên máy host.
 
-→ Việc thu được ciphertext chính xác theo NIST test vector cùng quá trình thực thi ổn định trong gem5 cho thấy môi trường mô phỏng đã được thiết lập thành công. Điều này tạo nền tảng đáng tin cậy cho các bước tiếp theo của nghiên cứu, bao gồm xác định fault injection window, thử hướng fault injection ở mức simulator/checkpoint, sau đó chuyển sang source-level fault hook để tạo đúng fault model cho Differential Fault Analysis (DFA) nhằm khôi phục khóa AES.
+Đến đây baseline đã sạch: AES chạy đúng trong gem5, binary là RISC-V static executable, và output khớp NIST vector. Từ baseline này mới bắt đầu xác định fault window, thử checkpoint-based injection, rồi pivot sang source-level hook khi checkpoint path không tạo được fault model đủ sạch.
 
 ---
 
 ## 5. Phân tích Disassembly — Xác định Fault Window
 
-Sau khi xác nhận AES hoạt động chính xác trong gem5, bước tiếp theo là xác định thời điểm phù hợp để thực hiện fault injection.
+Sau khi AES chạy đúng trong gem5, câu hỏi tiếp theo là: **Round 9 nằm ở đâu trong execution?** Muốn trả lời câu này, ta cần nhìn xuống disassembly của RISC-V binary.
 
 ### Dump Disassembly
 
@@ -435,13 +459,13 @@ Kết quả:
 1971: 00000000000118b6 <AES_ECB_encrypt>:
 ```
 
-Cần lưu ý rằng:
+Ở đây có một điểm dễ nhầm:
 
 ```text
 273: 104d2: jal 118b6 <AES_ECB_encrypt>
 ```
 
-chỉ là vị trí gọi hàm (`call site`).
+chỉ là nơi `main()` gọi `AES_ECB_encrypt()`.
 
 Trong khi đó:
 
@@ -449,9 +473,9 @@ Trong khi đó:
 1971: 00000000000118b6 <AES_ECB_encrypt>:
 ```
 
-mới là vị trí bắt đầu định nghĩa hàm `AES_ECB_encrypt()`.
+mới là nơi thân hàm `AES_ECB_encrypt()` bắt đầu.
 
-Do đó cần tiếp tục phân tích vùng disassembly xung quanh địa chỉ này.
+Vì vậy không thể chỉ nhìn dòng `273` rồi kết luận fault window. Ta phải đi vào thân `AES_ECB_encrypt()`, rồi tiếp tục đi đến hàm thực sự làm AES round transformation.
 
 ### Phân tích AES_ECB_encrypt
 
@@ -471,7 +495,7 @@ Kết quả cho thấy:
 118d0: jal 117bc <Cipher>
 ```
 
-Điều này cho thấy `AES_ECB_encrypt()` chỉ đóng vai trò wrapper. Toàn bộ quá trình mã hóa AES thực tế được thực hiện trong hàm `Cipher()` tại địa chỉ:
+Dòng `jal 117bc <Cipher>` cho thấy `AES_ECB_encrypt()` chỉ là wrapper. Toàn bộ round loop của AES nằm trong `Cipher()` tại địa chỉ:
 
 ```text
 0x117bc
@@ -516,7 +540,7 @@ Kết quả đã được rút gọn và chú thích như sau:
 11840: ret
 ```
 
-Từ disassembly có thể thấy `Cipher()` triển khai AES dưới dạng một vòng lặp duy nhất thay vì unroll toàn bộ 10 rounds.
+Từ disassembly có thể thấy `Cipher()` triển khai AES bằng một vòng lặp duy nhất, không unroll thành 10 đoạn code riêng biệt. Điều này rất quan trọng: cùng một instruction `jal SubBytes` sẽ được chạy nhiều lần, mỗi lần tương ứng một AES round khác nhau.
 
 Cấu trúc này tương ứng trực tiếp với đặc tả AES-128:
 
@@ -552,32 +576,35 @@ Instruction:
 117e8: jal 109e2 <SubBytes>
 ```
 
-được thực thi đúng một lần trong mỗi round và có thể sử dụng như một marker để xác định vòng AES hiện tại trong execution trace.
+nằm trong loop và được thực thi đúng một lần ở đầu mỗi round. Vì vậy ta có thể dùng địa chỉ `0x117e8` như một marker: lần thấy thứ nhất là Round 1, lần thấy thứ chín là Round 9.
 
 ### Xác định Fault Window
 
-Theo mô hình DFA của Piret–Quisquater, lỗi cần được đưa vào trạng thái AES tại vòng áp chót (Round 9) để tạo ra các sai khác có thể khai thác trên ciphertext cuối cùng.
+Theo mô hình DFA dùng bởi PhoenixAES, lỗi cần được đưa vào state ở vòng áp chót, tức Round 9, để ciphertext cuối vẫn giữ cấu trúc sai khác có thể khai thác.
 
 Quan sát disassembly:
 
 ```assembly
+117e8: jal SubBytes
+117f0: jal ShiftRows
 11806: jal MixColumns
-...
 11818: jal AddRoundKey
 ```
 
-cho thấy khoảng thời gian giữa hai lời gọi hàm này là vị trí phù hợp để thực hiện fault injection.
+Trong implementation này, `Cipher()` chạy AES bằng một vòng lặp. Do đó cùng một instruction `jal SubBytes` tại `0x117e8` xuất hiện 10 lần, tương ứng với Round 1 đến Round 10. Theo fault model đã dùng trong log, vị trí inject là **ngay trước SubBytes của Round 9**, tức sau khi Round 8 đã hoàn tất và state chuẩn bị đi vào vòng áp chót.
 
 ```text
+Round 8 kết thúc
+↓
 Round 9
-
+↓
+[ Fault Injection ]
+↓
 SubBytes
 ↓
 ShiftRows
 ↓
 MixColumns
-↓
-[ Fault Injection ]
 ↓
 AddRoundKey
 ↓
@@ -586,9 +613,9 @@ Round 10
 Ciphertext
 ```
 
-Do đó, bước tiếp theo là xác định chính xác thời điểm Round 9 được thực thi trong gem5 bằng execution trace.
+Do đó, bước tiếp theo là xác định chính xác lần xuất hiện thứ 9 của `0x117e8` trong gem5 execution trace.
 
-````
+---
 
 ## 6. Xác định Cycle Range của Round 9
 
@@ -606,7 +633,7 @@ Execution trace được thu thập bằng:
     ~/Desktop/run_aes.py \
     2>&1 | grep -n "117e8\|117f0\|11806\|11818" \
     > ~/Desktop/exec_trace.txt
-````
+```
 
 output:
 
@@ -742,11 +769,37 @@ Kết quả này cung cấp mốc thời gian cần thiết để triển khai f
 
 ---
 
+## 7. Approach 1: Checkpoint-based fault injection
+
+Sau khi biết Round 9 bắt đầu tại tick `10,812,745,000`, hướng đầu tiên trong log là làm fault injection ở mức simulator/checkpoint. Ý tưởng nghe rất trực tiếp: dừng gem5 đúng fault window, lưu checkpoint, sửa register hoặc memory trong checkpoint, rồi restore để xem ciphertext có đổi không.
+
+Ý tưởng ban đầu:
+
+```text
+Run AES trong gem5
+↓
+Stop tại tick Round 9
+↓
+Save checkpoint
+↓
+Modify register hoặc memory trong checkpoint
+↓
+Restore checkpoint
+↓
+Collect faulty ciphertext
+```
+
+Nếu làm được, đây sẽ gần với mục tiêu GemFI/hardware-level hơn source patch, vì fault được đưa từ phía simulator. Nhưng khi debug thực tế, việc tìm đúng byte đại diện cho AES state trong checkpoint không đơn giản. Các attempt bên dưới cho thấy ta hoặc đang sửa pointer, hoặc đang đọc một vùng memory pattern (`0xaa`, `0x55`) không khớp với state AES cần cho DFA.
+
+Vì vậy checkpoint-based injection được giữ lại trong bài như một debug path quan trọng. Nó giải thích vì sao pipeline cuối cùng phải pivot sang source-level hook để tạo single-bit fault model sạch tại Round 9.
+
+---
+
 ## 8. Vấn đề với checkpoint approach — debug quá trình
 
 ### Attempt 1: Modify register x10 trực tiếp
 
-Ban đầu ta thử flip bit 0 của register x10 trong checkpoint:
+Attempt đầu tiên là sửa trực tiếp register `x10` trong checkpoint. Ở thời điểm gọi `SubBytes`, `x10` thường được dùng làm argument register trong RISC-V calling convention, nên trực giác ban đầu là nó có thể liên quan đến state pointer.
 
 ```python
 # modify_ckpt.py
@@ -765,7 +818,7 @@ Output:
 [POST-FAULT] x10 = 0x7ffffffffffffc79
 ```
 
-Restore và chạy → ciphertext vẫn thay đổi (`e6d77bb40d7a36c7a89e67f324dcef97`), nhưng khi thử tất cả 64 bit positions của x10, chỉ bit 0 tạo ra faulty output. Lý do: x10 lúc đó là **stack pointer-like address** (trỏ vào AES state), không phải AES state data. Chỉ bit 0 tạo fault vì flip bit này làm x10 trỏ sang byte khác trong state.
+Sau khi restore và chạy tiếp, ciphertext có thay đổi (`e6d77bb40d7a36c7a89e67f324dcef97`). Nhưng khi thử nhiều bit position của `x10`, chỉ bit 0 tạo ra output khác. Đây là dấu hiệu quan trọng: `x10` lúc đó không phải AES state data, mà giống một pointer trỏ tới vùng state. Flip bit 0 làm pointer lệch sang byte kế bên, nên output đổi, nhưng đây không phải single-bit fault sạch trong AES state.
 
 ### Attempt 2: Modify physical memory
 
@@ -777,7 +830,7 @@ x11 = 0x7ffffffffffffc78
 x12 = 0x7ffffffffffffc78
 ```
 
-x10, x11, x12 đều trỏ vào vùng `0x7ffffffffffffc78` — đây là **virtual address của AES state buffer** trên stack của `main()`.
+Các register này đều liên quan đến vùng `0x7ffffffffffffc78`, tức virtual address của buffer AES trên stack. Vì vậy attempt tiếp theo là thử đi từ virtual address này sang physical address trong checkpoint.
 
 Tìm physical address tương ứng bằng cách đọc page table từ `m5.cpt`:
 
@@ -804,11 +857,11 @@ Physical address của AES state: `0x76000 + 0xc78 = 0x76c78`
 AES state at 0x76c78: aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa
 ```
 
-**Toàn `aa` — đây là uninitialized memory pattern, không phải AES state thật.**
+Kết quả toàn `aa` là tín hiệu xấu: vùng đọc được không giống AES state đang mong đợi tại Round 9.
 
 ### Tại sao checkpoint save dữ liệu sai?
 
-Checkpoint được save khi `jal <SubBytes>` vừa được **fetch** — nhưng tại thời điểm đó, SubBytes chưa bắt đầu thực sự. AES state đang ở trong **registers của Cipher function**, không phải trên stack của `main()`. Stack của `main()` chứa `buf[16]` chỉ được ghi sau khi `AES_ECB_encrypt` return.
+Checkpoint được save khi `jal <SubBytes>` vừa được **fetch**. Nhưng ở cấp checkpoint, ánh xạ từ logical AES state sang byte cần sửa không đơn giản như "đọc 16 bytes tại pointer rồi flip bit". Kết quả toàn `0xaa` cho thấy attempt này chưa chạm đúng dữ liệu state đang được AES sử dụng tại fault boundary.
 
 Cụ thể hơn: nhìn vào disassembly của Cipher:
 
@@ -817,13 +870,13 @@ Cụ thể hơn: nhìn vào disassembly của Cipher:
 117c4: sd    a0,-40(s0)     ; Lưu state pointer = địa chỉ của buf trong main()
 ```
 
-`-40(s0)` là chỗ Cipher lưu pointer đến state. Khi ta read `0x7ffffffffffffc78` (địa chỉ của `buf` trong `main()`), ta đang đọc đúng địa chỉ của buffer. Nhưng buffer này đang được xử lý bởi SubBytes — SubBytes đọc data vào registers, xử lý từng byte trong registers, rồi ghi kết quả trở lại. Tại thời điểm checkpoint save, SubBytes chưa đọc gì, chưa ghi gì → buffer vẫn có giá trị trước khi SubBytes chạy.
+`-40(s0)` là chỗ `Cipher()` lưu pointer đến state. Vấn đề là checkpoint-level edit cần đúng nhiều thứ cùng lúc: virtual-to-physical mapping, backing memory object, thời điểm checkpoint commit state, và byte nào thực sự đại diện cho AES state ở boundary đó. Trong attempt này, dữ liệu đọc từ physical memory không khớp với state AES mong đợi, nên flip byte ở đó không tạo fault model sạch cho PhoenixAES.
 
-Và `aa aa aa` là memory pattern của gem5 SE mode cho uninitialized stack (gem5 fill stack với `0xaa` để detect stack corruption).
+Vì vậy `aa aa aa` được xem là dấu hiệu rằng ta đang đọc một vùng/pattern không đại diện cho AES state cần inject, không phải bằng chứng rằng DFA fault đã được đặt đúng chỗ.
 
 ### Attempt 3: Save checkpoint muộn hơn
 
-Save checkpoint bên trong SubBytes sau khi data đã được load vào registers:
+Sau đó thử save checkpoint muộn hơn một chút, đi sâu vào bên trong `SubBytes`:
 
 ```python
 FAULT_TICK = 10812745000 + 50000  # thêm 50ns vào bên trong SubBytes
@@ -841,24 +894,26 @@ Output:
 AES state: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55
 ```
 
-`55` = `01010101` binary — đây vẫn là uninitialized pattern khác (`0x55` thay vì `0xaa`). SubBytes đang xử lý data bằng cách đọc từng byte vào registers, lookup S-box, ghi kết quả — trong suốt quá trình này, stack buffer trống (SubBytes không lưu intermediate state trên stack).
+`55` = `01010101` binary. Đây vẫn là pattern không khớp với AES state mong đợi. Nói cách khác, chỉ dịch checkpoint muộn hơn chưa giải quyết được vấn đề cốt lõi: ta vẫn chưa map được logical AES state ở Round 9 sang byte cụ thể trong checkpoint file một cách đáng tin cậy.
 
 ### Kết luận về checkpoint approach
 
-Checkpoint approach hoạt động tốt cho **register-level fault injection**, nhưng không hiệu quả cho **AES state injection** vì AES state được xử lý hoàn toàn trong registers, không touch memory trong suốt execution của một SubBytes call.
+Checkpoint approach có thể hữu ích cho **register-level fault injection** hoặc cho một setup có mapping state rõ hơn. Nhưng trong log này nó không hiệu quả cho **AES state injection** vì chưa xác định được byte state đúng trong checkpoint để sửa một cách sạch và lặp lại được.
 
-Để inject fault vào đúng AES state data, cần một approach khác.
+Để tiếp tục attack path, cần một approach khác: đưa fault hook trực tiếp vào code AES tại đúng boundary Round 9.
 
 ---
 
 ## 9. Approach 2: Source-level fault injection
 
-Thay vì cố inject fault ở hardware level (memory/register), ta inject trực tiếp vào source code của AES implementation. Đây vẫn là valid approach vì:
+Thay vì tiếp tục sửa checkpoint, pipeline cuối cùng đưa fault hook trực tiếp vào source của tiny-AES-c. Đây không phải hardware-level injection, nhưng vẫn hợp lệ cho mục tiêu của hướng này: kiểm chứng **cryptographic DFA path**. Điều PhoenixAES cần là faulty ciphertexts sinh ra từ fault model đúng vị trí; các ciphertext đó vẫn được tạo bởi RISC-V binary chạy trong gem5, không phải hardcode.
 
-- Ta vẫn chạy AES binary trong gem5 simulator (RISC-V, cycle-accurate)
-- Fault được inject tại đúng vị trí logical (đầu round 9, trước SubBytes)
-- Các faulty ciphertexts được gem5 produce, không hardcode
-- Về mặt DFA, phương pháp này tạo cùng fault model cần thiết: một single-bit fault tại state boundary của round 9. Nó không thay thế GemFI/hardware-level injection, nhưng đủ để chứng minh phần cryptographic attack path vì ciphertext lỗi vẫn được sinh ra bởi binary RISC-V chạy trong gem5.
+Tóm lại:
+
+- AES vẫn được compile thành RISC-V binary và chạy trong gem5.
+- Fault được đặt đúng logical boundary: đầu Round 9, trước `SubBytes`.
+- Faulty ciphertexts được sinh ra bởi execution thật của binary, không viết tay.
+- Phương pháp này chứng minh attack math và defense behavior, nhưng không chứng minh khả năng glitch phần cứng vật lý.
 
 ### Patch aes.c — thêm fault hook
 
@@ -884,7 +939,7 @@ static void Cipher(state_t* state, const uint8_t* RoundKey)
 }
 ```
 
-Patch để thêm fault injection hook **trước SubBytes của round 9** (khi `round == 9`):
+Hook được đặt **trước SubBytes của Round 9**. Đây chính là vị trí đã xác định bằng trace: sau Round 8, trước khi state đi vào vòng áp chót.
 
 ```c
 for (round = 1; ; ++round)
@@ -899,7 +954,7 @@ for (round = 1; ; ++round)
     ...
 ```
 
-`fault_byte` và `fault_bit` là global variables được set từ environment variables.
+`fault_byte` và `fault_bit` là global variables được set từ environment variables. Nhờ vậy mỗi lần chạy gem5 có thể chọn byte/bit khác nhau mà không cần compile lại.
 
 ### Compile và verify
 
@@ -943,7 +998,7 @@ process.env = [f'FAULT_BYTE={fault_byte}', f'FAULT_BIT={fault_bit}']
 
 ## 10. Collect 128 faulty ciphertexts
 
-AES state là 16 bytes × 8 bits = 128 possible single-bit faults. Ta cần collect tất cả để PhoenixAES có đủ data.
+AES state có 16 bytes, mỗi byte có 8 bit, tổng cộng 128 vị trí single-bit fault. Trong log, ta chạy hết 128 vị trí để tạo dataset dư dả cho PhoenixAES và cũng để quan sát pattern lan truyền của lỗi.
 
 ### Automation script
 
@@ -983,7 +1038,7 @@ for byte_idx in range(16):
 
 ### Kết quả — 128 faulty ciphertexts
 
-Script chạy 128 iterations × ~10 giây mỗi lần = khoảng 20 phút. Output (trích):
+Script chạy 128 iterations, mỗi lần đổi `FAULT_BYTE` và `FAULT_BIT`, rồi parse dòng `Ciphertext:` từ stdout của gem5. Output dưới đây là trích đoạn:
 
 ```
 byte=0 bit=0: 5dd77bb40d7a3616a89eeff32406ef97
@@ -1016,7 +1071,7 @@ Fault tại byte 0:
 9f d7 7b b4 0d 7a 36 b0 a8 9e 54 f3 24 1a ef 97  (bit 1)
 ```
 
-Byte 0 bị flip → thay đổi lan truyền qua MixColumns của round 9 → affect **4 bytes** của ciphertext (do MixColumns mixed column structure). Cụ thể bytes bị ảnh hưởng là `[0, 7, 10, 13]` — đây là một column trong AES state theo column-major order.
+Khi flip byte 0 ở đầu Round 9, sai khác đi qua MixColumns của Round 9 và xuất hiện trên **4 bytes** của ciphertext. Với ví dụ trên, các byte thay đổi là `[0, 7, 10, 13]`. Đây chính là dấu hiệu mà classic AES DFA cần: một lỗi cục bộ trong state lan thành một nhóm 4 byte có cấu trúc.
 
 Fault tại byte 1:
 
@@ -1026,7 +1081,7 @@ Fault tại byte 1:
 
 Bytes thay đổi: `[3, 6, 9, 12]` — column khác.
 
-Đây là signature chuẩn của round 9 DFA: mỗi fault tại một byte của state ảnh hưởng đến đúng một column (4 bytes) trong ciphertext, và MixColumns column mixing tạo ra dependencies có thể exploit.
+Đây là signature chuẩn của Round 9 DFA: mỗi fault tại một byte state ảnh hưởng đến một nhóm 4 byte ciphertext. Các dependency do MixColumns tạo ra chính là thứ PhoenixAES khai thác để lọc candidate round key.
 
 ---
 
@@ -1038,11 +1093,11 @@ Bytes thay đổi: `[3, 6, 9, 12]` — column khác.
 pip3 install phoenixAES --break-system-packages
 ```
 
-PhoenixAES (version 0.0.5) implement thuật toán DFA crack của Giraud 2004 cho AES-128. Nó exploit algebraic structure của AES last round để recover round 10 key từ (correct, faulty) ciphertext pairs.
+PhoenixAES implement thuật toán DFA cho AES. Input của nó là một ciphertext đúng và nhiều ciphertext lỗi được tạo từ fault ở Round 9. Output mong muốn là AES last round key, tức round 10 key.
 
 ### Format input file
 
-`crack_file` expect file với format:
+Một điểm rất dễ sai trong log là format input. `crack_file()` không nhận correct ciphertext như một string riêng ở argument thứ hai. File input phải có format:
 - Dòng 1: correct ciphertext (hex)
 - Dòng 2+: faulty ciphertexts (hex)
 
@@ -1050,6 +1105,8 @@ PhoenixAES (version 0.0.5) implement thuật toán DFA crack của Giraud 2004 c
 echo "3ad77bb40d7a3660a89ecaf32466ef97" > ~/Desktop/dfa_input.txt
 cat ~/Desktop/faulty_ciphertexts.txt >> ~/Desktop/dfa_input.txt
 ```
+
+Nếu truyền sai API, PhoenixAES có thể báo lỗi kiểu dữ liệu khi xử lý XOR. Cách ổn định nhất trong log là tạo `dfa_input.txt` đúng format rồi gọi `crack_file()` trực tiếp trên file đó.
 
 ### Chạy PhoenixAES
 
@@ -1071,7 +1128,7 @@ Round 10 key: D014F9A8C9EE2589E13F0CC8B6630CA6
 
 ### Cách PhoenixAES hoạt động (brief)
 
-Thuật toán DFA của Giraud exploit cấu trúc của AES last round như sau:
+Ở mức trực giác, PhoenixAES làm việc như sau:
 
 AES round 10 chỉ gồm SubBytes → ShiftRows → AddRoundKey (bỏ MixColumns). Khi fault xảy ra tại đầu round 9:
 
@@ -1079,9 +1136,9 @@ AES round 10 chỉ gồm SubBytes → ShiftRows → AddRoundKey (bỏ MixColumns
 State_round9 = State_correct_round9 ⊕ error_delta
 ```
 
-Sau khi qua SubBytes, ShiftRows, MixColumns, AddRoundKey của round 9, error propagate theo một pattern cụ thể. Sau đó round 10 (SubBytes, ShiftRows, AddRoundKey), error tiếp tục transform.
+Sau khi đi qua SubBytes, ShiftRows, MixColumns và AddRoundKey của Round 9, error lan theo pattern 4 byte. Sau đó nó đi tiếp qua final round, tức Round 10, gồm SubBytes, ShiftRows và AddRoundKey.
 
-Key insight: với một fault tại byte `i` của state (flip bit `j`), sự khác biệt giữa faulty và correct ciphertext sau khi XOR với round 10 key và inverse ShiftRows phải có một specific differential structure trong S-box domain.
+Ý tưởng chính là: nếu đoán đúng byte của round 10 key, ta có thể "đi ngược" qua final round và thấy sai khác quay về đúng cấu trúc do MixColumns của Round 9 tạo ra. Nếu đoán sai key byte, cấu trúc này không còn nhất quán trên nhiều faulty ciphertexts.
 
 Cụ thể, với `D = Correct_CT ⊕ Faulty_CT`:
 
@@ -1090,15 +1147,17 @@ InvShiftRows(InvSubBytes(CT ⊕ RK10)) ⊕
 InvShiftRows(InvSubBytes(CT_fault ⊕ RK10)) = MixColumns_column_pattern
 ```
 
-Với mỗi candidate byte của RK10 (256 candidates per byte), ta kiểm tra consistency với tất cả faulty ciphertexts. Byte nào consistent với tất cả → đó là byte đúng của RK10.
+Với mỗi candidate byte của `RK10` có 256 khả năng. PhoenixAES kiểm tra candidate nào nhất quán với toàn bộ dataset fault. Khi đủ ciphertext lỗi, không gian candidate bị thu hẹp cho đến khi round 10 key được recover.
 
-128 faults của ta (flip từng bit của 16 bytes state) cung cấp redundancy lớn, cho phép crack toàn bộ 16 bytes của RK10 với high confidence.
+128 faults trong log tạo redundancy lớn, giúp recover toàn bộ 16 bytes của `RK10`.
 
 ---
 
 ## 12. Recover master key bằng reverse key schedule
 
-Round 10 key `D014F9A8C9EE2589E13F0CC8B6630CA6` là kết quả của AES key expansion từ master key. Ta cần reverse 10 rounds của key schedule để recover master key.
+Round 10 key `D014F9A8C9EE2589E13F0CC8B6630CA6` là kết quả của AES key expansion từ master key. Về lý thuyết, ta có thể đảo AES-128 key schedule để đi từ `w[40]..w[43]` về `w[0]..w[3]`, tức master key.
+
+Trong log, đoạn reverse key schedule tự viết lần đầu bị sai và trả ra key không khớp. Đây là lỗi implementation, không phải lỗi của PhoenixAES. Vì vậy phần dưới trình bày bản reverse đúng để bài hoàn chỉnh, sau đó dùng forward expansion như một sanity check giống bước verify cuối trong log.
 
 ### Reverse từ round 10 key về master key
 
@@ -1124,7 +1183,7 @@ Vì vậy có thể đảo ngược:
 w[i-4] = w[i] xor temp
 ```
 
-Code recover:
+Code recover corrected:
 
 ```python
 def xor_w(a, b):
@@ -1168,11 +1227,11 @@ Expected master key:  2B7E151628AED2A6ABF7158809CF4F3C
 Match: True
 ```
 
-Như vậy, PhoenixAES recover được round 10 key, và reverse key schedule từ round 10 key recover lại đúng AES-128 master key.
+Như vậy, với reverse key schedule đúng, round 10 key do PhoenixAES recover có thể đưa ngược về đúng AES-128 master key.
 
 ### Verify bằng forward expansion
 
-Để kiểm chứng ngược lại, expand master key vừa recover và check round 10:
+Trong log thực tế, bước verify cuối cùng là expand master key đã biết của test vector rồi kiểm tra round 10 key có khớp với key PhoenixAES recover hay không:
 
 ```python
 master = bytes.fromhex('2B7E151628AED2A6ABF7158809CF4F3C')
@@ -1223,9 +1282,9 @@ Expected:       3ad77bb40d7a3660a89ecaf32466ef97
 
 Lockstep Defense là countermeasure phổ biến nhất cho fault injection attacks. Ý tưởng: chạy cùng một computation **hai lần**, compare outputs. Nếu diverge → fault đã xảy ra → abort trước khi output bị leak.
 
-Trong hardware: hai CPU cores execute identical instructions, comparator circuit kiểm tra output mỗi cycle.
+Trong hardware: hai CPU cores execute identical instructions, comparator circuit kiểm tra output hoặc architectural state theo từng checkpoint/cycle tùy thiết kế.
 
-Trong software (demo này): hai lần gọi AES trong cùng process, so sánh kết quả.
+Trong log/demo này: chưa dựng dual-core lockstep thật trong gem5. Ta mô phỏng ý tưởng lockstep ở mức software bằng hai lần gọi AES trong cùng process, sau đó so sánh kết quả trước khi cho phép ciphertext đi ra ngoài.
 
 ### Implementation
 
@@ -1270,7 +1329,7 @@ int main() {
 }
 ```
 
-**Key design decision:** CPU B luôn chạy clean bằng cách disable fault hook. Trong hardware implementation thực tế, CPU B sẽ là một independent execution unit — fault injection physical nhắm vào một CPU sẽ không ảnh hưởng CPU kia (vì supply voltage, clock, memory paths độc lập). Trong software demo, ta mô phỏng điều này bằng flag.
+**Key design decision:** lane B luôn chạy clean bằng cách disable fault hook. Trong hardware implementation thực tế, lane B sẽ là một independent execution unit. Trong software demo, ta mô phỏng giả định đó bằng flag để chứng minh nguyên lý: nếu hai lane diverge thì abort trước khi ciphertext lỗi bị output.
 
 ### Compile
 
@@ -1336,9 +1395,9 @@ Fault detected! CPU A bị corrupt (`5d...`), CPU B clean (`3a...`). Comparator 
 
 Fault khác vị trí, cũng bị detect thành công. ✓
 
-### Lockstep defense hiệu quả 100% trong model này
+### Lockstep defense chặn được fault trong demo này
 
-Với bất kỳ single-byte fault nào trong 16 bytes AES state tại round 9, Lockstep Defense đều:
+Trong fault model của demo này, nếu source-level hook làm lane A lệch khỏi lane B tại round 9, comparator sẽ:
 - Phát hiện fault trước khi ciphertext được output
 - Abort execution, không leak faulty ciphertext cho attacker
 - CPU B vẫn tính được correct ciphertext (available nội bộ nếu cần retry)
@@ -1372,7 +1431,7 @@ Cần lưu ý một số điều mà implementation này chưa cover:
 | Faulty ciphertexts | 128 unique (16 bytes × 8 bits) |
 | Round 10 key | `D014F9A8C9EE2589E13F0CC8B6630CA6` |
 | Master key | `2B7E151628AED2A6ABF7158809CF4F3C` ✓ |
-| Lockstep Defense | Detect 100% faults, abort before ciphertext output |
+| Lockstep Defense | Demo software lockstep detect divergence và abort before ciphertext output |
 
 ### Những điều học được từ quá trình debug
 

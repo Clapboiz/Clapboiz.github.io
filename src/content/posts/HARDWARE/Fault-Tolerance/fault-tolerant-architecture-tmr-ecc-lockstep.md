@@ -1,6 +1,6 @@
 ---
-title: "Từ Bit Flip đến Fault Injection: ECC, TMR và Lockstep trong Bảo mật Phần cứng Hiện đại"
-published: 2026-06-05
+title: "[Phần 1 - Nền tảng] Từ Bit Flip đến Lockstep: Các Cơ chế Bảo mật và Chịu lỗi trong Phần cứng Hiện đại"
+published: 2026-05-15
 description: "Hardware Security & Computer Architecture"
 image: './banner.png'
 tags: ["HARDWARE", "SECURITY", "COMPUTER-ARCHITECTURE"]
@@ -9,6 +9,13 @@ draft: false
 ---
 
 Khi nhắc đến các cuộc tấn công vào hệ thống máy tính, chúng ta thường nghĩ đến malware, buffer overflow, SQL injection hay các kỹ thuật khai thác lỗ hổng phần mềm. Tuy nhiên, không phải mọi sự cố đều bắt nguồn từ một dòng code lỗi hoặc một attacker ngồi phía bên kia màn hình.
+
+> 📌 Đây là Phần 1 trong chuỗi bài viết về Fault Injection và Hardware Security:
+>
+> * **Phần 1 – Nền tảng:** Bit Flip, Soft Error, ECC, TMR và Lockstep
+> * **Phần 2 – Tấn công I:** Differential Fault Analysis (DFA) trên AES-128 trong gem5
+>
+> Bài viết này tập trung vào các khái niệm nền tảng giúp giải thích tại sao các cuộc tấn công Fault Injection có thể hoạt động và vì sao những cơ chế như ECC, TMR hay Lockstep lại trở nên quan trọng trong các hệ thống hiện đại.
 
 Ít ai biết rằng đôi khi nguyên nhân có thể đến từ một thứ rất xa xôi: các hạt năng lượng cao xuất phát từ ngoài không gian.
 
