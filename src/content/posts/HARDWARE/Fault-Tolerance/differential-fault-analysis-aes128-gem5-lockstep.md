@@ -570,6 +570,8 @@ Do đó:
 * Lần thực thi thứ chín tương ứng Round 9.
 * Lần thực thi thứ mười tương ứng Round 10.
 
+Việc đánh số này không dựa trên giả định từ execution trace mà được suy ra trực tiếp từ cấu trúc vòng lặp trong Cipher(). Execution trace ở bước tiếp theo chỉ được sử dụng để xác định thời điểm thực thi thực tế của từng vòng AES trong gem5.
+
 Instruction:
 
 ```assembly
@@ -618,6 +620,99 @@ Do đó, bước tiếp theo là xác định chính xác lần xuất hiện th
 ---
 
 ## 6. Xác định Cycle Range của Round 9
+### Liên hệ Execution Trace với AES Round
+
+Ở bước trước, disassembly của `Cipher()` cho thấy:
+
+```assembly
+117e8: jal SubBytes
+117f0: jal ShiftRows
+11806: jal MixColumns
+11818: jal AddRoundKey
+
+11820: round_counter++
+11826: j 117e4
+```
+
+Các instruction trên nằm bên trong vòng lặp AES chính. Mỗi lần vòng lặp được thực thi, chương trình sẽ lần lượt gọi:
+
+```text
+SubBytes
+↓
+ShiftRows
+↓
+MixColumns
+↓
+AddRoundKey
+```
+
+sau đó tăng `round_counter` và quay lại đầu vòng lặp để xử lý round tiếp theo.
+
+Do đó, nếu theo dõi các địa chỉ:
+
+```text
+0x117e8
+0x117f0
+0x11806
+0x11818
+```
+
+trong execution trace, ta sẽ thấy một mẫu lặp lại nhiều lần:
+
+```text
+0x117e8  (SubBytes)
+↓
+0x117f0  (ShiftRows)
+↓
+0x11806  (MixColumns)
+↓
+0x11818  (AddRoundKey)
+```
+
+Mỗi lần xuất hiện đầy đủ chuỗi này tương ứng với một AES round hoàn chỉnh.
+
+Ví dụ, trong execution trace:
+
+Round 1:
+
+```text
+9029861000 : 0x117e8
+9080545000 : 0x117f0
+9087100000 : 0x11806
+9188518000 : 0x11818
+```
+
+Round 2:
+
+```text
+9252774000 : 0x117e8
+9303089000 : 0x117f0
+9309643000 : 0x11806
+9411108000 : 0x11818
+```
+
+Round 3:
+
+```text
+9475351000 : 0x117e8
+9526013000 : 0x117f0
+9532537000 : 0x11806
+9633992000 : 0x11818
+```
+
+Có thể thấy sau khi hoàn thành chuỗi:
+
+```text
+SubBytes → ShiftRows → MixColumns → AddRoundKey
+```
+
+chương trình lại quay về `0x117e8`, tức bắt đầu một vòng AES mới.
+
+Điều này khớp với cấu trúc vòng lặp đã quan sát được trong disassembly của `Cipher()`.
+
+Vì AES-128 có tổng cộng 10 rounds và `0x117e8` là lệnh gọi `SubBytes()` nằm ở đầu vòng lặp, nên lần xuất hiện thứ nhất của `0x117e8` tương ứng Round 1, lần thứ hai tương ứng Round 2, ..., lần thứ chín tương ứng Round 9 và lần thứ mười tương ứng Round 10.
+
+Do đó, thay vì phải phân tích toàn bộ execution trace, chỉ cần theo dõi các lần xuất hiện của địa chỉ `0x117e8` là có thể xác định chính xác thời điểm bắt đầu từng AES round.
 
 ### Thu thập Execution Trace
 
@@ -693,14 +788,16 @@ output:
 151354:11085998000: system.cpu: T0 : 0x117f0 @Cipher+52    : jal ra, -3440              : IntAlu :  D=0x00000000000117f4
 ```
 
-Các địa chỉ được theo dõi tương ứng với:
+Các địa chỉ được theo dõi không phải là địa chỉ bắt đầu của các hàm AES, mà là các lệnh gọi (call site) nằm bên trong vòng lặp của Cipher():
 
-| Address | Function    |
-| ------- | ----------- |
-| 0x117e8 | SubBytes    |
-| 0x117f0 | ShiftRows   |
-| 0x11806 | MixColumns  |
-| 0x11818 | AddRoundKey |
+| Address | Ý nghĩa |
+|----------|----------|
+| 0x117e8 | gọi SubBytes() |
+| 0x117f0 | gọi ShiftRows() |
+| 0x11806 | gọi MixColumns() |
+| 0x11818 | gọi AddRoundKey() |
+
+Những địa chỉ này được lựa chọn vì chúng xuất hiện đúng một lần trong mỗi vòng lặp AES, giúp việc nhận diện từng round trong execution trace trở nên dễ dàng hơn.
 
 Trích đoạn execution trace:
 
@@ -717,7 +814,7 @@ Trích đoạn execution trace:
 11035659000  : 0x117e8  ← Round 10
 ```
 
-Do `0x117e8` là điểm bắt đầu của `SubBytes`, mỗi lần xuất hiện tương ứng với một vòng AES mới.
+Do 0x117e8 là lệnh gọi SubBytes() nằm ở đầu vòng lặp AES, mỗi lần địa chỉ này được thực thi tương ứng với việc bắt đầu một AES round mới.
 
 Từ trace có thể xác định:
 
@@ -767,35 +864,89 @@ Khoảng cách giữa các vòng tương đối ổn định, cho phép sử d�
 
 Kết quả này cung cấp mốc thời gian cần thiết để triển khai fault injection trong các bước tiếp theo.
 
+Trong implementation cuối cùng của nghiên cứu này, fault được chèn trực tiếp vào state AES thông qua source-level fault hook để tạo tập faulty ciphertext phục vụ DFA. Do đó execution trace không được sử dụng để kích hoạt fault injection. Thay vào đó, trace được dùng để xác minh vị trí fault tương ứng với Round 9 và làm cơ sở cho các fault model ở mức simulator trong các nghiên cứu mở rộng sau này.
+
 ---
 
-## 7. Approach 1: Checkpoint-based fault injection
+## 7. Approach 1: Checkpoint-based Fault Injection
 
-Sau khi biết Round 9 bắt đầu tại tick `10,812,745,000`, hướng đầu tiên trong log là làm fault injection ở mức simulator/checkpoint. Ý tưởng nghe rất trực tiếp: dừng gem5 đúng fault window, lưu checkpoint, sửa register hoặc memory trong checkpoint, rồi restore để xem ciphertext có đổi không.
+Sau khi xác định được Round 9 bắt đầu tại khoảng tick `10,812,745,000`, hướng tiếp cận đầu tiên là thực hiện fault injection ở mức simulator thông qua cơ chế checkpoint của gem5.
 
-Ý tưởng ban đầu:
+Ý tưởng của phương pháp này là dừng mô phỏng ngay trước thời điểm fault window, lưu toàn bộ trạng thái hệ thống, sau đó chỉnh sửa dữ liệu trong checkpoint rồi tiếp tục thực thi.
+
+Pipeline dự kiến:
 
 ```text
 Run AES trong gem5
 ↓
-Stop tại tick Round 9
+Stop tại Round 9
 ↓
-Save checkpoint
+Create checkpoint
 ↓
-Modify register hoặc memory trong checkpoint
+Modify register hoặc memory
 ↓
 Restore checkpoint
 ↓
 Collect faulty ciphertext
 ```
 
-Nếu làm được, đây sẽ gần với mục tiêu GemFI/hardware-level hơn source patch, vì fault được đưa từ phía simulator. Nhưng khi debug thực tế, việc tìm đúng byte đại diện cho AES state trong checkpoint không đơn giản. Các attempt bên dưới cho thấy ta hoặc đang sửa pointer, hoặc đang đọc một vùng memory pattern (`0xaa`, `0x55`) không khớp với state AES cần cho DFA.
+Nếu thành công, đây sẽ là một mô hình fault injection gần với kịch bản phần cứng hơn so với việc chỉnh sửa mã nguồn, bởi lỗi được đưa vào từ phía simulator thay vì từ bên trong chương trình AES.
 
-Vì vậy checkpoint-based injection được giữ lại trong bài như một debug path quan trọng. Nó giải thích vì sao pipeline cuối cùng phải pivot sang source-level hook để tạo single-bit fault model sạch tại Round 9.
+### Thách thức khi làm việc với Checkpoint
+
+Về mặt kỹ thuật, gem5 cho phép lưu và khôi phục toàn bộ trạng thái CPU, register và memory tại thời điểm checkpoint. Tuy nhiên, checkpoint không lưu thông tin ở mức ngữ nghĩa của ứng dụng.
+
+Nói cách khác, checkpoint chỉ chứa:
+
+```text
+Register values
+Memory pages
+CPU state
+Cache state
+```
+
+chứ không chứa khái niệm:
+
+```text
+AES state
+Round 9 state
+SubBytes input
+```
+
+Do đó, sau khi tạo checkpoint tại Round 9, bước khó nhất là xác định chính xác byte nào trong hàng nghìn byte memory tương ứng với AES state cần gây lỗi.
+
+### Các Attempt Thực Hiện
+
+Trong quá trình debug, nhiều vị trí memory và register đã được sửa đổi thủ công rồi restore lại checkpoint.
+
+Tuy nhiên kết quả cho thấy:
+
+* Một số vị trí chỉ là pointer hoặc metadata của chương trình.
+* Một số vùng memory chứa các pattern như `0xaa` hoặc `0x55`, không liên quan đến AES state thực tế.
+* Ciphertext sau khi restore không thay đổi theo fault model mong muốn của DFA.
+
+Điều này cho thấy việc tìm đúng byte đại diện cho state AES bên trong checkpoint khó hơn dự kiến. Mặc dù fault đã được đưa vào simulator, nhưng chưa thể chứng minh rằng fault đó thực sự tác động đến trạng thái nội bộ của AES ở Round 9.
+
+> Checkpoint-based fault injection là một hướng tiếp cận hợp lý và gần với mô hình hardware fault injection. Tuy nhiên trong phạm vi nghiên cứu này, việc ánh xạ từ dữ liệu thô trong checkpoint sang AES state chưa được giải quyết triệt để.
+
+> Vì vậy pipeline cuối cùng được chuyển sang source-level fault hook, nơi fault được chèn trực tiếp vào AES state tại Round 9. Cách tiếp cận này giúp tạo ra tập faulty ciphertext ổn định và phù hợp với yêu cầu của PhoenixAES để thực hiện DFA key recovery.
+
+> Mặc dù không được sử dụng trong kết quả cuối cùng, checkpoint-based injection vẫn là một bước debug quan trọng vì nó giúp đánh giá tính khả thi của fault injection ở mức simulator trước khi chuyển sang fault model có kiểm soát hơn.
 
 ---
 
 ## 8. Vấn đề với checkpoint approach  - debug quá trình
+Mục tiêu của phần debug này là trả lời một câu hỏi duy nhất:
+
+> Nếu checkpoint được tạo đúng tại Round 9, liệu có thể xác định và sửa trực tiếp AES state từ dữ liệu lưu trong checkpoint hay không?
+
+Để kiểm chứng giả thuyết này, ba hướng tiếp cận khác nhau đã được thử:
+
+1. Sửa trực tiếp register đang được truyền vào SubBytes().
+2. Suy ngược từ virtual address sang physical memory rồi sửa dữ liệu trong checkpoint.
+3. Dịch thời điểm checkpoint sâu hơn vào bên trong SubBytes để kiểm tra trạng thái bộ nhớ có thay đổi hay không.
+
+Nếu một trong các hướng trên thành công, fault có thể được đưa vào từ phía simulator mà không cần chỉnh sửa mã nguồn AES.
 
 ### Attempt 1: Modify register x10 trực tiếp
 
@@ -818,7 +969,13 @@ Output:
 [POST-FAULT] x10 = 0x7ffffffffffffc79
 ```
 
-Sau khi restore và chạy tiếp, ciphertext có thay đổi (`e6d77bb40d7a36c7a89e67f324dcef97`). Nhưng khi thử nhiều bit position của `x10`, chỉ bit 0 tạo ra output khác. Đây là dấu hiệu quan trọng: `x10` lúc đó không phải AES state data, mà giống một pointer trỏ tới vùng state. Flip bit 0 làm pointer lệch sang byte kế bên, nên output đổi, nhưng đây không phải single-bit fault sạch trong AES state.
+Sau khi restore và chạy tiếp, ciphertext có thay đổi (`e6d77bb40d7a36c7a89e67f324dcef97`). Nhưng khi thử nhiều bit position của `x10`, chỉ bit 0 tạo ra output khác. 
+
+Kết quả này cho thấy fault đã ảnh hưởng đến quá trình thực thi của chương trình, nhưng chưa chứng minh được rằng bit bị lật nằm trong AES state.
+
+Việc chỉ có bit thấp nhất của x10 tạo ra thay đổi ở ciphertext là dấu hiệu cho thấy x10 nhiều khả năng đang chứa địa chỉ (pointer) hơn là dữ liệu state AES. Khi bit 0 bị thay đổi, địa chỉ bị lệch sang byte kế cận và chương trình tiếp tục xử lý dữ liệu khác, dẫn tới ciphertext thay đổi.
+
+Tuy nhiên đây không phải fault model mà DFA yêu cầu, vì vị trí lỗi không còn nằm trên một byte của AES state.
 
 ### Attempt 2: Modify physical memory
 
@@ -849,17 +1006,27 @@ vaddr=9223372036854771712  →  paddr=483328
 # 0x7ffffffffffff000 = 9223372036854771712 → phys 0x76000
 ```
 
-Physical address của AES state: `0x76000 + 0xc78 = 0x76c78`
+Từ mapping trên có thể suy ra một địa chỉ vật lý ứng viên:
+
+`0x76000 + 0xc78 = 0x76c78`
+
+Địa chỉ này sau đó được sử dụng như một giả thuyết ban đầu cho vị trí của AES state trong physical memory.
 
 Đọc 16 bytes tại địa chỉ đó từ `system.physmem.store0.pmem`:
+
+Cần lưu ý rằng bản thân giá trị `0xaa` hoặc `0x55` không chứng minh vùng nhớ này chắc chắn không phải AES state.
+
+Tuy nhiên trong bối cảnh AES đang xử lý plaintext thử nghiệm, xác suất toàn bộ 16 byte state đều đồng nhất thành:
 
 ```
 AES state at 0x76c78: aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa
 ```
 
-Kết quả toàn `aa` là tín hiệu xấu: vùng đọc được không giống AES state đang mong đợi tại Round 9.
+Kết quả toàn `aa` là một dấu hiệu cho thấy vùng nhớ đang đọc có thể không phải AES state thực tế.
 
-### Tại sao checkpoint save dữ liệu sai?
+Mặc dù không thể khẳng định chỉ từ giá trị dữ liệu, nhưng việc toàn bộ 16 byte đều mang cùng một pattern (`0xaa`) không phù hợp với kỳ vọng về trạng thái trung gian của AES sau nhiều vòng biến đổi. Do đó khả năng cao địa chỉ vật lý vừa tìm được chưa ánh xạ tới vùng dữ liệu state đang được Cipher() sử dụng tại thời điểm checkpoint.
+
+### Tại sao chưa xác định được AES state từ checkpoint?
 
 Checkpoint được save khi `jal <SubBytes>` vừa được **fetch**. Nhưng ở cấp checkpoint, ánh xạ từ logical AES state sang byte cần sửa không đơn giản như "đọc 16 bytes tại pointer rồi flip bit". Kết quả toàn `0xaa` cho thấy attempt này chưa chạm đúng dữ liệu state đang được AES sử dụng tại fault boundary.
 
@@ -894,14 +1061,21 @@ Output:
 AES state: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55
 ```
 
-`55` = `01010101` binary. Đây vẫn là pattern không khớp với AES state mong đợi. Nói cách khác, chỉ dịch checkpoint muộn hơn chưa giải quyết được vấn đề cốt lõi: ta vẫn chưa map được logical AES state ở Round 9 sang byte cụ thể trong checkpoint file một cách đáng tin cậy.
+Việc pattern thay đổi từ 0xaa sang 0x55 cho thấy thời điểm checkpoint có ảnh hưởng đến dữ liệu được quan sát. Tuy nhiên cả hai trường hợp đều chưa cung cấp bằng chứng đủ mạnh rằng vùng nhớ đang đọc chính là AES state tại Round 9.
+
+0x55 tương ứng với mẫu bit 01010101. Việc toàn bộ 16 byte đều có cùng giá trị là một dấu hiệu bất thường đối với dữ liệu state AES đang được biến đổi qua nhiều vòng mã hóa. Quan trọng hơn, không có bằng chứng nào cho thấy vùng nhớ này thực sự tương ứng với state mà SubBytes() đang xử lý tại thời điểm fault boundary.
+
+Nói cách khác, việc dịch checkpoint muộn hơn chưa giải quyết được vấn đề cốt lõi: ta vẫn chưa ánh xạ được một cách đáng tin cậy từ logical AES state trong chương trình sang byte cụ thể trong file checkpoint.
 
 ### Kết luận về checkpoint approach
 
 Checkpoint approach có thể hữu ích cho **register-level fault injection** hoặc cho một setup có mapping state rõ hơn. Nhưng trong log này nó không hiệu quả cho **AES state injection** vì chưa xác định được byte state đúng trong checkpoint để sửa một cách sạch và lặp lại được.
 
-Để tiếp tục attack path, cần một approach khác: đưa fault hook trực tiếp vào code AES tại đúng boundary Round 9.
+Sau ba attempt trên, vấn đề cốt lõi vẫn chưa được giải quyết: chưa có phương pháp đáng tin cậy để ánh xạ một byte trong checkpoint sang một byte cụ thể của AES state tại Round 9.
 
+Điều này khiến fault injection ở mức checkpoint khó kiểm soát, khó lặp lại và khó chứng minh rằng fault thực sự được đặt trên đúng byte của AES state theo fault model mà PhoenixAES yêu cầu.
+
+Vì vậy hướng checkpoint-based injection được dừng lại tại đây và chuyển sang source-level fault hook, nơi vị trí fault có thể được xác định chính xác trên AES state trước khi tạo faulty ciphertext cho PhoenixAES.
 ---
 
 ## 9. Approach 2: Source-level fault injection
@@ -914,6 +1088,8 @@ Tóm lại:
 - Fault được đặt đúng logical boundary: đầu Round 9, trước `SubBytes`.
 - Faulty ciphertexts được sinh ra bởi execution thật của binary, không viết tay.
 - Phương pháp này chứng minh attack math và defense behavior, nhưng không chứng minh khả năng glitch phần cứng vật lý.
+
+Vị trí fault được chọn dựa trên kết quả phân tích disassembly và execution trace ở các phần trước, nhằm mô phỏng fault model thường dùng trong DFA trên AES-128.
 
 ### Patch aes.c  - thêm fault hook
 
@@ -939,7 +1115,9 @@ static void Cipher(state_t* state, const uint8_t* RoundKey)
 }
 ```
 
-Hook được đặt **trước SubBytes của Round 9**. Đây chính là vị trí đã xác định bằng trace: sau Round 8, trước khi state đi vào vòng áp chót.
+Hook được đặt **ngay trước SubBytes của Round 9**.
+
+Theo phân tích ở phần trước, đây là thời điểm state vừa hoàn thành Round 8 và chuẩn bị đi vào Round 9. Fault được đưa vào tại boundary này để sai khác tiếp tục lan truyền qua các bước còn lại của Round 9 và toàn bộ Round 10 trước khi tạo ciphertext cuối cùng.
 
 ```c
 for (round = 1; ; ++round)
@@ -998,7 +1176,13 @@ process.env = [f'FAULT_BYTE={fault_byte}', f'FAULT_BIT={fault_bit}']
 
 ## 10. Collect 128 faulty ciphertexts
 
-AES state có 16 bytes, mỗi byte có 8 bit, tổng cộng 128 vị trí single-bit fault. Trong log, ta chạy hết 128 vị trí để tạo dataset dư dả cho PhoenixAES và cũng để quan sát pattern lan truyền của lỗi.
+AES state gồm 16 byte. Với fault model sử dụng một lần lật bit (single-bit fault), mỗi byte có 8 vị trí bit có thể bị tác động. Vì vậy tổng cộng có:
+
+```
+16 × 8 = 128
+```
+
+vị trí fault khác nhau được khảo sát. Trong log, ta chạy hết 128 vị trí để tạo dataset dư dả cho PhoenixAES và cũng để quan sát pattern lan truyền của lỗi.
 
 ### Automation script
 
@@ -1053,7 +1237,7 @@ byte=1 bit=0: 3ad77b430d7aff60a89dcaf33366ef97
 ...
 byte=15 bit=7: b3d77bb40d7a36cda89e8ef3243eef97
 
-Total: 128 unique faulty ciphertexts
+Trong tập thực nghiệm này, cả 128 vị trí fault đều tạo ra ciphertext khác với ciphertext đúng và không xuất hiện trường hợp trùng lặp. Điều này cho thấy mỗi vị trí single-bit fault đã tạo ra một mẫu lan truyền lỗi riêng biệt trong ciphertext.
 ```
 
 ### Phân tích pattern của faulty ciphertexts
@@ -1071,7 +1255,7 @@ Fault tại byte 0:
 9f d7 7b b4 0d 7a 36 b0 a8 9e 54 f3 24 1a ef 97  (bit 1)
 ```
 
-Khi flip byte 0 ở đầu Round 9, sai khác đi qua MixColumns của Round 9 và xuất hiện trên **4 bytes** của ciphertext. Với ví dụ trên, các byte thay đổi là `[0, 7, 10, 13]`. Đây chính là dấu hiệu mà classic AES DFA cần: một lỗi cục bộ trong state lan thành một nhóm 4 byte có cấu trúc.
+Khi fault được đưa vào một byte của state ở đầu Round 9, sai khác tiếp tục đi qua các bước còn lại của Round 9 trước khi đi vào Round 10. Kết quả là lỗi không còn giới hạn ở một byte duy nhất mà lan sang một nhóm byte có quan hệ với nhau do phép biến đổi MixColumns tạo ra. Với ví dụ trên, các byte thay đổi là `[0, 7, 10, 13]`. Đây chính là dấu hiệu mà classic AES DFA cần: một lỗi cục bộ trong state lan thành một nhóm 4 byte có cấu trúc.
 
 Fault tại byte 1:
 
@@ -1083,10 +1267,14 @@ Bytes thay đổi: `[3, 6, 9, 12]`  - column khác.
 
 Đây là signature chuẩn của Round 9 DFA: mỗi fault tại một byte state ảnh hưởng đến một nhóm 4 byte ciphertext. Các dependency do MixColumns tạo ra chính là thứ PhoenixAES khai thác để lọc candidate round key.
 
+Kết quả này cho thấy fault hook đã tạo ra đúng loại faulty ciphertext mà DFA trên AES mong đợi. Do đó tập dữ liệu thu được có thể được sử dụng làm đầu vào cho PhoenixAES ở bước tiếp theo để thực hiện quá trình khôi phục khóa.
+
 ---
 
 ## 11. PhoenixAES recover round 10 key
+Sau bước thu thập fault dataset, mục tiêu tiếp theo là kiểm tra xem các faulty ciphertext có thực sự chứa đủ thông tin để suy ra khóa AES hay không.
 
+Theo lý thuyết DFA trên AES-128, chỉ cần fault được đặt đúng tại Round 9 thì các sai khác trong ciphertext sẽ mang cấu trúc toán học liên quan đến last round key. PhoenixAES được sử dụng để tự động khai thác các quan hệ này và thực hiện quá trình key recovery.
 ### Cài đặt PhoenixAES
 
 ```bash
@@ -1126,6 +1314,10 @@ Round 10 key: D014F9A8C9EE2589E13F0CC8B6630CA6
 
 **Round 10 key recovered: `D014F9A8C9EE2589E13F0CC8B6630CA6`**
 
+Kết quả này là bằng chứng đầu tiên cho thấy fault model được sử dụng trong nghiên cứu là hợp lệ.
+
+Nếu fault được đặt sai round hoặc sai cấu trúc mà PhoenixAES giả định, quá trình lọc candidate sẽ không hội tụ về một last round key duy nhất. Việc recover thành công toàn bộ 16 bytes của Round 10 key cho thấy các faulty ciphertext thu thập được thực sự mang dấu hiệu của Round 9 DFA.
+
 ### Cách PhoenixAES hoạt động (brief)
 
 Ở mức trực giác, PhoenixAES làm việc như sau:
@@ -1154,6 +1346,11 @@ Với mỗi candidate byte của `RK10` có 256 khả năng. PhoenixAES kiểm t
 ---
 
 ## 12. Recover master key bằng reverse key schedule
+Tuy nhiên Round 10 key chưa phải khóa bí mật mà hệ thống sử dụng.
+
+Trong AES-128, last round key chỉ là kết quả của quá trình key expansion từ master key ban đầu. Vì key schedule của AES là hàm khả nghịch, việc thu được Round 10 key đồng nghĩa với việc có thể khôi phục toàn bộ master key.
+
+Do đó bước cuối cùng của attack chain là đảo ngược AES key schedule.
 
 Round 10 key `D014F9A8C9EE2589E13F0CC8B6630CA6` là kết quả của AES key expansion từ master key. Về lý thuyết, ta có thể đảo AES-128 key schedule để đi từ `w[40]..w[43]` về `w[0]..w[3]`, tức master key.
 
@@ -1268,19 +1465,43 @@ Encrypt verify: 3ad77bb40d7a3660a89ecaf32466ef97
 Expected:       3ad77bb40d7a3660a89ecaf32466ef97
 ```
 
-**DFA attack hoàn toàn thành công:**
+**DFA attack hoàn toàn thành công và đạt được mục tiêu ban đầu của nghiên cứu:**
 
 - Correct ciphertext: `3ad77bb40d7a3660a89ecaf32466ef97`
 - Round 10 key recovered: `D014F9A8C9EE2589E13F0CC8B6630CA6`
 - Master key: `2B7E151628AED2A6ABF7158809CF4F3C` ✓
 
+Chuỗi tấn công hoàn chỉnh có thể được tóm tắt như sau:
+
+```text
+Fault tại Round 9
+        ↓
+Faulty Ciphertexts
+        ↓
+PhoenixAES
+        ↓
+Round 10 Key
+        ↓
+Reverse Key Schedule
+        ↓
+AES-128 Master Key
+
+Điều này chứng minh rằng chỉ từ các ciphertext lỗi được sinh ra bởi fault injection tại Round 9, attacker có thể khôi phục thành công khóa bí mật của AES-128 mà không cần truy cập trực tiếp vào bộ nhớ chứa key.
+
 ---
 
 ## 13. Lockstep Defense  - implement và verify
+Tới thời điểm này, attack chain đã hoàn chỉnh: fault tại Round 9 cho phép tạo faulty ciphertexts, PhoenixAES recover được Round 10 key, và reverse key schedule đưa ngược về master key.
+
+Câu hỏi tiếp theo là: làm thế nào để ngăn attacker thu được các faulty ciphertext này ngay từ đầu?
+
+Một trong những countermeasure phổ biến nhất trong fault-tolerant systems và secure hardware là Lockstep Execution.
 
 ### Concept
 
-Lockstep Defense là countermeasure phổ biến nhất cho fault injection attacks. Ý tưởng: chạy cùng một computation **hai lần**, compare outputs. Nếu diverge → fault đã xảy ra → abort trước khi output bị leak.
+Lockstep Defense là countermeasure phổ biến nhất cho fault injection attacks. Ý tưởng cốt lõi của lockstep là thực hiện cùng một phép tính trên hai execution lanes độc lập rồi so sánh kết quả.
+
+Nếu một fault chỉ ảnh hưởng đến một lane, trạng thái thực thi của hai lane sẽ khác nhau và comparator có thể phát hiện sự sai lệch trước khi kết quả được trả về cho bên ngoài.
 
 Trong hardware: hai CPU cores execute identical instructions, comparator circuit kiểm tra output hoặc architectural state theo từng checkpoint/cycle tùy thiết kế.
 
@@ -1395,12 +1616,20 @@ Fault detected! CPU A bị corrupt (`5d...`), CPU B clean (`3a...`). Comparator 
 
 Fault khác vị trí, cũng bị detect thành công. ✓
 
+Ba kịch bản trên cho thấy kết quả phù hợp với kỳ vọng của lockstep:
+
+- Không có fault → hai lane tạo cùng ciphertext.
+- Có fault trên lane A → ciphertext của hai lane khác nhau.
+- Comparator phát hiện divergence và dừng chương trình trước khi dữ liệu lỗi bị lộ ra ngoài.
+
+Điểm quan trọng là attacker không còn thu được faulty ciphertext. Khi đầu vào của PhoenixAES không tồn tại, toàn bộ DFA attack chain bị chặn từ bước đầu tiên.
+
 ### Lockstep defense chặn được fault trong demo này
 
 Trong fault model của demo này, nếu source-level hook làm lane A lệch khỏi lane B tại round 9, comparator sẽ:
 - Phát hiện fault trước khi ciphertext được output
 - Abort execution, không leak faulty ciphertext cho attacker
-- CPU B vẫn tính được correct ciphertext (available nội bộ nếu cần retry)
+- CPU B vẫn tính được correct ciphertext ở nội bộ hệ thống. Trong một thiết kế thực tế, hệ thống có thể thực hiện retry, reset hoặc chuyển sang cơ chế xử lý lỗi tùy theo yêu cầu an toàn.
 
 ### Limitations của Lockstep Defense
 
@@ -1419,6 +1648,9 @@ Cần lưu ý một số điều mà implementation này chưa cover:
 ---
 
 ## 14. Tổng kết và bài học
+Nghiên cứu này bắt đầu từ mục tiêu mô phỏng một cuộc tấn công Differential Fault Analysis trên AES-128 trong môi trường gem5 và đánh giá hiệu quả của cơ chế Lockstep Defense.
+
+Kết quả cuối cùng cho thấy cả hai mục tiêu đều đạt được: DFA có thể recover khóa AES khi fault được đặt đúng vị trí, trong khi lockstep có thể phát hiện sai lệch và ngăn faulty ciphertext bị rò rỉ.
 
 ### Summary of results
 
@@ -1439,7 +1671,7 @@ Cần lưu ý một số điều mà implementation này chưa cover:
 
 **gem5 v25 API thay đổi so với documentation cũ.** `threadContexts` không còn là attribute trực tiếp của CPU object. Cần dùng `cpu.cpuList[0].getContext(0)` hoặc các API mới hơn. Documentation online thường lag behind actual codebase.
 
-**Checkpoint approach cho memory injection phức tạp hơn tưởng.** AES state trong SubBytes tồn tại trong registers, không phải memory, nên không thể dễ dàng modify từ checkpoint. Cần hiểu AES execution model ở mức instruction để chọn đúng approach.
+**Checkpoint approach cho memory injection phức tạp hơn tưởng.** Tại thời điểm fault boundary được chọn, dữ liệu AES không thể được xác định một cách đáng tin cậy chỉ bằng cách chỉnh sửa các byte trong checkpoint memory. Điều này khiến việc checkpoint-level fault injection khó kiểm soát hơn dự kiến, nên không thể dễ dàng modify từ checkpoint. Cần hiểu AES execution model ở mức instruction để chọn đúng approach.
 
 **Source-level fault injection vẫn hợp lệ cho phần cryptographic validation.** Nó không chứng minh khả năng glitch phần cứng vật lý, nhưng nếu fault được inject đúng vị trí trong computation (round boundary), faulty ciphertexts sẽ có differential structure cần thiết để PhoenixAES recover key.
 
@@ -1454,6 +1686,19 @@ Project này gặp nhiều issues: GemFI repo bị xóa (404), gem5 v25 API thay
 Quan trọng là biết cách debug: đọc error message, trace ngược lại source, thử alternative approach, không fix symptom mà fix root cause.
 
 ### Hướng mở rộng
+Từ góc độ nghiên cứu, kết quả này cho thấy mối quan hệ trực tiếp giữa fault injection và cryptographic key recovery:
+
+```text
+Fault Injection
+        ↓
+Faulty Ciphertexts
+        ↓
+Differential Analysis
+        ↓
+Round Key Recovery
+        ↓
+Master Key Recovery
+```
 
 **Về attack:**
 - Multi-fault DFA: inject 2 faults trong cùng session → reduce số ciphertext pairs cần thiết
@@ -1468,3 +1713,5 @@ Quan trọng là biết cách debug: đọc error message, trace ngược lại 
 **Về tooling:**
 - Build custom gem5 module để automate fault injection ở hardware level (không cần patch source)
 - Integrate với TVLA (Test Vector Leakage Assessment) để measure information leakage
+
+Đồng thời, nghiên cứu cũng minh họa cách các cơ chế dự phòng như lockstep có thể cắt đứt chuỗi tấn công này bằng cách ngăn attacker tiếp cận dữ liệu lỗi ngay từ đầu.
