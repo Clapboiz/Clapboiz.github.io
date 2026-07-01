@@ -263,6 +263,76 @@ Quá trình này được gọi là **Error Propagation**.
 
 Vì lý do đó, các kiến trúc chịu lỗi hiện đại luôn cố gắng phát hiện và xử lý lỗi càng gần nguồn phát sinh càng tốt.
 
+### 3.4. Nhìn Toàn Cảnh: Mỗi Cơ Chế Bảo Vệ Một Tầng Khác Nhau
+
+Ở các phần trước, chúng ta đã thấy rằng một **bit flip** không nhất thiết sẽ trở thành *Failure*. Sau khi xuất hiện, lỗi có thể bị phát hiện, được sửa chữa hoặc tiếp tục lan truyền qua nhiều tầng của hệ thống trước khi ảnh hưởng đến kết quả cuối cùng.
+
+Điều đó cũng dẫn đến một câu hỏi rất tự nhiên:
+
+> **Nếu lỗi có thể xuất hiện ở nhiều tầng khác nhau, vậy hệ thống sẽ bảo vệ ở đâu?**
+
+Câu trả lời là:
+
+> **Không có một cơ chế đơn lẻ nào có thể bảo vệ toàn bộ hệ thống.**
+
+Thay vào đó, các kiến trúc **Fault-Tolerant Computing** được xây dựng theo tư tưởng **phòng vệ nhiều tầng (Layered Fault Tolerance)**. Mỗi cơ chế được triển khai tại một vị trí khác nhau trong hệ thống và chịu trách nhiệm ngăn chặn lỗi ngay tại tầng mà nó có khả năng xảy ra.
+
+Nói cách khác, thay vì đợi lỗi lan truyền đến ứng dụng rồi mới xử lý, hệ thống cố gắng phát hiện hoặc cô lập lỗi càng sớm càng tốt.
+
+---
+
+#### Kiến trúc tổng quan
+![alt text](Image/diag1.png)
+
+Hình trên cho thấy vị trí triển khai của bốn cơ chế chịu lỗi trong chuỗi lan truyền từ Fault đến Failure. Thay vì tập trung tại một điểm duy nhất, các cơ chế được phân bố ở nhiều lớp khác nhau của hệ thống nhằm chặn lỗi càng sớm càng tốt.
+
+Có thể thấy rằng chúng **không phải là bốn phiên bản khác nhau của cùng một kỹ thuật**, cũng **không hoạt động theo kiểu thay thế lẫn nhau**. Thay vào đó, mỗi cơ chế được triển khai tại một vị trí hoặc cấp độ khác nhau trong hệ thống nhằm ngăn lỗi lan truyền ngay tại nơi nó có khả năng xuất hiện.
+
+| Đối tượng được bảo vệ | Cơ chế bảo vệ |
+|-------------------|---------------|
+| Bit trong bộ nhớ | ECC |
+| Chip DRAM | Chipkill |
+| Logic tính toán | TMR |
+| Luồng thực thi CPU | Lockstep |
+
+Nếu ví toàn bộ hệ thống như một tòa nhà nhiều tầng thì mỗi cơ chế giống như một lớp phòng vệ được bố trí ở một vị trí khác nhau.
+
+- **ECC** đứng ngay tại bộ nhớ và trả lời câu hỏi: *"Bit nào bị lỗi và có thể sửa lại được không?"*
+- **Chipkill** tiếp tục bảo vệ tầng bộ nhớ nhưng ở mức nghiêm trọng hơn: *"Nếu cả một chip DRAM bị hỏng thì sao?"*
+- **TMR** chuyển sang tầng tính toán và trả lời: *"Nếu nhiều khối logic cho các kết quả khác nhau thì đâu mới là kết quả đúng?"*
+- **Lockstep** đứng ở tầng cao nhất của phần cứng và liên tục kiểm tra: *"Hai CPU dự phòng có còn thực thi giống hệt nhau hay không?"*
+
+---
+
+### Khác biệt giữa các cơ chế không chỉ nằm ở vị trí triển khai mà còn ở cách chúng phản ứng khi phát hiện lỗi.
+
+Bốn cơ chế trên đều hướng tới mục tiêu nâng cao độ tin cậy của hệ thống, nhưng chúng phản ứng với lỗi theo những cách hoàn toàn khác nhau.
+
+![alt text](Image/diag2.png)
+
+Trong đó:
+
+- **Correction** là phát hiện và sửa lỗi trước khi dữ liệu được sử dụng.
+- **Masking** là che giấu lỗi bằng cách sử dụng nhiều bản sao và chọn kết quả theo cơ chế bỏ phiếu.
+- **Detection** chỉ phát hiện sai lệch; việc khôi phục sẽ do các cơ chế khác của hệ thống đảm nhiệm.
+
+---
+
+### Phân loại theo thành phần được bảo vệ
+
+Một cách nhìn khác là phân loại theo thành phần mà chúng bảo vệ.
+
+![alt text](Image/diag3.png)
+
+Có thể thấy:
+
+- **ECC** và **Chipkill** tập trung bảo vệ **dữ liệu lưu trữ trong bộ nhớ**.
+- **TMR** và **Lockstep** tập trung đảm bảo **tính đúng đắn của quá trình tính toán và thực thi**.
+
+Đây cũng là lý do bốn cơ chế này thường xuất hiện cùng nhau trong các hệ thống yêu cầu độ tin cậy cao như máy chủ, trung tâm dữ liệu, hàng không, ô tô hay thiết bị không gian. Chúng không cạnh tranh hay thay thế lẫn nhau mà phối hợp để tạo thành nhiều lớp phòng vệ, ngăn lỗi lan truyền từ **Fault** đến **Failure**.
+
+Với bức tranh tổng quan này, các phần tiếp theo sẽ lần lượt đi sâu vào từng cơ chế, bắt đầu từ các kỹ thuật bảo vệ bộ nhớ (ECC, Chipkill), sau đó đến các kỹ thuật bảo vệ quá trình tính toán (TMR, Lockstep).
+
 ---
 
 ## 4. ECC: Phát Hiện Và Sửa Lỗi Bằng Toán Học
