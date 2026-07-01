@@ -304,7 +304,7 @@ Nếu ví toàn bộ hệ thống như một tòa nhà nhiều tầng thì mỗi
 
 ---
 
-### Khác biệt giữa các cơ chế không chỉ nằm ở vị trí triển khai mà còn ở cách chúng phản ứng khi phát hiện lỗi.
+#### Khác biệt giữa các cơ chế không chỉ nằm ở vị trí triển khai mà còn ở cách chúng phản ứng khi phát hiện lỗi.
 
 Bốn cơ chế trên đều hướng tới mục tiêu nâng cao độ tin cậy của hệ thống, nhưng chúng phản ứng với lỗi theo những cách hoàn toàn khác nhau.
 
@@ -318,7 +318,7 @@ Trong đó:
 
 ---
 
-### Phân loại theo thành phần được bảo vệ
+#### Phân loại theo thành phần được bảo vệ
 
 Một cách nhìn khác là phân loại theo thành phần mà chúng bảo vệ.
 
