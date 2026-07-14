@@ -167,12 +167,12 @@ Trong project này, ta dùng gem5 phiên bản 25.1.0.1 với RISC-V backend.
 ### Verify gem5 đã compile xong
 
 ```bash
-./build/RISCV/gem5.opt --version
-```
+┌──(clap㉿clap)-[~/Desktop/gem5]
+└─$ ./build/RISCV/gem5.opt --version
+Usage
+=====
+  gem5.opt [gem5 options] script.py [script options]
 
-Output:
-
-```
 gem5.opt: error: no such option: --version
 ```
 
