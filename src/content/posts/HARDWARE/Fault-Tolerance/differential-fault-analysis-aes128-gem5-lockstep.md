@@ -525,11 +525,13 @@ riscv64-linux-gnu-objdump -d ~/Desktop/tiny-AES-c/aes_test > ~/Desktop/aes_disas
 
 ![alt text](Image/Screenshot_293.png)
 
-Để nhanh chóng xác định vị trí các thành phần của AES trong disassembly, sử dụng:
+Bước đầu tiên là xác định vị trí các hàm chính của thuật toán AES trong file disassembly.
 
 ```bash
 grep -n "AES_ECB_encrypt\|SubBytes\|ShiftRows\|MixColumns\|AddRoundKey" ~/Desktop/aes_disasm.txt
 ```
+
+> **Lưu ý:** Bổ sung `Cipher` vào biểu thức tìm kiếm để xác định trực tiếp vị trí của hàm này trong file disassembly.
 
 Kết quả:
 
@@ -550,13 +552,17 @@ Kết quả:
 1971: 00000000000118b6 <AES_ECB_encrypt>:
 ```
 
-Ở đây có một điểm dễ nhầm:
+Từ kết quả trên có thể xác định được địa chỉ của các hàm thực hiện các phép biến đổi trong AES cũng như hàm `AES_ECB_encrypt()`. Tuy nhiên, **việc biết địa chỉ của các hàm vẫn chưa đủ để xác định vị trí fault injection**. Điều quan trọng hơn là phải hiểu **luồng thực thi (control flow)** của chương trình: hàm nào gọi hàm nào và các vòng AES thực sự được thực hiện ở đâu.
+
+Có một điểm rất dễ nhầm trong kết quả trên.
+
+Dòng:
 
 ```text
 273: 104d2: jal 118b6 <AES_ECB_encrypt>
 ```
 
-chỉ là nơi `main()` gọi `AES_ECB_encrypt()`.
+không phải là phần thân của `AES_ECB_encrypt()`. Đây chỉ là lệnh `jal` (*Jump And Link*), tức là vị trí mà `main()` gọi sang hàm `AES_ECB_encrypt()`.
 
 Trong khi đó:
 
@@ -564,11 +570,13 @@ Trong khi đó:
 1971: 00000000000118b6 <AES_ECB_encrypt>:
 ```
 
-mới là nơi thân hàm `AES_ECB_encrypt()` bắt đầu.
+mới là nhãn đánh dấu điểm bắt đầu của thân hàm `AES_ECB_encrypt()` trong file disassembly.
 
-Vì vậy không thể chỉ nhìn dòng `273` rồi kết luận fault window. Ta phải đi vào thân `AES_ECB_encrypt()`, rồi tiếp tục đi đến hàm thực sự làm AES round transformation.
+Vì vậy, thay vì phân tích tại vị trí gọi hàm, ta cần đi vào bên trong `AES_ECB_encrypt()` để xác định hàm nào thực sự thực hiện các vòng mã hóa AES.
 
-### Phân tích AES_ECB_encrypt
+---
+
+## Phân tích hàm AES_ECB_encrypt
 
 ![alt text](Image/Screenshot_294.png)
 
@@ -586,11 +594,21 @@ Kết quả cho thấy:
 118d0: jal 117bc <Cipher>
 ```
 
-Dòng `jal 117bc <Cipher>` cho thấy `AES_ECB_encrypt()` chỉ là wrapper. Toàn bộ round loop của AES nằm trong `Cipher()` tại địa chỉ:
+Điều này cho thấy `AES_ECB_encrypt()` không trực tiếp thực hiện các phép biến đổi của AES mà chỉ chuẩn bị tham số rồi chuyển việc mã hóa sang hàm `Cipher()`.
+
+Luồng gọi hàm có thể được biểu diễn như sau:
 
 ```text
-0x117bc
+main()
+    │
+    ▼
+AES_ECB_encrypt()
+    │
+    ▼
+Cipher()
 ```
+
+Do đó, nếu muốn xác định chính xác thời điểm diễn ra từng AES round để thực hiện fault injection, ta cần tiếp tục phân tích hàm `Cipher()`, vì đây mới là nơi chứa toàn bộ vòng lặp mã hóa của AES.
 
 ### Phân tích hàm Cipher
 ![alt text](Image/Screenshot_297.png)
