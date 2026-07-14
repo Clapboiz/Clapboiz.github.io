@@ -16,25 +16,6 @@ draft: false
 
 ---
 
-## Mục lục
-
-1. [Tổng quan về DFA Attack](#1-tổng-quan-về-dfa-attack)
-2. [Setup môi trường gem5](#2-setup-môi-trường-gem5)
-3. [Compile AES cho RISC-V](#3-compile-aes-cho-risc-v)
-4. [Chạy AES trong gem5 SE Mode](#4-chạy-aes-trong-gem5-se-mode)
-5. [Phân tích disassembly  - tìm fault window](#5-phân-tích-disassembly--tìm-fault-window)
-6. [Xác định cycle range của round 9](#6-xác-định-cycle-range-của-round-9)
-7. [Approach 1: Checkpoint-based fault injection](#7-approach-1-checkpoint-based-fault-injection)
-8. [Vấn đề với checkpoint approach  - debug quá trình](#8-vấn-đề-với-checkpoint-approach--debug-quá-trình)
-9. [Approach 2: Source-level fault injection](#9-approach-2-source-level-fault-injection)
-10. [Collect 128 faulty ciphertexts](#10-collect-128-faulty-ciphertexts)
-11. [PhoenixAES recover round 10 key](#11-phoenixaes-recover-round-10-key)
-12. [Recover master key bằng reverse key schedule](#12-recover-master-key-bằng-reverse-key-schedule)
-13. [Lockstep Defense  - implement và verify](#13-lockstep-defense--implement-và-verify)
-14. [Tổng kết và bài học](#14-tổng-kết-và-bài-học)
-
----
-
 ## 1. Tổng quan về DFA Attack
 
 Differential Fault Analysis (DFA) là một kỹ thuật `active side-channel attack`, trong đó kẻ tấn công `chủ động gây lỗi (fault)` trong quá trình thực thi của thuật toán mật mã thay vì chỉ quan sát hành vi của hệ thống như các tấn công `Power Analysis` hay `Timing Attack`.
@@ -80,7 +61,7 @@ PhoenixAES sẽ khai thác các quan hệ toán học của DFA để khôi ph�
 
 ---
 
-## Tại sao lại chọn Round 9?
+### Tại sao lại chọn Round 9?
 
 Đây là câu hỏi quan trọng nhất trong DFA.
 
@@ -124,7 +105,7 @@ Chính vì vậy, phần lớn các nghiên cứu DFA trên AES-128 đều lựa
 
 ---
 
-## Điều kiện để DFA thành công
+### Điều kiện để DFA thành công
 
 Để cuộc tấn công hoạt động, cần thỏa mãn ba điều kiện chính:
 
@@ -136,7 +117,7 @@ Nếu fault quá mạnh hoặc xuất hiện ở vị trí không mong muốn, c
 
 ---
 
-## Tại sao sử dụng gem5?
+### Tại sao sử dụng gem5?
 
 Đây cũng chính là lý do `gem5` được lựa chọn trong bài viết này.
 
@@ -576,7 +557,7 @@ Vì vậy, thay vì phân tích tại vị trí gọi hàm, ta cần đi vào b�
 
 ---
 
-## Phân tích hàm AES_ECB_encrypt
+### Phân tích hàm AES_ECB_encrypt
 ```
 grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1971,2100p'
 ```
@@ -1030,7 +1011,7 @@ Do đó, mặc dù có thể chỉnh sửa bất kỳ byte nào trong checkpoint
 
 ---
 
-## 7.2 Attempt 1 – Modify Register `x10`
+### 7.2 Attempt 1 – Modify Register `x10`
 
 ### Giả thuyết
 
@@ -1085,7 +1066,7 @@ Do đó, mặc dù fault đã ảnh hưởng tới quá trình thực thi, nhưn
 
 ---
 
-## 7.3 Attempt 2 – Modify Physical Memory
+### 7.3 Attempt 2 – Modify Physical Memory
 
 ### Giả thuyết
 
@@ -1150,7 +1131,7 @@ Do đó, attempt này vẫn chưa xác định được vị trí của AES stat
 
 ---
 
-## 7.4 Attempt 3 – Save Checkpoint Later
+### 7.4 Attempt 3 – Save Checkpoint Later
 
 ### Giả thuyết
 
@@ -1189,7 +1170,7 @@ Tuy nhiên, toàn bộ 16 byte vẫn có cùng một giá trị và không có b
 
 ---
 
-## 7.5 Tổng kết
+### 7.5 Tổng kết
 
 Ba hướng tiếp cận được tóm tắt như sau:
 
@@ -1209,7 +1190,7 @@ Thay vào đó, nghiên cứu chuyển sang `source-level fault hook`, trong đ�
 
 ---
 
-## 9. Approach 2: Source-level Fault Hook
+## 8. Approach 2: Source-level Fault Hook
 
 Phần trước đã cho thấy checkpoint có thể được tạo và chỉnh sửa thành công, tuy nhiên chưa thể xác định một cách đáng tin cậy byte nào trong checkpoint tương ứng với `AES state tại Round 9`. Vì vậy, mặc dù fault có thể được đưa vào trạng thái thực thi của hệ thống, vẫn chưa có đủ bằng chứng để khẳng định fault được đặt đúng vị trí mà mô hình DFA yêu cầu.
 
@@ -1346,7 +1327,7 @@ Nhờ cơ chế này, mỗi lần chạy chỉ cần thay đổi giá trị củ
 
 ---
 
-## 10. Collecting Faulty Ciphertexts
+## 9. Collecting Faulty Ciphertexts
 
 Sau khi fault hook được tích hợp vào `Cipher()`, bước tiếp theo là sinh tập `faulty ciphertexts` để phục vụ cho quá trình Differential Fault Analysis.
 
@@ -1536,7 +1517,7 @@ Kết quả này cho thấy fault hook hoạt động ổn định trong toàn b
 
 ---
 
-## 11. Recovering the Round 10 Key with PhoenixAES
+## 10. Recovering the Round 10 Key with PhoenixAES
 
 Sau khi thu thập được tập `128 faulty ciphertexts`, bước tiếp theo là kiểm tra xem các ciphertext này có thực sự chứa đủ thông tin để thực hiện `Differential Fault Analysis (DFA)` hay không.
 
@@ -1803,9 +1784,10 @@ Sau khi kiểm tra trên nhiều faulty ciphertext:
 Quá trình trên được thực hiện độc lập cho từng byte của Round 10 Key. Khi số lượng faulty ciphertext đủ lớn, các khóa ứng viên không thỏa mãn quan hệ DFA sẽ lần lượt bị loại bỏ cho đến khi chỉ còn một nghiệm duy nhất.
 
 Trong thực nghiệm này, tập `128 faulty ciphertexts` đã cung cấp đủ thông tin để PhoenixAES khôi phục thành công toàn bộ `16 byte của Round 10 Key`.
+
 ---
 
-## 12. Recovering the Master Key
+## 11. Recovering the Master Key
 
 PhoenixAES chỉ khôi phục được `Round 10 Key`, trong khi khóa bí mật mà hệ thống thực sự sử dụng là `AES-128 Master Key`.
 
@@ -2065,7 +2047,7 @@ Do đó, nếu hệ thống có thể phát hiện lỗi và ngăn không cho ci
 
 ---
 
-## Nguyên lý của Lockstep
+### Nguyên lý của Lockstep
 
 Lockstep là một cơ chế được sử dụng rộng rãi trong các hệ thống yêu cầu độ tin cậy cao và khả năng chống fault injection.
 
@@ -2101,7 +2083,7 @@ Trong phần cứng thực tế, hai lane thường được thực hiện bởi
 
 ---
 
-## Thiết kế Lockstep trong nghiên cứu
+### Thiết kế Lockstep trong nghiên cứu
 
 Trong phạm vi nghiên cứu này, mục tiêu không phải xây dựng một kiến trúc dual-core hoàn chỉnh trong gem5 mà là kiểm chứng `nguyên lý hoạt động của Lockstep` đối với fault model đã xây dựng.
 
@@ -2116,7 +2098,7 @@ Sau khi cả hai lane hoàn thành, chương trình sử dụng `memcmp()` để
 
 ---
 
-## Cài đặt Comparator
+### Cài đặt Comparator
 
 ```c
 if (memcmp(buf_a, buf_b, 16) != 0) {
@@ -2131,7 +2113,7 @@ Chỉ khi cả hai lane tạo ra cùng một kết quả thì ciphertext mới �
 
 ---
 
-## Thực nghiệm
+### Thực nghiệm
 
 Ba kịch bản được kiểm tra trong gem5.
 
@@ -2185,7 +2167,7 @@ Thay đổi vị trí fault vẫn dẫn tới cùng kết quả: comparator luô
 
 ---
 
-## Phân tích
+### Phân tích
 
 Ba kịch bản trên cho thấy hành vi của hệ thống phù hợp với nguyên lý của Lockstep:
 
@@ -2220,7 +2202,7 @@ Vì attacker không còn thu được các faulty ciphertext dùng làm đầu v
 
 ---
 
-## Kết luận
+### Kết luận
 
 Trong phạm vi fault model của nghiên cứu, Lockstep đã phát hiện thành công mọi fault được đưa vào tại Round 9 và ngăn không cho faulty ciphertext được trả ra ngoài.
 
@@ -2277,7 +2259,7 @@ Kết quả thực nghiệm cho thấy cả hai mục tiêu đều đạt đư�
 
 ---
 
-## Summary of Results
+### Summary of Results
 
 | Thành phần | Kết quả |
 |------------|----------|
@@ -2294,7 +2276,7 @@ Kết quả thực nghiệm cho thấy cả hai mục tiêu đều đạt đư�
 
 ---
 
-## Những bài học rút ra
+### Những bài học rút ra
 
 Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghiên cứu fault injection trên AES:
 
@@ -2306,7 +2288,7 @@ Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghi�
 
 ---
 
-## Hướng phát triển
+### Hướng phát triển
 
 ### Về tấn công
 
@@ -2328,7 +2310,7 @@ Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghi�
 
 ---
 
-## Kết luận cuối cùng
+### Kết luận cuối cùng
 
 Nghiên cứu đã xây dựng thành công một chuỗi thực nghiệm hoàn chỉnh từ fault injection, thu thập faulty ciphertext, khôi phục Round 10 Key bằng PhoenixAES, đảo ngược AES Key Schedule để thu được Master Key và đánh giá hiệu quả của cơ chế Lockstep Defense.
 
