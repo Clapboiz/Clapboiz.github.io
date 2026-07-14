@@ -1095,8 +1095,8 @@ Thực hiện virtual-to-physical mapping:
 VADDR = 0x7ffffffffffffc78
 
 PAGE_SIZE = 4096
-vpage = (VADDR // PAGE_SIZE) * PAGE_SIZE
-offset = VADDR % PAGE_SIZE
+vpage = (VADDR // PAGE_SIZE) * PAGE_SIZE  # 0x7ffffffffffff000
+offset = VADDR % PAGE_SIZE               # 0xc78
 ```
 
 Kết quả:
@@ -1922,30 +1922,17 @@ Match: True
 Để kiểm chứng thêm, Master Key vừa thu được được mở rộng lại bằng thuật toán AES Key Expansion.
 
 ```python
-master = bytes.fromhex(
-    "2B7E151628AED2A6ABF7158809CF4F3C"
-)
-
+master = bytes.fromhex('2B7E151628AED2A6ABF7158809CF4F3C')
 w = expand_key(master)
-
-r10 = bytes(
-    b
-    for word in w[40:44]
-    for b in word
-)
+r10 = bytes(b for word in w[40:44] for b in word)
+print(f"Round 10 key from master: {r10.hex().upper()}")
 ```
 
-Kết quả:
+Output:
 
-```text
-Round 10 Key from Expansion
-
-D014F9A8C9EE2589E13F0CC8B6630CA6
-
-PhoenixAES
-
-D014F9A8C9EE2589E13F0CC8B6630CA6
-
+```
+Round 10 key from master: D014F9A8C9EE2589E13F0CC8B6630CA6
+PhoenixAES recovered:     D014F9A8C9EE2589E13F0CC8B6630CA6
 Match: True
 ```
 
@@ -1960,27 +1947,19 @@ Cuối cùng, Master Key vừa khôi phục được sử dụng để mã hóa 
 ```python
 from Crypto.Cipher import AES
 
-master = bytes.fromhex(
-    "2B7E151628AED2A6ABF7158809CF4F3C"
-)
-
+master = bytes.fromhex('2B7E151628AED2A6ABF7158809CF4F3C')
 cipher = AES.new(master, AES.MODE_ECB)
-
-cipher.encrypt(plaintext)
+pt = bytes.fromhex('6bc1bee22e409f96e93d7e117393172a')
+ct = cipher.encrypt(pt)
+print(f"Encrypt verify: {ct.hex()}")
+print(f"Expected:       3ad77bb40d7a3660a89ecaf32466ef97")
 ```
 
-Kết quả:
+Output:
 
-```text
-Recovered Key Encryption
-
-3ad77bb40d7a3660a89ecaf32466ef97
-
-Expected Ciphertext
-
-3ad77bb40d7a3660a89ecaf32466ef97
-
-Match: True
+```
+Encrypt verify: 3ad77bb40d7a3660a89ecaf32466ef97
+Expected:       3ad77bb40d7a3660a89ecaf32466ef97
 ```
 
 Việc ciphertext thu được hoàn toàn trùng khớp với ciphertext đúng của NIST AES Known Answer Test xác nhận rằng Master Key đã được khôi phục chính xác.
