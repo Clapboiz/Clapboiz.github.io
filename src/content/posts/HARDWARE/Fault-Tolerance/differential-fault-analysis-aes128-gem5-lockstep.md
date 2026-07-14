@@ -577,6 +577,9 @@ Vì vậy, thay vì phân tích tại vị trí gọi hàm, ta cần đi vào b�
 ---
 
 ## Phân tích hàm AES_ECB_encrypt
+```
+grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1971,2100p'
+```
 
 ![alt text](Image/Screenshot_362.png)
 
@@ -607,37 +610,28 @@ Cipher()
 
 Do đó, nếu muốn xác định chính xác thời điểm diễn ra từng AES round để thực hiện fault injection, ta cần tiếp tục phân tích hàm `Cipher()`, vì đây mới là nơi chứa toàn bộ vòng lặp mã hóa của AES.
 
-### Phân tích hàm Cipher
-![alt text](Image/Screenshot_297.png)
-
-Trích xuất vùng disassembly chứa hàm:
-
-```bash
-grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1888,1930p'
-```
-
-Kết quả đã được rút gọn và chú thích như sau:
+Để dễ quan sát, phần kết quả được rút gọn và chú thích như sau:
 
 ```assembly
 00000000000117bc <Cipher>:
 
-117da: jal AddRoundKey      ; Initial RoundKey
+117da: jal AddRoundKey      ; Initial AddRoundKey
 
 117de: li  a5,1
-117e0: sb  a5,-17(s0)       ; round_counter = 1
+117e0: sb  a5,-17(s0)       ; round counter = 1
 
 ; ─── Main AES Loop ─────────────────────────────
 
 117e8: jal SubBytes
 117f0: jal ShiftRows
 
-117fe: beq round,10,11828   ; Round 10 => skip MixColumns
+117fe: beq round,10,11828   ; nếu round == 10 thì chuyển sang Final Round
 
 11806: jal MixColumns
 11818: jal AddRoundKey
 
-11820: round_counter++
-11826: j 117e4              ; Loop back
+11820: round++
+11826: j 117e4              ; quay lại đầu vòng lặp
 
 ; ─── Final Round ──────────────────────────────
 
@@ -646,13 +640,19 @@ Kết quả đã được rút gọn và chú thích như sau:
 11840: ret
 ```
 
-Từ disassembly có thể thấy `Cipher()` triển khai AES bằng một vòng lặp duy nhất, không unroll thành 10 đoạn code riêng biệt. Điều này rất quan trọng: cùng một instruction `jal SubBytes` sẽ được chạy nhiều lần, mỗi lần tương ứng một AES round khác nhau.
+Quan sát disassembly có thể thấy `Cipher()` được triển khai bằng **một vòng lặp duy nhất**, thay vì unroll thành 10 đoạn mã riêng biệt.
 
-Cấu trúc này tương ứng trực tiếp với đặc tả AES-128:
+Cụ thể:
+
+- `0x117da` thực hiện **Initial AddRoundKey** trước khi bắt đầu các AES round.
+- Một biến đếm vòng lặp được khởi tạo với giá trị `1` và được cập nhật sau mỗi lần lặp.
+- Mỗi vòng lặp lần lượt gọi `SubBytes`, `ShiftRows`, `MixColumns` và `AddRoundKey`.
+- Tại địa chỉ `0x117fe`, chương trình kiểm tra biến đếm. Khi giá trị đạt `10`, nhánh `beq` được thực hiện để bỏ qua `MixColumns` và chuyển sang `AddRoundKey` của vòng cuối tại `0x11834`, đúng với đặc tả của AES-128.
+
+Luồng thực thi của `Cipher()` tương ứng với đặc tả AES-128 như sau:
 
 ```text
-Round 0
-    AddRoundKey
+Initial AddRoundKey
 
 Rounds 1 → 9
     SubBytes
@@ -666,62 +666,51 @@ Round 10
     AddRoundKey
 ```
 
-Biến `round_counter` được khởi tạo bằng 1 sau bước Initial AddRoundKey và được tăng sau mỗi vòng lặp. Khi giá trị đạt 10, nhánh tại `0x117fe` được kích hoạt và chương trình chuyển sang vòng cuối cùng không chứa bước MixColumns theo đúng chuẩn AES.
-
-Do đó:
-
-* Lần thực thi thứ nhất của `SubBytes` tương ứng Round 1.
-* Lần thực thi thứ hai tương ứng Round 2.
-* ...
-* Lần thực thi thứ chín tương ứng Round 9.
-* Lần thực thi thứ mười tương ứng Round 10.
-
-Việc đánh số này không dựa trên giả định từ execution trace mà được suy ra trực tiếp từ cấu trúc vòng lặp trong Cipher(). Execution trace ở bước tiếp theo chỉ được sử dụng để xác định thời điểm thực thi thực tế của từng vòng AES trong gem5.
-
-Instruction:
+Điều quan trọng rút ra từ disassembly là compiler **không sinh 10 đoạn mã khác nhau cho 10 AES round**. Thay vào đó, cùng một nhóm instruction được thực thi lặp lại trong mỗi vòng của `Cipher()`. Ví dụ, instruction:
 
 ```assembly
 117e8: jal 109e2 <SubBytes>
 ```
 
-nằm trong loop và được thực thi đúng một lần ở đầu mỗi round. Vì vậy ta có thể dùng địa chỉ `0x117e8` như một marker: lần thấy thứ nhất là Round 1, lần thấy thứ chín là Round 9.
+luôn nằm ở đầu vòng lặp và sẽ được thực thi nhiều lần trong suốt quá trình mã hóa.
+
+Tuy nhiên, **disassembly chỉ cho biết instruction này nằm trong vòng lặp**, chứ chưa thể xác định đó là lần thực thi thứ mấy. Để biết một lần thực thi cụ thể của `0x117e8` tương ứng với Round 1, Round 9 hay Round 10, cần phân tích execution trace do gem5 sinh ra.
 
 ### Xác định Fault Window
 
-Theo mô hình DFA dùng bởi PhoenixAES, lỗi cần được đưa vào state ở vòng áp chót, tức Round 9, để ciphertext cuối vẫn giữ cấu trúc sai khác có thể khai thác.
+Theo mô hình DFA được PhoenixAES sử dụng, lỗi cần được đưa vào **state của Round 9** (vòng áp chót). Khi đó, dữ liệu lỗi vẫn tiếp tục đi qua Round 10 và tạo ra các faulty ciphertext có cấu trúc phù hợp để PhoenixAES khôi phục khóa.
 
-Quan sát disassembly:
+Do `Cipher()` được triển khai bằng một vòng lặp, instruction:
 
 ```assembly
-117e8: jal SubBytes
-117f0: jal ShiftRows
-11806: jal MixColumns
-11818: jal AddRoundKey
+117e8: jal 109e2 <SubBytes>
 ```
 
-Trong implementation này, `Cipher()` chạy AES bằng một vòng lặp. Do đó cùng một instruction `jal SubBytes` tại `0x117e8` xuất hiện 10 lần, tương ứng với Round 1 đến Round 10. Theo fault model đã dùng trong log, vị trí inject là **ngay trước SubBytes của Round 9**, tức sau khi Round 8 đã hoàn tất và state chuẩn bị đi vào vòng áp chót.
+sẽ xuất hiện nhiều lần trong execution trace. Vì vậy, nhiệm vụ tiếp theo là xác định **lần xuất hiện tương ứng với Round 9**, sau đó thực hiện fault injection ngay trước instruction này.
+
+Quá trình thực hiện fault injection có thể được mô tả như sau:
 
 ```text
 Round 8 kết thúc
-↓
+        │
+        ▼
+ Fault Injection
+        │
+        ▼
 Round 9
-↓
-[ Fault Injection ]
-↓
-SubBytes
-↓
-ShiftRows
-↓
-MixColumns
-↓
-AddRoundKey
-↓
+    SubBytes
+    ShiftRows
+    MixColumns
+    AddRoundKey
+        │
+        ▼
 Round 10
-↓
-Ciphertext
+        │
+        ▼
+Faulty Ciphertext
 ```
 
-Do đó, bước tiếp theo là xác định chính xác lần xuất hiện thứ 9 của `0x117e8` trong gem5 execution trace.
+Ở bước tiếp theo, execution trace của gem5 sẽ được sử dụng để xác định chính xác lần thực thi của `0x117e8` tương ứng với Round 9.
 
 ---
 
