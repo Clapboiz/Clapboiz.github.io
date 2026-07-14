@@ -61,13 +61,13 @@ PhoenixAES sẽ khai thác các quan hệ toán học của DFA để khôi ph�
 
 ---
 
-### Tại sao lại chọn Round 9?
+### 1.1. Tại sao lại chọn Round 9?
 
 Đây là câu hỏi quan trọng nhất trong DFA.
 
 Thời điểm gây lỗi quyết định trực tiếp khả năng thành công của cuộc tấn công.
 
-### Gây lỗi quá sớm (Round 1–8)
+### 1.2. Gây lỗi quá sớm (Round 1–8)
 
 Nếu fault được đưa vào từ các vòng đầu, sai khác sẽ phải đi qua nhiều lần `MixColumns`.
 
@@ -81,7 +81,7 @@ Ví dụ:
 
 Khi sai khác lan truyền quá rộng, cấu trúc toán học mà DFA dựa vào gần như biến mất, khiến việc khôi phục khóa trở nên rất khó hoặc không còn khả thi.
 
-### Gây lỗi quá muộn (Round 10)
+### 1.3. Gây lỗi quá muộn (Round 10)
 
 Ngược lại, nếu fault được chèn vào `Round 10` thì ciphertext gần như chỉ bị ảnh hưởng bởi đúng byte bị lỗi.
 
@@ -89,7 +89,7 @@ Do Round 10 `không có MixColumns`, sai khác không được khuếch tán san
 
 Kết quả là ciphertext chỉ chứa rất ít thông tin về cấu trúc lan truyền của lỗi, không đáp ứng được giả định của thuật toán DFA cổ điển.
 
-### Round 9 là vị trí "vừa đủ"
+### 1.4. Round 9 là vị trí "vừa đủ"
 
 Round 9 chính là điểm cân bằng giữa hai trường hợp trên.
 
@@ -105,7 +105,7 @@ Chính vì vậy, phần lớn các nghiên cứu DFA trên AES-128 đều lựa
 
 ---
 
-### Điều kiện để DFA thành công
+### 1.5. Điều kiện để DFA thành công
 
 Để cuộc tấn công hoạt động, cần thỏa mãn ba điều kiện chính:
 
@@ -117,7 +117,7 @@ Nếu fault quá mạnh hoặc xuất hiện ở vị trí không mong muốn, c
 
 ---
 
-### Tại sao sử dụng gem5?
+### 1.6. Tại sao sử dụng gem5?
 
 Đây cũng chính là lý do `gem5` được lựa chọn trong bài viết này.
 
@@ -137,7 +137,7 @@ Trong bài viết này, fault sẽ được chèn tại `Round 9` của AES thô
 
 ## 2. Setup môi trường gem5
 
-### gem5 là gì?
+### 2.1. gem5 là gì?
 
 gem5 là một architectural simulator: nó cho phép chạy binary của một kiến trúc như RISC-V, ARM hoặc x86 trên máy host mà không cần phần cứng thật. Tùy CPU model, gem5 có thể mô phỏng ở các mức chi tiết khác nhau.
 
@@ -145,7 +145,7 @@ Trong bài này, ta dùng `RiscvTimingSimpleCPU`. Đây không phải mô hình 
 
 Trong project này, ta dùng gem5 phiên bản 25.1.0.1 với RISC-V backend.
 
-### Verify gem5 đã compile xong
+### 2.2. Verify gem5 đã compile xong
 
 ```bash
 ┌──(clap㉿clap)-[~/Desktop/gem5]
@@ -159,7 +159,7 @@ gem5.opt: error: no such option: --version
 
 Đây là output bình thường trong log. `gem5.opt` không nhận `--version` như một option hợp lệ, nhưng việc nó in được usage message cho thấy binary đã khởi động được. Bước này chỉ xác nhận gem5 executable không bị lỗi cơ bản; workload AES vẫn cần được kiểm chứng riêng ở các bước sau.
 
-### Cấu trúc gem5 RISC-V build
+### 2.3. Cấu trúc gem5 RISC-V build
 
 ```
 build/RISCV/gem5.opt   ← optimized build, dùng cho production run
@@ -173,7 +173,7 @@ Trong log này ta dùng `gem5.opt` vì nó cân bằng giữa tốc độ và kh
 
 ## 3. Compile AES cho RISC-V
 
-### Chọn AES implementation
+### 3.1. Chọn AES implementation
 
 Ta dùng [tiny-AES-c](https://github.com/kokke/tiny-AES-c)  - một AES implementation thuần C, single-file, không dependency. Lý do:
 
@@ -182,7 +182,7 @@ Ta dùng [tiny-AES-c](https://github.com/kokke/tiny-AES-c)  - một AES implemen
 - Compile sạch trên cross-compiler RISC-V
 - Được dùng rộng rãi trong embedded/IoT research
 
-### Clone và chuẩn bị
+### 3.2. Clone và chuẩn bị
 
 ```bash
 cd ~/Desktop
@@ -190,7 +190,7 @@ git clone https://github.com/kokke/tiny-AES-c
 cd tiny-AES-c
 ```
 
-### Tạo wrapper với NIST test vector
+### 3.3. Tạo wrapper với NIST test vector
 
 Trước khi inject fault, cần có một baseline đúng. Nếu AES implementation hoặc cross-compile đã sai từ đầu, mọi ciphertext lỗi thu được sau đó sẽ không còn ý nghĩa. Vì vậy bước đầu tiên là chạy AES với một test vector chuẩn của NIST FIPS 197 Appendix B.
 
@@ -259,7 +259,7 @@ Tiêu chí xác nhận tính đúng đắn là ciphertext được sinh ra phả
 
 Nếu ciphertext khác giá trị này, phải dừng lại để sửa AES wrapper hoặc toolchain trước khi làm fault injection. DFA cần so sánh giữa correct output và faulty output; correct output sai thì toàn bộ phân tích phía sau sai theo.
 
-### Biên dịch chương trình AES cho kiến trúc RISC-V
+### 3.4. Biên dịch chương trình AES cho kiến trúc RISC-V
 
 Sau khi có wrapper, bước tiếp theo là biên dịch chương trình sang RISC-V để gem5 có thể chạy được.
 
@@ -290,7 +290,7 @@ interpreter /lib/ld-linux-riscv64-lp64d.so.1
 
 Thông tin này xác nhận binary đúng kiến trúc RISC-V. Nhưng nó cũng cho thấy một vấn đề: file đang là `dynamically linked executable`.
 
-### Vấn đề với dynamic linking trong gem5 SE mode
+### 3.5. Vấn đề với dynamic linking trong gem5 SE mode
 
 ![alt text](Image/Screenshot_285.png)
 
@@ -337,7 +337,7 @@ Thuộc tính *statically linked* cho thấy các thư viện cần thiết đã
 
 ## 4. Chạy AES trong gem5 SE Mode
 
-### Config script cho gem5
+### 4.1. Config script cho gem5
 
 gem5 dùng Python script để mô tả system cần mô phỏng: clock, CPU model, memory, bus, workload và process arguments. Với workload AES nhỏ này, cấu hình tối giản là đủ:
 
@@ -399,7 +399,7 @@ Failed to open file /root/Desktop/tiny-AES-c/aes_test
 
 Đây là lỗi path, không phải lỗi simulator. Sau khi sửa binary path thành `/home/clap/Desktop/tiny-AES-c/aes_test`, chương trình mới đi tiếp đến lỗi dynamic linker đã xử lý ở phần trước.
 
-### Tại sao sử dụng TimingSimpleCPU?
+### 4.2. Tại sao sử dụng TimingSimpleCPU?
 
 gem5 cung cấp nhiều CPU model với các mức độ chi tiết khác nhau:
 
@@ -411,7 +411,7 @@ Trong nghiên cứu này, `TimingSimpleCPU` được chọn vì cân bằng gi�
 
 Điểm cần nói rõ: TimingSimpleCPU không chứng minh một glitch vật lý ở mức silicon. Nó được dùng ở đây để tạo môi trường RISC-V có timing trace nhất quán, phục vụ việc dựng và kiểm chứng fault model.
 
-### Chạy chương trình AES trong gem5
+### 4.3. Chạy chương trình AES trong gem5
 
 ![alt text](Image/Screenshot_292.png)
 
@@ -421,7 +421,7 @@ Sau khi biên dịch chương trình AES thành binary RISC-V, mô phỏng đư�
 ./build/RISCV/gem5.opt ~/Desktop/run_aes.py
 ```
 
-### Kiểm tra kết quả mã hóa
+### 4.4. Kiểm tra kết quả mã hóa
 
 Ciphertext thu được là:
 
@@ -438,7 +438,7 @@ Kết quả này xác nhận rằng:
 * gem5 SE mode chạy được workload AES đến khi chương trình exit bình thường.
 * Ta có correct ciphertext để làm reference cho DFA.
 
-#### Remote GDB Stub
+#### 4.4.1. Remote GDB Stub
 
 ```text
 system.remote_gdb: Listening for connections on port 7000
@@ -453,7 +453,7 @@ Người dùng có thể kết nối GDB tới simulator để:
 * Quan sát bộ nhớ.
 * Debug chương trình trong quá trình mô phỏng.
 
-#### Stack Growth
+#### 4.4.2. Stack Growth
 
 ```text
 Increasing stack size by one page.
@@ -463,7 +463,7 @@ Thông báo này cho biết gem5 tự động mở rộng vùng stack của ti�
 
 Đây là hành vi bình thường trong chế độ Syscall Emulation.
 
-### Thời gian mô phỏng
+### 4.5. Thời gian mô phỏng
 
 Theo log thực nghiệm, mô phỏng kết thúc tại:
 
@@ -494,7 +494,7 @@ Cần lưu ý rằng đây là thời gian của hệ thống mô phỏng theo t
 
 Sau khi AES chạy đúng trong gem5, câu hỏi tiếp theo là: `Round 9 nằm ở đâu trong execution?` Muốn trả lời câu này, ta cần nhìn xuống disassembly của RISC-V binary.
 
-### Dump Disassembly
+### 5.1. Dump Disassembly
 
 Binary được disassemble bằng `objdump`:
 
@@ -502,7 +502,7 @@ Binary được disassemble bằng `objdump`:
 riscv64-linux-gnu-objdump -d ~/Desktop/tiny-AES-c/aes_test > ~/Desktop/aes_disasm.txt
 ```
 
-### Tìm các hàm AES quan trọng
+### 5.2. Tìm các hàm AES quan trọng
 
 ![alt text](Image/Screenshot_293.png)
 
@@ -557,7 +557,7 @@ Vì vậy, thay vì phân tích tại vị trí gọi hàm, ta cần đi vào b�
 
 ---
 
-### Phân tích hàm AES_ECB_encrypt
+### 5.3. Phân tích hàm AES_ECB_encrypt
 ```
 grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1971,2100p'
 ```
@@ -593,7 +593,7 @@ Do đó, nếu muốn xác định chính xác thời điểm diễn ra từng A
 
 ---
 
-### Phân tích hàm `Cipher`
+### 5.4. Phân tích hàm `Cipher`
 
 ```bash
 grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1888,1930p'
@@ -667,7 +667,7 @@ luôn nằm ở đầu vòng lặp và sẽ được thực thi nhiều lần tr
 
 Tuy nhiên, `disassembly chỉ cho biết instruction này nằm trong vòng lặp`, chứ chưa thể xác định đó là lần thực thi thứ mấy. Để biết một lần thực thi cụ thể của `0x117e8` tương ứng với Round 1, Round 9 hay Round 10, cần phân tích execution trace do gem5 sinh ra.
 
-### Xác định Fault Window
+### 5.5. Xác định Fault Window
 
 Theo mô hình DFA được PhoenixAES sử dụng, lỗi cần được đưa vào `state của Round 9` (vòng áp chót). Khi đó, dữ liệu lỗi vẫn tiếp tục đi qua Round 10 và tạo ra các faulty ciphertext có cấu trúc phù hợp để PhoenixAES khôi phục khóa.
 
@@ -706,7 +706,8 @@ Faulty Ciphertext
 ---
 
 ## 6. Xác định Cycle Range của Round 9
-### Liên hệ Execution Trace với AES Round
+
+### 6.1. Liên hệ Execution Trace với AES Round
 
 Ở bước trước, disassembly của `Cipher()` cho thấy:
 
@@ -800,7 +801,7 @@ Vì AES-128 có tổng cộng 10 rounds và `0x117e8` là lệnh gọi `SubBytes
 
 Do đó, thay vì phải phân tích toàn bộ execution trace, chỉ cần theo dõi các lần xuất hiện của địa chỉ `0x117e8` là có thể xác định chính xác thời điểm bắt đầu từng AES round.
 
-### Thu thập Execution Trace
+### 6.2. Thu thập Execution Trace
 
 gem5 hỗ trợ theo dõi từng instruction thông qua debug flag `Exec`.
 
@@ -909,7 +910,7 @@ Round 9 bắt đầu tại tick:
 10,812,745,000
 ```
 
-### Mapping Tick sang Cycle
+### 6.3. Mapping Tick sang Cycle
 
 CPU được cấu hình ở tần số:
 
@@ -985,7 +986,7 @@ Nếu thành công, fault sẽ được đưa vào quá trình thực thi mà kh
 
 ---
 
-### 7.1 Thách thức
+### 7.1. Thách thức
 
 Checkpoint của gem5 lưu lại toàn bộ trạng thái thực thi của hệ thống tại một thời điểm, bao gồm:
 
@@ -1011,9 +1012,9 @@ Do đó, mặc dù có thể chỉnh sửa bất kỳ byte nào trong checkpoint
 
 ---
 
-### 7.2 Attempt 1 – Modify Register `x10`
+### 7.2. Attempt 1 – Modify Register `x10`
 
-### Giả thuyết
+#### 7.2.1. Giả thuyết
 
 Checkpoint được tạo tại tick `10,812,745,000`, tương ứng với thời điểm chương trình chuẩn bị thực thi `SubBytes` của Round 9.
 
@@ -1021,7 +1022,7 @@ Theo RISC-V Calling Convention, thanh ghi `x10` (`a0`) được dùng để truy
 
 Nếu đúng, chỉ cần sửa giá trị của `x10` trong checkpoint là có thể tạo ra faulty ciphertext.
 
-### Thực nghiệm
+#### 7.2.2. Thực nghiệm
 
 ```python
 # modify_ckpt.py
@@ -1050,7 +1051,7 @@ Ciphertext:
 e6d77bb40d7a36c7a89e67f324dcef97
 ```
 
-### Phân tích
+#### 7.2.3. Phân tích
 
 Kết quả trên chứng minh:
 
@@ -1066,9 +1067,9 @@ Do đó, mặc dù fault đã ảnh hưởng tới quá trình thực thi, nhưn
 
 ---
 
-### 7.3 Attempt 2 – Modify Physical Memory
+### 7.3. Attempt 2 – Modify Physical Memory
 
-### Giả thuyết
+#### 7.3.1. Giả thuyết
 
 Nếu `x10` là pointer tới AES state trên stack, có thể suy ngược từ virtual address sang physical address trong checkpoint rồi chỉnh sửa trực tiếp dữ liệu tại đó.
 
@@ -1078,7 +1079,7 @@ Checkpoint vẫn được tạo tại tick:
 10,812,745,000
 ```
 
-### Thực nghiệm
+### 7.3.2. Thực nghiệm
 
 Đọc các thanh ghi:
 
@@ -1119,7 +1120,7 @@ aa aa aa aa aa aa aa aa
 aa aa aa aa aa aa aa aa
 ```
 
-### Phân tích
+### 7.3.3. Phân tích
 
 Việc toàn bộ 16 byte đều mang giá trị `0xaa` không đủ để kết luận đây chắc chắn không phải AES state.
 
@@ -1131,9 +1132,9 @@ Do đó, attempt này vẫn chưa xác định được vị trí của AES stat
 
 ---
 
-### 7.4 Attempt 3 – Save Checkpoint Later
+### 7.4. Attempt 3 – Save Checkpoint Later
 
-### Giả thuyết
+#### 7.4.1. Giả thuyết
 
 Hai attempt trước đều sử dụng checkpoint tại đúng fault boundary (`10,812,745,000`).
 
@@ -1141,7 +1142,7 @@ Một giả thuyết khác là checkpoint có thể được tạo quá sớm, k
 
 Do đó checkpoint được dịch muộn hơn `50,000 ticks`, đi sâu hơn vào bên trong `SubBytes()`.
 
-### Thực nghiệm
+#### 7.4.2. Thực nghiệm
 
 ```python
 FAULT_TICK = 10812745000 + 50000
@@ -1160,7 +1161,7 @@ Checkpoint được tạo tại:
 55 55 55 55 55 55 55 55
 ```
 
-### Phân tích
+#### 7.4.3. Phân tích
 
 Pattern thay đổi từ `0xaa` sang `0x55`, cho thấy thời điểm tạo checkpoint thực sự ảnh hưởng tới dữ liệu được quan sát.
 
@@ -1170,7 +1171,7 @@ Tuy nhiên, toàn bộ 16 byte vẫn có cùng một giá trị và không có b
 
 ---
 
-### 7.5 Tổng kết
+### 7.5. Tổng kết
 
 Ba hướng tiếp cận được tóm tắt như sau:
 
@@ -1220,7 +1221,7 @@ Collect Faulty Ciphertexts
 
 Ưu điểm của cách tiếp cận này là vị trí fault được kiểm soát chính xác theo fault model của DFA, đồng thời vẫn giữ nguyên toàn bộ quá trình thực thi của chương trình trong gem5.
 
-### Patch `aes.c` - Thêm Fault Hook
+### 8.1. Patch `aes.c` - Thêm Fault Hook
 
 Đọc source của hàm `Cipher()` trong `aes.c`:
 
@@ -1272,7 +1273,7 @@ Nhờ vậy, mỗi lần thực thi chỉ tạo ra `một single-bit fault` đú
 
 ---
 
-### Compile và Verify
+### 8.2. Compile và Verify
 
 Khai báo các biến toàn cục trong `aes.c`:
 
@@ -1310,7 +1311,7 @@ riscv64-linux-gnu-gcc -O0 -g -static \
 
 ---
 
-### Truyền Fault Parameters vào gem5
+### 8.3. Truyền Fault Parameters vào gem5
 
 Để không phải biên dịch lại chương trình sau mỗi lần thay đổi vị trí fault, hai environment variables được truyền trực tiếp từ script chạy gem5:
 
@@ -1364,7 +1365,7 @@ Lặp lại cho 128 vị trí fault
 
 ---
 
-### Automation Script
+### 9.1. Automation Script
 
 Quá trình trên được tự động hóa bằng Python.
 
@@ -1423,7 +1424,7 @@ Script trên thực hiện hai vòng lặp lồng nhau qua toàn bộ 16 byte v�
 
 ---
 
-### Kết quả
+### 9.2. Kết quả
 
 Sau 128 lần thực thi, chương trình thu được 128 faulty ciphertexts.
 
@@ -1448,7 +1449,7 @@ Trong tập thực nghiệm này:
 
 ---
 
-### Kiểm chứng Fault Model
+### 9.3. Kiểm chứng Fault Model
 
 Ngoài việc thu được 128 faulty ciphertexts, cần kiểm tra xem các ciphertext này có phù hợp với fault model của DFA hay không.
 
@@ -1456,7 +1457,7 @@ Ngoài việc thu được 128 faulty ciphertexts, cần kiểm tra xem các cip
 
 Các ciphertext thu được trong thực nghiệm đều thể hiện đặc điểm này. Sai khác luôn xuất hiện theo các nhóm byte có cấu trúc thay vì phân bố ngẫu nhiên trên toàn bộ ciphertext. Đây là dấu hiệu quan trọng cho thấy fault đã được đưa vào đúng fault boundary và phù hợp với mô hình mà PhoenixAES sử dụng.
 
-### Phân tích Pattern của Faulty Ciphertexts
+### 9.4. Phân tích Pattern của Faulty Ciphertexts
 
 Ciphertext đúng:
 
@@ -1497,7 +1498,7 @@ Nhóm byte thay đổi chuyển sang:
 
 Đây chính là đặc trưng mà các thuật toán DFA trên AES, bao gồm PhoenixAES, khai thác để suy diễn khóa vòng cuối. Việc quan sát được đúng mẫu lan truyền này cũng là bằng chứng cho thấy fault hook đã được đặt đúng tại fault boundary của Round 9 và tạo ra faulty ciphertext phù hợp với fault model mong muốn.
 
-### Thống kê kết quả
+### 9.5. Thống kê kết quả
 
 Kết quả thu thập được được tổng hợp trong bảng dưới đây:
 
@@ -1527,7 +1528,7 @@ Trong nghiên cứu này, công cụ `PhoenixAES` được sử dụng để t�
 
 ---
 
-### Tổng quan quá trình Key Recovery
+### 10.1. Tổng quan quá trình Key Recovery
 
 Toàn bộ quá trình có thể được mô tả như sau:
 
@@ -1556,7 +1557,7 @@ Trong pipeline này, PhoenixAES không tương tác trực tiếp với quá tr�
 
 ---
 
-### Cài đặt PhoenixAES
+### 10.2. Cài đặt PhoenixAES
 
 ```bash
 pip3 install phoenixAES --break-system-packages
@@ -1571,7 +1572,7 @@ PhoenixAES triển khai thuật toán DFA cho AES-128. Đầu vào của chươn
 
 ---
 
-### Chuẩn bị dữ liệu đầu vào
+### 10.3. Chuẩn bị dữ liệu đầu vào
 
 PhoenixAES yêu cầu dữ liệu được lưu trong cùng một file với định dạng:
 
@@ -1598,7 +1599,7 @@ Trong quá trình thực nghiệm, đây là cách sử dụng ổn định nh�
 
 ---
 
-### Thực hiện Key Recovery
+### 10.4. Thực hiện Key Recovery
 
 PhoenixAES được gọi trực tiếp từ Python:
 
@@ -1629,7 +1630,7 @@ D014F9A8C9EE2589E13F0CC8B6630CA6
 
 ---
 
-### Thống kê quá trình Key Recovery
+### 10.5. Thống kê quá trình Key Recovery
 
 | Metric | Value |
 |---------|------:|
@@ -1646,7 +1647,7 @@ Kết quả trên cho thấy PhoenixAES đã hội tụ về `một Round 10 Key
 
 ---
 
-### Kiểm chứng kết quả
+### 10.6. Kiểm chứng kết quả
 
 Việc PhoenixAES khôi phục thành công `toàn bộ 16 byte của Round 10 Key` là bằng chứng quan trọng cho thấy fault model được sử dụng trong nghiên cứu là phù hợp.
 
@@ -1666,7 +1667,7 @@ Ngược lại, việc thu được đúng một khóa vòng cuối cho thấy:
 
 ---
 
-### Ý nghĩa của kết quả
+### 10.7. Ý nghĩa của kết quả
 
 Việc khôi phục thành công Round 10 Key không chỉ chứng minh PhoenixAES hoạt động đúng mà còn gián tiếp xác nhận toàn bộ pipeline thực nghiệm trước đó.
 
@@ -1681,7 +1682,7 @@ Nói cách khác, thành công của PhoenixAES đồng thời xác nhận rằn
 
 ---
 
-### PhoenixAES hoạt động như thế nào?
+### 10.8. PhoenixAES hoạt động như thế nào?
 
 AES-128 có một đặc điểm quan trọng là `Round 10 không còn thực hiện MixColumns`. Do đó, cấu trúc sai khác do fault tạo ra ở Round 9 vẫn được bảo toàn đến ciphertext cuối cùng.
 
@@ -1797,7 +1798,7 @@ Do đó, việc thu được `Round 10 Key` đồng nghĩa với việc có th�
 
 ---
 
-### Reverse AES Key Schedule
+### 11.1. Reverse AES Key Schedule
 
 Trong AES-128, quá trình mở rộng khóa sinh ra tổng cộng `44 words (176 bytes)`:
 
@@ -1846,7 +1847,7 @@ Dựa trên quan hệ này, chương trình lần lượt tính ngược từ `w
 
 ---
 
-### Cài đặt Reverse Key Schedule
+### 11.2. Cài đặt Reverse Key Schedule
 
 ```python
 def xor_w(a, b):
@@ -1866,7 +1867,7 @@ def reverse_aes128_key_schedule(round10_hex):
 
 ---
 
-### Kết quả
+### 11.3. Kết quả
 
 Sử dụng Round 10 Key do PhoenixAES khôi phục:
 
@@ -1898,7 +1899,7 @@ Match: True
 
 ---
 
-### Verify bằng Forward Key Expansion
+### 11.4. Verify bằng Forward Key Expansion
 
 Để kiểm chứng thêm, Master Key vừa thu được được mở rộng lại bằng thuật toán AES Key Expansion.
 
@@ -1934,7 +1935,7 @@ Việc mở rộng khóa theo chiều thuận thu được đúng Round 10 Key �
 
 ---
 
-### End-to-End Verification
+### 11.5. End-to-End Verification
 
 Cuối cùng, Master Key vừa khôi phục được sử dụng để mã hóa lại plaintext ban đầu.
 
@@ -1968,7 +1969,7 @@ Việc ciphertext thu được hoàn toàn trùng khớp với ciphertext đúng
 
 ---
 
-### Kết quả của toàn bộ Attack Chain
+### 11.6. Kết quả của toàn bộ Attack Chain
 
 Toàn bộ chuỗi tấn công có thể được tóm tắt như sau:
 
@@ -2021,7 +2022,7 @@ Như vậy, mục tiêu của nghiên cứu đã được hoàn thành: chỉ t�
 
 ---
 
-# 13. Lockstep Defense - Thiết kế và đánh giá
+## 12. Lockstep Defense - Thiết kế và đánh giá
 
 Đến đây, chuỗi tấn công đã hoàn chỉnh:
 
@@ -2047,7 +2048,7 @@ Do đó, nếu hệ thống có thể phát hiện lỗi và ngăn không cho ci
 
 ---
 
-### Nguyên lý của Lockstep
+### 12.1. Nguyên lý của Lockstep
 
 Lockstep là một cơ chế được sử dụng rộng rãi trong các hệ thống yêu cầu độ tin cậy cao và khả năng chống fault injection.
 
@@ -2083,7 +2084,7 @@ Trong phần cứng thực tế, hai lane thường được thực hiện bởi
 
 ---
 
-### Thiết kế Lockstep trong nghiên cứu
+### 12.2. Thiết kế Lockstep trong nghiên cứu
 
 Trong phạm vi nghiên cứu này, mục tiêu không phải xây dựng một kiến trúc dual-core hoàn chỉnh trong gem5 mà là kiểm chứng `nguyên lý hoạt động của Lockstep` đối với fault model đã xây dựng.
 
@@ -2098,7 +2099,7 @@ Sau khi cả hai lane hoàn thành, chương trình sử dụng `memcmp()` để
 
 ---
 
-### Cài đặt Comparator
+### 12.3. Cài đặt Comparator
 
 ```c
 if (memcmp(buf_a, buf_b, 16) != 0) {
@@ -2113,11 +2114,11 @@ Chỉ khi cả hai lane tạo ra cùng một kết quả thì ciphertext mới �
 
 ---
 
-### Thực nghiệm
+### 12.4. Thực nghiệm
 
 Ba kịch bản được kiểm tra trong gem5.
 
-### Scenario 1 - Không có fault
+#### 12.4.1. Scenario 1 - Không có fault
 
 ```
 Ciphertext:
@@ -2129,7 +2130,7 @@ Hai lane tạo cùng ciphertext nên comparator cho phép chương trình tiếp
 
 ---
 
-### Scenario 2 - Fault tại byte 0, bit 0
+#### 12.4.2. Scenario 2 - Fault tại byte 0, bit 0
 
 ```
 [LOCKSTEP] FAULT DETECTED
@@ -2149,7 +2150,7 @@ Comparator phát hiện sự sai khác và dừng chương trình trước khi c
 
 ---
 
-### Scenario 3 - Fault tại byte 5, bit 3
+#### 12.4.3. Scenario 3 - Fault tại byte 5, bit 3
 
 ```
 [LOCKSTEP] FAULT DETECTED
@@ -2167,7 +2168,7 @@ Thay đổi vị trí fault vẫn dẫn tới cùng kết quả: comparator luô
 
 ---
 
-### Phân tích
+### 12.5. Phân tích
 
 Ba kịch bản trên cho thấy hành vi của hệ thống phù hợp với nguyên lý của Lockstep:
 
@@ -2202,7 +2203,7 @@ Vì attacker không còn thu được các faulty ciphertext dùng làm đầu v
 
 ---
 
-### Kết luận
+### 12.6. Kết luận
 
 Trong phạm vi fault model của nghiên cứu, Lockstep đã phát hiện thành công mọi fault được đưa vào tại Round 9 và ngăn không cho faulty ciphertext được trả ra ngoài.
 
@@ -2210,7 +2211,7 @@ Kết quả này cho thấy mặc dù Lockstep không ngăn cản việc fault x
 
 ---
 
-### Limitations của Lockstep Defense
+### 12.7. Limitations của Lockstep Defense
 
 Kết quả trên được đánh giá trong phạm vi fault model và kiến trúc của nghiên cứu. Một số trường hợp vẫn chưa được xem xét:
 
@@ -2246,7 +2247,7 @@ Cách tiếp cận này giúp đánh giá hiệu quả của cơ chế phát hi�
 
 ---
 
-# 14. Tổng kết
+## 13. Tổng kết
 
 Mục tiêu của nghiên cứu là xây dựng và đánh giá một chuỗi tấn công Differential Fault Analysis trên AES-128 trong môi trường gem5, đồng thời kiểm chứng khả năng phòng vệ của cơ chế Lockstep.
 
@@ -2259,7 +2260,7 @@ Kết quả thực nghiệm cho thấy cả hai mục tiêu đều đạt đư�
 
 ---
 
-### Summary of Results
+### 13.1. Summary of Results
 
 | Thành phần | Kết quả |
 |------------|----------|
@@ -2276,7 +2277,7 @@ Kết quả thực nghiệm cho thấy cả hai mục tiêu đều đạt đư�
 
 ---
 
-### Những bài học rút ra
+### 13.2. Những bài học rút ra
 
 Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghiên cứu fault injection trên AES:
 
@@ -2288,21 +2289,21 @@ Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghi�
 
 ---
 
-### Hướng phát triển
+### 13.3. Hướng phát triển
 
-### Về tấn công
+> Về tấn công
 
 - Nghiên cứu Multi-Fault DFA với nhiều fault trong cùng một lần mã hóa.
 - Mở rộng sang AES-192 và AES-256 với key schedule phức tạp hơn.
 - Áp dụng fault injection cho các primitive khác như SHA hoặc HMAC.
 
-### Về phòng vệ
+> Về phòng thủ
 
 - Xây dựng mô hình Lockstep trên hai CPU core thực trong gem5.
 - Kết hợp Lockstep với Temporal Redundancy hoặc Triple Modular Redundancy.
 - Kết hợp với các kỹ thuật Masking nhằm chống đồng thời Fault Analysis và Side-channel Analysis.
 
-### Về hệ thống mô phỏng
+> Về hệ thống mô phỏng
 
 - Phát triển module fault injection trực tiếp trong gem5 thay vì chèn fault hook vào chương trình.
 - Hỗ trợ nhiều fault model hơn như instruction fault, register fault hoặc timing fault.
@@ -2310,7 +2311,7 @@ Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghi�
 
 ---
 
-### Kết luận cuối cùng
+### 13.4. Kết luận cuối cùng
 
 Nghiên cứu đã xây dựng thành công một chuỗi thực nghiệm hoàn chỉnh từ fault injection, thu thập faulty ciphertext, khôi phục Round 10 Key bằng PhoenixAES, đảo ngược AES Key Schedule để thu được Master Key và đánh giá hiệu quả của cơ chế Lockstep Defense.
 
