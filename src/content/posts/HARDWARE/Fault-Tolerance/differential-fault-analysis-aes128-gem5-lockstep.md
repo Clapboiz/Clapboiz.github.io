@@ -37,29 +37,120 @@ draft: false
 
 ## 1. Tổng quan về DFA Attack
 
-Differential Fault Analysis (DFA) là một kiểu tấn công dựa trên lỗi chủ động. Thay vì chỉ quan sát hệ thống như power analysis hay timing attack, attacker cố tình làm chương trình tính sai tại một thời điểm có kiểm soát. Sau đó attacker so sánh output đúng với output bị lỗi để suy ra thông tin về khóa bí mật.
+Differential Fault Analysis (DFA) là một kỹ thuật **active side-channel attack**, trong đó kẻ tấn công **chủ động gây lỗi (fault)** trong quá trình thực thi của thuật toán mật mã thay vì chỉ quan sát hành vi của hệ thống như các tấn công **Power Analysis** hay **Timing Attack**.
 
-Với AES-128, ý tưởng cốt lõi là:
+Ý tưởng của DFA khá đơn giản:
 
-AES-128 gồm 10 rounds. Mỗi round thực hiện 4 phép biến đổi theo thứ tự: SubBytes → ShiftRows → MixColumns → AddRoundKey. Round cuối (round 10) bỏ qua MixColumns.
+- Chạy thuật toán bình thường để thu được **ciphertext đúng**.
+- Gây một lỗi nhỏ tại một thời điểm xác định trong quá trình mã hóa để tạo ra **ciphertext lỗi**.
+- So sánh hai ciphertext này để suy luận thông tin về khóa bí mật.
 
-Nếu lỗi được đưa vào đúng **sau Round 8, trước SubBytes của Round 9**, tức là flip một bit trong AES state ở đầu vòng áp chót, sai khác đó sẽ lan truyền ra ciphertext cuối theo một cấu trúc toán học đặc biệt. Cấu trúc này phụ thuộc vào round 10 key, hay còn gọi là last round key.
+Đối với AES-128, DFA nổi tiếng của **Piret & Quisquater** tận dụng cách mà sai khác (*difference*) lan truyền qua các vòng mã hóa để khôi phục **Round 10 Key (Last Round Key)**, sau đó sử dụng **Reverse Key Schedule** để tính ngược về **Master Key**.
 
-Bằng cách thu thập nhiều cặp `(correct ciphertext, faulty ciphertext)` với fault đặt tại các byte/bit khác nhau trong state, PhoenixAES có thể lọc các candidate key byte và recover round 10 key. Với AES-128, round 10 key là kết quả của key schedule từ master key, nên có thể dùng key schedule ngược để đi từ round 10 key về master key.
+---
 
-**Tại sao round 9?**
+AES-128 gồm **10 rounds**. Mỗi round thực hiện bốn phép biến đổi theo thứ tự:
 
-Vì fault ở đầu Round 9 chỉ đi qua **một lần MixColumns** nữa trước khi vào final round. Đây là điểm rất vừa vặn: sai khác đủ lan rộng để tạo pattern trên 4 byte ciphertext, nhưng chưa bị trộn qua quá nhiều vòng đến mức bài toán trở nên khó kiểm soát.
+```text
+SubBytes
+    ↓
+ShiftRows
+    ↓
+MixColumns
+    ↓
+AddRoundKey
+```
 
-Nếu fault xảy ra quá sớm, ví dụ Round 1-7, sai khác đi qua nhiều lần MixColumns và lan ra quá rộng. Nếu fault xảy ra quá muộn, ví dụ Round 10, nó không đi qua MixColumns nữa nên không tạo đúng cấu trúc mà PhoenixAES mong đợi cho classic DFA trên AES.
+Riêng **Round 10** không thực hiện bước **MixColumns**.
 
-**Điều kiện cần để DFA thành công:**
+Trong classic DFA, lỗi được chèn **ngay trước SubBytes của Round 9** (hay nói cách khác là sau khi kết thúc Round 8). Khi đó, sai khác chỉ còn đi qua:
 
-- Attacker phải đặt fault đúng vùng thời gian Round 9.
-- Attacker phải đọc được cả ciphertext đúng và ciphertext lỗi.
-- Fault model cần đủ sạch, thường là single-byte hoặc single-bit fault trong AES state.
+- Round 9 (đầy đủ bốn phép biến đổi)
+- Round 10 (không có MixColumns)
 
-Đây là lý do gem5 simulator phù hợp để demonstrate attack này  - ta có thể quan sát instruction trace, xác định mốc thời gian của từng round AES, rồi kiểm chứng fault model trong môi trường RISC-V mô phỏng.
+Điều này tạo ra một mẫu sai khác (*difference pattern*) đặc trưng trên ciphertext cuối cùng. Mẫu sai khác này phụ thuộc trực tiếp vào **Round 10 Key**, vì vậy chỉ cần thu thập đủ số lượng cặp:
+
+```text
+(Correct Ciphertext, Faulty Ciphertext)
+```
+
+PhoenixAES sẽ khai thác các quan hệ toán học của DFA để khôi phục **Round 10 Key (Last Round Key)**. Sau khi thu được khóa của vòng cuối, chỉ cần thực hiện **Reverse Key Schedule** là có thể tính ngược về **Master Key** của AES-128.
+
+![AES-128 Round Structure](Image/aes128.png)
+
+---
+
+## Tại sao lại chọn Round 9?
+
+Đây là câu hỏi quan trọng nhất trong DFA.
+
+Thời điểm gây lỗi quyết định trực tiếp khả năng thành công của cuộc tấn công.
+
+### Gây lỗi quá sớm (Round 1–8)
+
+Nếu fault được đưa vào từ các vòng đầu, sai khác sẽ phải đi qua nhiều lần **MixColumns**.
+
+Do MixColumns có tính chất **diffusion**, một lỗi rất nhỏ ban đầu sẽ nhanh chóng lan ra toàn bộ trạng thái AES.
+
+Ví dụ:
+
+- Ban đầu chỉ có **1 byte** bị lỗi.
+- Sau một lần **MixColumns**, lỗi lan sang **4 byte** trong cùng một cột.
+- Sau nhiều rounds tiếp theo, gần như toàn bộ **16 byte** của state đều bị ảnh hưởng.
+
+Khi sai khác lan truyền quá rộng, cấu trúc toán học mà DFA dựa vào gần như biến mất, khiến việc khôi phục khóa trở nên rất khó hoặc không còn khả thi.
+
+### Gây lỗi quá muộn (Round 10)
+
+Ngược lại, nếu fault được chèn vào **Round 10** thì ciphertext gần như chỉ bị ảnh hưởng bởi đúng byte bị lỗi.
+
+Do Round 10 **không có MixColumns**, sai khác không được khuếch tán sang các byte khác.
+
+Kết quả là ciphertext chỉ chứa rất ít thông tin về cấu trúc lan truyền của lỗi, không đáp ứng được giả định của thuật toán DFA cổ điển.
+
+### Round 9 là vị trí "vừa đủ"
+
+Round 9 chính là điểm cân bằng giữa hai trường hợp trên.
+
+Lỗi chỉ phải đi qua **một lần MixColumns** trước khi tạo ciphertext cuối cùng.
+
+Nhờ đó:
+
+- Sai khác được khuếch tán vừa đủ để tạo thành mẫu gồm **4 byte liên quan**.
+- Mẫu sai khác vẫn giữ được cấu trúc toán học mà thuật toán DFA có thể khai thác.
+- Thông tin thu được đủ để PhoenixAES suy luận từng byte của **Round 10 Key**.
+
+Chính vì vậy, phần lớn các nghiên cứu DFA trên AES-128 đều lựa chọn **fault injection tại đầu Round 9**.
+
+---
+
+## Điều kiện để DFA thành công
+
+Để cuộc tấn công hoạt động, cần thỏa mãn ba điều kiện chính:
+
+- Attacker phải đưa fault vào **đúng thời điểm**, tương ứng với **Round 9** của thuật toán.
+- Có thể thu thập được cả **ciphertext đúng** và **ciphertext lỗi**.
+- Fault model đủ "sạch", thông thường là **single-byte fault** hoặc **single-bit fault** trong trạng thái AES.
+
+Nếu fault quá mạnh hoặc xuất hiện ở vị trí không mong muốn, cấu trúc sai khác sẽ không còn phù hợp với mô hình phân tích của PhoenixAES.
+
+---
+
+## Tại sao sử dụng gem5?
+
+Đây cũng chính là lý do **gem5** được lựa chọn trong bài viết này.
+
+Mặc dù DFA thường được nghiên cứu trên phần cứng thực, gem5 cho phép mô phỏng toàn bộ quá trình thực thi của chương trình trên kiến trúc **RISC-V**, đồng thời cung cấp **instruction trace** và thông tin về số chu kỳ thực thi.
+
+Nhờ đó có thể:
+
+- Xác định chính xác khoảng thời gian tương ứng với từng vòng AES.
+- Tiêm lỗi tại đúng vị trí mong muốn.
+- Thu thập ciphertext lỗi một cách có kiểm soát.
+- Kiểm chứng khả năng khôi phục khóa của PhoenixAES.
+- Đánh giá xem cơ chế **Lockstep Defense** có ngăn được việc ciphertext lỗi bị xuất ra ngoài hay không.
+
+Trong bài viết này, fault sẽ được chèn tại **Round 9** của AES thông qua **source-level fault injection**, sau đó chương trình được biên dịch thành **RISC-V binary** và chạy trên **gem5** để sinh ra các faulty ciphertext phục vụ quá trình phân tích bằng **PhoenixAES**.
 
 ---
 
