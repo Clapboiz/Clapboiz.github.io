@@ -610,6 +610,16 @@ Cipher()
 
 Do đó, nếu muốn xác định chính xác thời điểm diễn ra từng AES round để thực hiện fault injection, ta cần tiếp tục phân tích hàm `Cipher()`, vì đây mới là nơi chứa toàn bộ vòng lặp mã hóa của AES.
 
+---
+
+### Phân tích hàm `Cipher`
+
+```bash
+grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1888,1930p'
+```
+
+![alt text](Image/Screenshot_363.png)
+
 Để dễ quan sát, phần kết quả được rút gọn và chú thích như sau:
 
 ```assembly
