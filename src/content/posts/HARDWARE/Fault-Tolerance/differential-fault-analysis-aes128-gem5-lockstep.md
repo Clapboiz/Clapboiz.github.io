@@ -2316,3 +2316,34 @@ Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghi�
 Nghiên cứu đã xây dựng thành công một chuỗi thực nghiệm hoàn chỉnh từ fault injection, thu thập faulty ciphertext, khôi phục Round 10 Key bằng PhoenixAES, đảo ngược AES Key Schedule để thu được Master Key và đánh giá hiệu quả của cơ chế Lockstep Defense.
 
 Các kết quả thực nghiệm cho thấy một fault được đưa vào đúng vị trí trong quá trình thực thi có thể dẫn tới việc khôi phục hoàn toàn khóa bí mật của AES-128. Đồng thời, nghiên cứu cũng minh họa rằng một cơ chế dự phòng như Lockstep có thể làm gián đoạn toàn bộ chuỗi tấn công bằng cách phát hiện sai lệch và ngăn không cho faulty ciphertext được sử dụng trong quá trình Differential Fault Analysis.
+
+---
+
+# REFERENCE
+[1]. https://www.thoughtworks.com/insights/blog/privacy/illustrated-guide-advanced-encryption-standard
+
+[2]. https://eprint.iacr.org/2009/575.pdf
+
+[3]. https://en.wikipedia.org/wiki/Differential_fault_analysis
+
+[4]. https://www.gem5.org/
+
+[5]. https://github.com/gem5/gem5
+
+[6]. https://github.com/SideChannelMarvels/JeanGrey
+
+[7]. https://pypi.org/project/phoenixAES/
+
+[8]. https://eprint.iacr.org/2023/1769
+
+[9]. https://ieeexplore.ieee.org/document/11015333
+
+[10]. https://docs.riscv.org/reference/isa/v20260120/index.html
+
+[11]. https://github.com/riscv/riscv-isa-manual
+
+[12]. https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.197.pdf
+
+[13]. https://www.researchgate.net/publication/345197936_Fault_Detection_in_Cryptographic_Systems
+
+[14]. https://dl.acm.org/doi/10.1145/3744640
