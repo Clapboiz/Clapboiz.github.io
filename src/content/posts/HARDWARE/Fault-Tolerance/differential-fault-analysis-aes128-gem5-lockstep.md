@@ -578,13 +578,9 @@ Vì vậy, thay vì phân tích tại vị trí gọi hàm, ta cần đi vào b�
 
 ## Phân tích hàm AES_ECB_encrypt
 
-![alt text](Image/Screenshot_294.png)
+![alt text](Image/Screenshot_362.png)
 
-Hiển thị phần thân của hàm:
-
-```bash
-grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1971,2100p'
-```
+Lệnh jal (Jump And Link) chuyển luồng thực thi sang hàm Cipher(). Điều này cho thấy AES_ECB_encrypt() không trực tiếp thực hiện các phép biến đổi như SubBytes, ShiftRows, MixColumns hay AddRoundKey, mà chỉ đóng vai trò là hàm bao (wrapper) để gọi Cipher(). Vì vậy, muốn xác định vị trí thích hợp để fault injection, ta cần tiếp tục phân tích hàm Cipher().
 
 ![alt text](Image/Screenshot_296.png)
 
@@ -604,6 +600,7 @@ main()
     ▼
 AES_ECB_encrypt()
     │
+    │  jal 117bc
     ▼
 Cipher()
 ```
