@@ -1079,7 +1079,7 @@ Checkpoint vẫn được tạo tại tick:
 10,812,745,000
 ```
 
-### 7.3.2. Thực nghiệm
+#### 7.3.2. Thực nghiệm
 
 Đọc các thanh ghi:
 
@@ -1857,13 +1857,31 @@ def rot_word(w):
     return w[1:] + w[:1]
 
 def sub_word(w):
-    ...
+    sbox = [0x63, 0x7c, ...]  # AES S-box
+    return [sbox[b] for b in w]
+
+rcon = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36]
 
 def reverse_aes128_key_schedule(round10_hex):
-    ...
-```
+    rk10 = bytes.fromhex(round10_hex)
+    w = [None] * 44
+    w[40:44] = [list(rk10[i:i+4]) for i in range(0, 16, 4)]
 
-(Phần mã nguồn đầy đủ được trình bày trong repository.)
+    for i in range(43, 3, -1):
+        temp = w[i-1][:]
+        if i % 4 == 0:
+            temp = xor_w(sub_word(rot_word(temp)), [rcon[i//4-1], 0, 0, 0])
+        w[i-4] = xor_w(w[i], temp)
+
+    return bytes(b for word in w[0:4] for b in word)
+
+rk10 = 'D014F9A8C9EE2589E13F0CC8B6630CA6'
+master = reverse_aes128_key_schedule(rk10)
+expected = '2B7E151628AED2A6ABF7158809CF4F3C'
+print(f"Recovered master key: {master.hex().upper()}")
+print(f"Expected master key:  {expected}")
+print(f"Match: {master.hex().upper() == expected}")
+```
 
 ---
 
