@@ -1970,7 +1970,7 @@ Lệnh trên tạo file thực thi `aes_test` dành cho kiến trúc RISC-V. Do 
 
 ---
 
-## 9. Collecting Faulty Ciphertexts
+## 9. Thu thập các ciphertext lỗi
 
 Sau khi fault hook được tích hợp vào `Cipher()`, bước tiếp theo là thu thập tập `faulty ciphertexts` phục vụ cho quá trình Differential Fault Analysis (DFA).
 
@@ -2192,7 +2192,7 @@ Kết quả này cho thấy fault hook hoạt động ổn định trên toàn b
 
 ---
 
-## 10. Recovering the Round 10 Key with PhoenixAES
+## 10. Khôi phục Round 10 Key bằng PhoenixAES
 
 Sau khi thu thập được tập `128 faulty ciphertexts`, bước tiếp theo là kiểm tra xem các ciphertext này có thực sự chứa đủ thông tin để thực hiện `Differential Fault Analysis (DFA)` hay không.
 
@@ -2533,7 +2533,7 @@ Trong thực nghiệm này, tập `128 faulty ciphertexts` đã cung cấp đủ
 
 ---
 
-## 11. Recovering the Master Key
+## 11. Khôi phục Master Key
 
 Trong giai đoạn trước, Differential Fault Analysis (DFA) đã được thực hiện trên AES-128 bằng cách inject fault trong quá trình thực thi trên môi trường gem5.
 
@@ -2568,7 +2568,7 @@ AES Key Expansion
 
 Do đó, mục tiêu tiếp theo là chứng minh rằng Round 10 Key đã recover có thể được sử dụng để xác định lại Master Key ban đầu.
 
-### 11.1. AES-128 Key Expansion Overview
+### 11.1. Tổng quan Key Expansion của AES-128
 
 AES-128 sử dụng khóa đầu vào có kích thước:
 
@@ -2705,7 +2705,7 @@ w[i-4] = w[i] XOR temp
 
 Vì vậy, Round 10 Key có thể được sử dụng để tính ngược về Master Key.
 
-### 11.3. Independent Verification of the Recovered Master Key
+### 11.3. Kiểm chứng Master Key bằng phương pháp độc lập
 
 Việc khôi phục `Round 10 Key` từ PhoenixAES mới chỉ chứng minh rằng thuật toán DFA có thể suy ra được khóa vòng cuối. Tuy nhiên, để đảm bảo kết quả không phụ thuộc vào chính công cụ tấn công, một bước kiểm chứng độc lập được thực hiện.
 
@@ -2719,7 +2719,7 @@ Nếu hai giá trị trùng khớp, điều này chứng minh rằng:
 
 Tiếp theo, `Master Key` tiếp tục được sử dụng để mã hóa lại plaintext của AES Known Answer Test (KAT). Ciphertext sinh ra được so sánh với giá trị chuẩn trong FIPS-197 nhằm xác nhận toàn bộ quá trình khôi phục khóa.
 
-### 11.4. Code block: Verification
+### 11.4. Code confirm
 
 ```python
 cat > /home/clap/Desktop/verify_key.py << 'EOF'
@@ -2908,7 +2908,7 @@ AES Encryption Verification
 
 Như vậy, quá trình Differential Fault Analysis không chỉ khôi phục thành công `Round 10 Key` mà còn xác định chính xác `Master Key`, đồng thời được kiểm chứng độc lập thông qua cả `AES Key Expansion` và phép mã hóa AES-128 tiêu chuẩn.
 
-### 11.5. Lockstep Defense Implementation
+### 11.5. Triển khai Lockstep Defense
 
 Sau khi hoàn thành DFA attack và khôi phục thành công AES-128 Master Key, bước tiếp theo là đánh giá một cơ chế phòng thủ nhằm phát hiện fault injection.
 
@@ -2968,7 +2968,7 @@ Kiến trúc:
               ----------------------------
 ```
 
-### 11.6. Lockstep AES Implementation
+### 11.6. Triển khai AES với Lockstep
 
 Cơ chế Lockstep được triển khai trong file:
 
@@ -3112,7 +3112,7 @@ Kết quả cho thấy quá trình biên dịch diễn ra thành công và sinh 
 
 Binary này sẽ được sử dụng làm workload trong gem5 để đánh giá khả năng phát hiện fault injection của cơ chế Lockstep ở các kịch bản thực nghiệm tiếp theo.
 
-### 11.8. Configure gem5 Execution Script
+### 11.8. Cấu hình gem5 Execution Script
 
 Để đánh giá cơ chế Lockstep trên gem5, một Python script được xây dựng nhằm khởi tạo hệ thống mô phỏng và truyền tham số fault vào chương trình AES thông qua các biến môi trường `FAULT_BYTE` và `FAULT_BIT`.
 
@@ -3167,7 +3167,7 @@ EOF
 
 Sau khi tạo xong script, gem5 đã sẵn sàng để thực hiện các kịch bản đánh giá Lockstep.
 
-### 11.9. Lockstep Evaluation on gem5
+### 11.9. Đánh giá Lockstep trên gem5
 
 Sau khi hoàn tất việc biên dịch binary và cấu hình môi trường gem5, ba kịch bản được thực hiện nhằm đánh giá khả năng phát hiện fault của cơ chế Lockstep.
 
@@ -3395,7 +3395,7 @@ Kết quả thực nghiệm cho thấy:
 - Khi fault được inject tại các vị trí khác nhau, ciphertext của execution path bị lỗi khác với execution path tham chiếu.
 - Comparator phát hiện sự sai khác và kích hoạt cơ chế abort trước khi ciphertext lỗi được trả về.
 
-### 11.11. Experimental Results
+### 11.11. Kết luận
 
 | Thành phần | Kết quả |
 |---|---|
@@ -3409,8 +3409,6 @@ Kết quả thực nghiệm cho thấy:
 | Key Expansion Verification | ✓ |
 | AES Encryption Verification | ✓ |
 | Lockstep Fault Detection | ✓ |
-
-### 11.12. Conclusion
 
 Kết quả thực nghiệm chứng minh rằng:
 
@@ -3444,7 +3442,7 @@ trong môi trường AES-128 chạy trên gem5.
 
 Chương 11 đã trình bày quá trình cài đặt và đánh giá thực nghiệm cơ chế Lockstep trên môi trường gem5. Phần này tập trung phân tích nguyên lý hoạt động của Lockstep, lý do cơ chế này có thể ngăn chặn chuỗi Differential Fault Analysis (DFA) và những giới hạn còn tồn tại.
 
-### 12.1. Lockstep Principle
+### 12.1. Nguyên lý Lockstep
 
 Lockstep là một cơ chế được sử dụng rộng rãi trong các hệ thống yêu cầu độ tin cậy cao nhằm phát hiện lỗi trong quá trình thực thi.
 
@@ -3477,7 +3475,7 @@ Lockstep là một cơ chế được sử dụng rộng rãi trong các hệ th
 
 Trong các hệ thống phần cứng, hai lane thường được triển khai trên hai execution unit hoặc hai CPU core độc lập. Comparator có thể kiểm tra architectural state hoặc kết quả cuối cùng tùy theo kiến trúc hệ thống.
 
-### 12.2. Lockstep Design in This Work
+### 12.2. Thiết kế Lockstep trong nghiên cứu này
 
 Mục tiêu của nghiên cứu không phải xây dựng một kiến trúc Lockstep hoàn chỉnh trong gem5 mà là đánh giá khả năng của cơ chế so sánh kép trong việc ngăn chặn chuỗi Differential Fault Analysis.
 
@@ -3505,7 +3503,7 @@ Nếu hai ciphertext khác nhau, chương trình dừng ngay và không trả ci
 
 Ngược lại, nếu hai ciphertext giống nhau, chương trình tiếp tục và trả về ciphertext hợp lệ.
 
-### 12.4. Analysis of Experimental Results
+### 12.4. Phân tích kết quả thực nghiệm
 
 Kết quả thực nghiệm tại Mục ``11.7`` cho thấy hành vi của Lockstep hoàn toàn phù hợp với nguyên lý thiết kế.
 
@@ -3536,7 +3534,7 @@ Lockstep Comparator
 
 Khác với nhiều cơ chế phòng thủ cố gắng ngăn cản fault xảy ra, Lockstep cho phép fault xuất hiện nhưng loại bỏ giá trị đầu ra bị lỗi trước khi attacker có thể thu thập và sử dụng cho quá trình khôi phục khóa.
 
-### 12.5. Limitations
+### 12.5. Hạn chế
 
 Kết quả đạt được được đánh giá trong phạm vi fault model và kiến trúc của nghiên cứu. Một số trường hợp chưa được xem xét bao gồm:
 
@@ -3572,9 +3570,9 @@ Cách tiếp cận này phù hợp để đánh giá hiệu quả phát hiện f
 
 ---
 
-## 13. Conclusion
+## 13. Kết luận
 
-### 13.1. Summary of Results
+### 13.1. Tổng hợp kết quả
 
 Toàn bộ chuỗi thực nghiệm đã được hoàn thành từ fault injection đến cơ chế phòng vệ.
 
@@ -3592,7 +3590,7 @@ Toàn bộ chuỗi thực nghiệm đã được hoàn thành từ fault injecti
 | AES Encryption Verification | ✓ |
 | Lockstep Defense | Phát hiện fault và hủy ciphertext lỗi |
 
-### 13.2. Lessons Learned
+### 13.2. Bài học rút ra
 
 Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghiên cứu Differential Fault Analysis trên AES-128.
 
@@ -3601,7 +3599,7 @@ Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghi�
 - Việc xác minh Master Key bằng cả Key Expansion và AES Encryption giúp tăng độ tin cậy của kết quả.
 - Thay vì cố gắng ngăn cản fault xảy ra, việc ngăn attacker thu thập faulty ciphertext có thể vô hiệu hóa toàn bộ chuỗi Differential Fault Analysis.
 
-### 13.3. Future Work
+### 13.3. Hướng phát triển
 
 Một số hướng nghiên cứu có thể được mở rộng trong tương lai bao gồm:
 
@@ -3624,7 +3622,7 @@ Một số hướng nghiên cứu có thể được mở rộng trong tương l
 - Hỗ trợ nhiều fault model hơn như register fault, instruction fault hoặc timing fault.
 - Tự động hóa quá trình sinh fault dataset và đánh giá các countermeasure.
 
-### 13.4. Final Remarks
+### 13.4. Nhận xét cuối
 
 Nghiên cứu đã xây dựng thành công một quy trình thực nghiệm hoàn chỉnh cho Differential Fault Analysis trên AES-128 trong môi trường gem5.
 
