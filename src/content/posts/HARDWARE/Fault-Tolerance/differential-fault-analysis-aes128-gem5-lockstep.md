@@ -2602,7 +2602,7 @@ AES Key Expansion
 
 Do đó, mục tiêu tiếp theo là chứng minh rằng Round 10 Key đã recover có thể được sử dụng để xác định lại Master Key ban đầu.
 
-## 11.1. AES-128 Key Expansion Overview
+### 11.1. AES-128 Key Expansion Overview
 
 AES-128 sử dụng khóa đầu vào có kích thước:
 
@@ -2662,7 +2662,7 @@ w[40], w[41], w[42], w[43]
 
 Sau đó có thể kiểm tra lại quan hệ giữa Round 10 Key và Master Key thông qua AES Key Expansion.
 
-## 11.2. Reverse AES Key Schedule
+### 11.2. Reverse AES Key Schedule
 
 AES Key Expansion sử dụng công thức:
 
@@ -2706,7 +2706,7 @@ w[i-4] = w[i] XOR temp
 
 Vì vậy, Round 10 Key có thể được sử dụng để tính ngược về Master Key.
 
-## 11.3. Independent Verification of the Recovered Master Key
+### 11.3. Independent Verification of the Recovered Master Key
 
 Việc khôi phục `Round 10 Key` từ PhoenixAES mới chỉ chứng minh rằng thuật toán DFA có thể suy ra được khóa vòng cuối. Tuy nhiên, để đảm bảo kết quả không phụ thuộc vào chính công cụ tấn công, một bước kiểm chứng độc lập được thực hiện.
 
@@ -2720,7 +2720,7 @@ Nếu hai giá trị trùng khớp, điều này chứng minh rằng:
 
 Tiếp theo, `Master Key` tiếp tục được sử dụng để mã hóa lại plaintext của AES Known Answer Test (KAT). Ciphertext sinh ra được so sánh với giá trị chuẩn trong FIPS-197 nhằm xác nhận toàn bộ quá trình khôi phục khóa.
 
-## 11.4. Code block: Verification
+### 11.4. Code block: Verification
 
 ```python
 cat > /home/clap/Desktop/verify_key.py << 'EOF'
@@ -2909,7 +2909,7 @@ AES Encryption Verification
 
 Như vậy, quá trình Differential Fault Analysis không chỉ khôi phục thành công `Round 10 Key` mà còn xác định chính xác `Master Key`, đồng thời được kiểm chứng độc lập thông qua cả `AES Key Expansion` và phép mã hóa AES-128 tiêu chuẩn.
 
-## 11.5. Lockstep Defense Implementation
+### 11.5. Lockstep Defense Implementation
 
 Sau khi hoàn thành DFA attack và khôi phục thành công AES-128 Master Key, bước tiếp theo là đánh giá một cơ chế phòng thủ nhằm phát hiện fault injection.
 
@@ -2969,7 +2969,7 @@ Kiến trúc:
               ----------------------------
 ```
 
-## 11.6. Lockstep AES Implementation
+### 11.6. Lockstep AES Implementation
 
 Cơ chế Lockstep được triển khai trong file:
 
@@ -3095,7 +3095,7 @@ int main() {
 EOF
 ```
 
-## 11.7. Build Lockstep AES Binary
+### 11.7. Build Lockstep AES Binary
 Sau khi hoàn thành việc triển khai cơ chế Lockstep trong `aes_lockstep.c`, chương trình cần được biên dịch thành binary cho kiến trúc ``RISC-V`` để có thể thực thi trên trình giả lập gem5.
 
 Quá trình biên dịch sử dụng trình biên dịch `riscv64-linux-gnu-gcc` với các tùy chọn `-static`, `-O0` và `-g` nhằm tạo binary độc lập, giữ nguyên cấu trúc chương trình và hỗ trợ việc quan sát quá trình thực thi trong gem5.
@@ -3113,7 +3113,7 @@ Kết quả cho thấy quá trình biên dịch diễn ra thành công và sinh 
 
 Binary này sẽ được sử dụng làm workload trong gem5 để đánh giá khả năng phát hiện fault injection của cơ chế Lockstep ở các kịch bản thực nghiệm tiếp theo.
 
-## 11.8. Configure gem5 Execution Script
+### 11.8. Configure gem5 Execution Script
 
 Để đánh giá cơ chế Lockstep trên gem5, một Python script được xây dựng nhằm khởi tạo hệ thống mô phỏng và truyền tham số fault vào chương trình AES thông qua các biến môi trường `FAULT_BYTE` và `FAULT_BIT`.
 
@@ -3168,7 +3168,7 @@ EOF
 
 Sau khi tạo xong script, gem5 đã sẵn sàng để thực hiện các kịch bản đánh giá Lockstep.
 
-## 11.9. Lockstep Evaluation on gem5
+### 11.9. Lockstep Evaluation on gem5
 
 Sau khi hoàn tất việc biên dịch binary và cấu hình môi trường gem5, ba kịch bản được thực hiện nhằm đánh giá khả năng phát hiện fault của cơ chế Lockstep.
 
@@ -3195,7 +3195,7 @@ echo "=== Scenario 3: Fault injected (byte=5 bit=3) ==="
 
 Kết quả của từng kịch bản được trình bày dưới đây.
 
-### 11.9.1. Scenario 1: Normal Execution
+> Scenario 1: Normal Execution
 
 Trong trường hợp bình thường, không có fault injection được thực hiện. Hai execution path sử dụng cùng input và tạo ra cùng một ciphertext.
 
@@ -3203,7 +3203,7 @@ Trong trường hợp bình thường, không có fault injection được thự
 
 Kết quả cho thấy khi không có fault injection, hai execution path tạo ra cùng một output và ciphertext hợp lệ được trả về.
 
-### 11.9.2. Scenario 2: Inject Fault (byte=0, bit=0)
+> Scenario 2: Inject Fault (byte=0, bit=0)
 
 Fault được inject vào execution path A.
 
@@ -3213,7 +3213,7 @@ Kết quả cho thấy ciphertext của execution path bị fault khác với re
 
 Comparator phát hiện sự sai khác giữa hai execution path và kích hoạt cơ chế abort trước khi ciphertext lỗi được xuất ra.
 
-### 11.9.3. Scenario 3: Inject Fault (byte=5, bit=3)
+> Scenario 3: Inject Fault (byte=5, bit=3)
 
 Một vị trí fault khác tiếp tục được đánh giá.
 
@@ -3223,14 +3223,14 @@ Mặc dù vị trí fault thay đổi, Lockstep vẫn phát hiện được sự
 
 Lockstep có thể phát hiện sự sai khác giữa execution path bị lỗi và execution path tham chiếu trước khi ciphertext bị lỗi được xuất ra ngoài hệ thống.
 
-## 11.10. Final Experiment Summary
+### 11.10. Final Experiment Summary
 
 Toàn bộ quá trình thực nghiệm được chia thành hai phần chính:
 
 - ``Attack Evaluation:`` đánh giá khả năng khai thác fault injection bằng Differential Fault Analysis (DFA) để khôi phục khóa AES-128.
 - ``Defense Evaluation:`` đánh giá khả năng phát hiện fault injection bằng cơ chế Lockstep Execution.
 
-### 11.10.1. Attack Evaluation
+#### 11.10.1. Attack Evaluation
 
 Quy trình tấn công được tổng hợp như sau:
 
@@ -3327,7 +3327,7 @@ Khóa sau khi khôi phục được xác thực độc lập bằng hai phương
 - Forward AES Key Expansion Verification.
 - AES-128 Known Answer Test Encryption Verification.
 
-### 11.10.2. Defense Evaluation
+#### 11.10.2. Defense Evaluation
 
 Sau khi đánh giá khả năng tấn công, cơ chế Lockstep Execution được triển khai nhằm phát hiện sự sai lệch do fault injection.
 
@@ -3396,7 +3396,7 @@ Kết quả thực nghiệm cho thấy:
 - Khi fault được inject tại các vị trí khác nhau, ciphertext của execution path bị lỗi khác với execution path tham chiếu.
 - Comparator phát hiện sự sai khác và kích hoạt cơ chế abort trước khi ciphertext lỗi được trả về.
 
-## 11.11. Experimental Results
+### 11.11. Experimental Results
 
 | Thành phần | Kết quả |
 |---|---|
@@ -3411,7 +3411,7 @@ Kết quả thực nghiệm cho thấy:
 | AES Encryption Verification | ✓ |
 | Lockstep Fault Detection | ✓ |
 
-## 11.12. Conclusion
+### 11.12. Conclusion
 
 Kết quả thực nghiệm chứng minh rằng:
 
