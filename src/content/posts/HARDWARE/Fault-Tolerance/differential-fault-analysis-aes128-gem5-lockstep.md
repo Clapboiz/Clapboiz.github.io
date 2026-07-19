@@ -28,8 +28,6 @@ Differential Fault Analysis (DFA) là một kỹ thuật `active side-channel at
 
 Đối với AES-128, DFA nổi tiếng của `Piret & Quisquater` tận dụng cách mà sai khác (`difference`) lan truyền qua các vòng mã hóa để khôi phục `Round 10 Key (Last Round Key)`, sau đó sử dụng `Reverse Key Schedule` để tính ngược về `Master Key`.
 
----
-
 AES-128 gồm `10 rounds`. Mỗi round thực hiện bốn phép biến đổi theo thứ tự:
 
 ```text
@@ -58,8 +56,6 @@ Trong classic DFA, lỗi được chèn `ngay trước SubBytes của Round 9` (
 PhoenixAES sẽ khai thác các quan hệ toán học của DFA để khôi phục `Round 10 Key (Last Round Key)`. Sau khi thu được khóa của vòng cuối, chỉ cần thực hiện `Reverse Key Schedule` là có thể tính ngược về `Master Key` của AES-128.
 
 ![AES-128 Round Structure](Image/aes128.png)
-
----
 
 ### 1.1. Tại sao lại chọn Round 9?
 
@@ -103,8 +99,6 @@ Nhờ đó:
 
 Chính vì vậy, phần lớn các nghiên cứu DFA trên AES-128 đều lựa chọn `fault injection tại đầu Round 9`.
 
----
-
 ### 1.5. Điều kiện để DFA thành công
 
 Để cuộc tấn công hoạt động, cần thỏa mãn ba điều kiện chính:
@@ -114,8 +108,6 @@ Chính vì vậy, phần lớn các nghiên cứu DFA trên AES-128 đều lựa
 - Fault model đủ "sạch", thông thường là `single-byte fault` hoặc `single-bit fault` trong trạng thái AES.
 
 Nếu fault quá mạnh hoặc xuất hiện ở vị trí không mong muốn, cấu trúc sai khác sẽ không còn phù hợp với mô hình phân tích của PhoenixAES.
-
----
 
 ### 1.6. Tại sao sử dụng gem5?
 
@@ -555,8 +547,6 @@ mới là nhãn đánh dấu điểm bắt đầu của thân hàm `AES_ECB_encr
 
 Vì vậy, thay vì phân tích tại vị trí gọi hàm, ta cần đi vào bên trong `AES_ECB_encrypt()` để xác định hàm nào thực sự thực hiện các vòng mã hóa AES.
 
----
-
 ### 5.3. Phân tích hàm AES_ECB_encrypt
 ```
 grep -n "" ~/Desktop/aes_disasm.txt | sed -n '1971,2100p'
@@ -590,8 +580,6 @@ Cipher()
 ```
 
 Do đó, nếu muốn xác định chính xác thời điểm diễn ra từng AES round để thực hiện fault injection, ta cần tiếp tục phân tích hàm `Cipher()`, vì đây mới là nơi chứa toàn bộ vòng lặp mã hóa của AES.
-
----
 
 ### 5.4. Phân tích hàm `Cipher`
 
@@ -986,8 +974,6 @@ Collect Faulty Ciphertext
 
 Nếu thành công, fault sẽ được đưa vào quá trình thực thi mà không cần sửa đổi mã nguồn của AES.
 
----
-
 ### 7.1. Tự động tạo checkpoint tại fault boundary
 
 Sau khi xác định được thời điểm bắt đầu của Round 9 thông qua execution trace (tick = ``10,812,745,000``), bước tiếp theo là xây dựng một script điều khiển gem5 tự động dừng mô phỏng tại đúng thời điểm này và tạo checkpoint.
@@ -1094,8 +1080,6 @@ Sau khi tiếp tục mô phỏng mà không chỉnh sửa checkpoint, chương t
 
 Script này ``không thực hiện fault injection``, mà chỉ tự động tạo checkpoint tại ``fault boundary``. Checkpoint thu được sau đó được sử dụng trong các thử nghiệm chỉnh sửa trạng thái thực thi ở các mục tiếp theo.
 
----
-
 ### 7.2. Thách thức
 
 Checkpoint của gem5 lưu lại toàn bộ trạng thái thực thi của hệ thống tại một thời điểm, bao gồm:
@@ -1117,8 +1101,6 @@ Round key
 ```
 
 Do đó, mặc dù có thể chỉnh sửa bất kỳ byte nào trong checkpoint, nhưng không thể biết byte nào thực sự tương ứng với ``AES state của Round 9``.
-
----
 
 #### 7.2.1. Ý tưởng lựa chọn điểm can thiệp
 
@@ -1146,8 +1128,6 @@ Mỗi hướng đều được thực nghiệm và đánh giá dựa trên hai t
 
 - Có tạo ra faulty ciphertext hay không.
 - Fault có thực sự tác động trực tiếp lên AES state theo fault model của DFA hay không.
-
----
 
 ### 7.3. Attempt 1 – Modify Register `x10`
 
@@ -1381,8 +1361,6 @@ Kết hợp với kết quả phân tích disassembly ở mục trước, có th
 
 Từ các kết quả thực nghiệm trên, có thể kết luận rằng phương pháp chỉnh sửa checkpoint thông qua thanh ghi `x10` không thể tạo ra các faulty ciphertext phục vụ quá trình khôi phục khóa bằng DFA. Vì vậy, hướng tiếp cận này được xem là ``không phù hợp`` và bị loại bỏ trong nghiên cứu. 
 
----
-
 ### 7.4. Attempt 2 – Modify Physical Memory
 
 #### 7.4.1. Giả thuyết
@@ -1398,8 +1376,6 @@ Checkpoint vẫn được tạo tại tick:
 ```text
 10,812,745,000
 ```
-
----
 
 #### 7.4.2. Thực nghiệm
 
@@ -1578,8 +1554,6 @@ Kết quả trên cho thấy không có bất kỳ faulty ciphertext nào đư�
 Đồng thời, dữ liệu đọc được tại địa chỉ này chỉ bao gồm các giá trị lặp (`0x55`), thay vì trạng thái trung gian của AES vốn được kỳ vọng sẽ có phân bố gần như ngẫu nhiên sau nhiều vòng biến đổi.
 
 Điều này cho thấy địa chỉ vật lý được suy ra từ virtual-to-physical mapping nhiều khả năng không phải là vùng nhớ chứa AES state tại thời điểm thực hiện Round 9.
-
----
 
 ### 7.4.3. Phân tích
 
@@ -1819,8 +1793,6 @@ EOF
 Mặc dù mẫu dữ liệu trong bộ nhớ đã thay đổi từ 0xaa sang 0x55 sau khi checkpoint được dịch muộn hơn, việc lật toàn bộ 128 bit của vùng nhớ này vẫn không tạo ra bất kỳ faulty ciphertext nào.
 
 Kết quả này cho thấy vùng nhớ đang được chỉnh sửa không phải là AES state được sử dụng bởi hàm SubBytes() tại thời điểm fault injection. Nói cách khác, việc thay đổi thời điểm lưu checkpoint chưa giải quyết được vấn đề xác định chính xác vị trí của AES state trong bộ nhớ.
-
----
 
 ### 7.6. Tổng kết
 
@@ -2268,8 +2240,6 @@ PhoenixAES triển khai thuật toán DFA cho AES-128. Đầu vào của chươn
 
 Đầu ra mong muốn là `Round 10 Key (Last Round Key)`.
 
----
-
 ### 10.3. Chuẩn bị dữ liệu đầu vào
 
 Sau khi chạy script thu thập fault:
@@ -2334,8 +2304,6 @@ Trong đó:
 
 - Dòng đầu tiên là ciphertext đúng.
 - 128 dòng còn lại là ciphertext lỗi được sinh ra từ gem5.
-
----
 
 ### 10.4. Thực hiện Key Recovery
 
@@ -2458,8 +2426,6 @@ Cụ thể:
 - PhoenixAES có thể khai thác các sai khác này để khôi phục khóa vòng cuối.
 
 Như vậy, thực nghiệm đã chứng minh rằng phương pháp fault injection trên gem5 có khả năng tái tạo một cuộc tấn công Differential Fault Analysis thực tế trên AES-128.
-
----
 
 ### 10.8. PhoenixAES hoạt động như thế nào?
 
@@ -2610,15 +2576,48 @@ AES-128 sử dụng khóa đầu vào có kích thước:
 128 bits = 16 bytes
 ```
 
-Sau quá trình Key Expansion, AES sinh ra:
+Thuật toán AES-128 thực hiện tổng cộng **10 round** mã hóa. Ngoài các round này, trước khi bước vào Round 1 còn có một bước **Initial AddRoundKey**, vì vậy quá trình mã hóa cần tổng cộng:
+
+```text
+11 round keys
+```
+
+Mỗi round key có kích thước đúng bằng kích thước block AES:
+
+```text
+128 bits = 16 bytes
+= 4 words
+```
+
+Do đó, toàn bộ key schedule cần sinh ra:
+
+```text
+11 round keys
+
+×
+
+4 words
+
+=
+
+44 words
+```
+
+hay tương đương:
 
 ```text
 44 words
 
-mỗi word = 32 bits
+×
 
-44 × 4 bytes = 176 bytes
+4 bytes
+
+=
+
+176 bytes
 ```
+
+Quá trình AES Key Expansion sẽ mở rộng Master Key thành toàn bộ 44 words này.
 
 Cấu trúc key schedule:
 
@@ -3570,6 +3569,8 @@ Việc thực hiện cùng một phép tính trên hai execution lane làm tăng
 Implementation trong nghiên cứu sử dụng hai lần thực thi AES trong cùng một chương trình nhằm mô phỏng nguyên lý Lockstep.
 
 Cách tiếp cận này phù hợp để đánh giá hiệu quả phát hiện fault nhưng chưa phản ánh đầy đủ các đặc điểm của một kiến trúc Lockstep phần cứng với hai execution lane độc lập.
+
+---
 
 ## 13. Conclusion
 
