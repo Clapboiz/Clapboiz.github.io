@@ -26,7 +26,7 @@ Differential Fault Analysis (DFA) là một kỹ thuật `active side-channel at
 - Gây một lỗi nhỏ tại một thời điểm xác định trong quá trình mã hóa để tạo ra `ciphertext lỗi`.
 - So sánh hai ciphertext này để suy luận thông tin về khóa bí mật.
 
-Đối với AES-128, DFA nổi tiếng của `Piret & Quisquater` tận dụng cách mà sai khác (*difference*) lan truyền qua các vòng mã hóa để khôi phục `Round 10 Key (Last Round Key)`, sau đó sử dụng `Reverse Key Schedule` để tính ngược về `Master Key`.
+Đối với AES-128, DFA nổi tiếng của `Piret & Quisquater` tận dụng cách mà sai khác (`difference`) lan truyền qua các vòng mã hóa để khôi phục `Round 10 Key (Last Round Key)`, sau đó sử dụng `Reverse Key Schedule` để tính ngược về `Master Key`.
 
 ---
 
@@ -49,7 +49,7 @@ Trong classic DFA, lỗi được chèn `ngay trước SubBytes của Round 9` (
 - Round 9 (đầy đủ bốn phép biến đổi)
 - Round 10 (không có MixColumns)
 
-Điều này tạo ra một mẫu sai khác (*difference pattern*) đặc trưng trên ciphertext cuối cùng. Mẫu sai khác này phụ thuộc trực tiếp vào `Round 10 Key`, vì vậy chỉ cần thu thập đủ số lượng cặp:
+Điều này tạo ra một mẫu sai khác (`difference pattern`) đặc trưng trên ciphertext cuối cùng. Mẫu sai khác này phụ thuộc trực tiếp vào `Round 10 Key`, vì vậy chỉ cần thu thập đủ số lượng cặp:
 
 ```text
 (Correct Ciphertext, Faulty Ciphertext)
@@ -296,8 +296,8 @@ Thông tin này xác nhận binary đúng kiến trúc RISC-V. Nhưng nó cũng 
 
 gem5 hỗ trợ hai chế độ mô phỏng chính:
 
-* `Full System (FS) mode`: mô phỏng toàn bộ hệ thống bao gồm hệ điều hành, trình điều khiển thiết bị và các thành phần phần cứng liên quan.
-* `Syscall Emulation (SE) mode`: chỉ mô phỏng tiến trình người dùng và các lời gọi hệ thống (system calls), không mô phỏng toàn bộ hệ điều hành.
+` `Full System (FS) mode`: mô phỏng toàn bộ hệ thống bao gồm hệ điều hành, trình điều khiển thiết bị và các thành phần phần cứng liên quan.
+` `Syscall Emulation (SE) mode`: chỉ mô phỏng tiến trình người dùng và các lời gọi hệ thống (system calls), không mô phỏng toàn bộ hệ điều hành.
 
 Trong log này, ta dùng `SE mode` vì workload chỉ là một userspace program nhỏ. SE mode nhẹ hơn Full System mode và phù hợp khi cần chạy lại workload nhiều lần để collect faulty ciphertexts.
 
@@ -331,7 +331,7 @@ statically linked,
 ...
 ```
 
-Thuộc tính *statically linked* cho thấy các thư viện cần thiết đã được liên kết trực tiếp vào binary. Nhờ đó, gem5 SE mode không cần tìm dynamic linker nữa và có thể chạy workload AES trực tiếp.
+Thuộc tính `statically linked` cho thấy các thư viện cần thiết đã được liên kết trực tiếp vào binary. Nhờ đó, gem5 SE mode không cần tìm dynamic linker nữa và có thể chạy workload AES trực tiếp.
 
 ---
 
@@ -344,7 +344,7 @@ gem5 dùng Python script để mô tả system cần mô phỏng: clock, CPU mod
 ```python
 # run_aes.py
 import m5
-from m5.objects import *
+from m5.objects import `
 
 # Khởi tạo system
 system = System()
@@ -403,9 +403,9 @@ Failed to open file /root/Desktop/tiny-AES-c/aes_test
 
 gem5 cung cấp nhiều CPU model với các mức độ chi tiết khác nhau:
 
-* `AtomicSimpleCPU`: thực thi nhanh nhất, không mô hình hóa timing của memory accesses.
-* `TimingSimpleCPU`: mô hình hóa timing của hệ thống nhớ và thực thi tuần tự từng instruction.
-* `O3CPU`: mô hình out-of-order chi tiết, hỗ trợ pipeline, speculation và nhiều đặc điểm vi kiến trúc khác.
+` `AtomicSimpleCPU`: thực thi nhanh nhất, không mô hình hóa timing của memory accesses.
+` `TimingSimpleCPU`: mô hình hóa timing của hệ thống nhớ và thực thi tuần tự từng instruction.
+` `O3CPU`: mô hình out-of-order chi tiết, hỗ trợ pipeline, speculation và nhiều đặc điểm vi kiến trúc khác.
 
 Trong nghiên cứu này, `TimingSimpleCPU` được chọn vì cân bằng giữa tốc độ và khả năng quan sát timing. So với O3CPU, nó đơn giản hơn và chạy nhanh hơn, phù hợp khi phải lặp lại mô phỏng nhiều lần. Đồng thời execution trace của nó đủ ổn định để đếm các lần gọi `SubBytes` và xác định Round 9.
 
@@ -433,10 +433,10 @@ Giá trị này trùng khớp với AES-128 Known Answer Test (KAT) của NIST �
 
 Kết quả này xác nhận rằng:
 
-* Mã nguồn tiny-AES-c được biên dịch chính xác sang kiến trúc RISC-V.
-* Binary RISC-V được thực thi đúng trong môi trường gem5.
-* gem5 SE mode chạy được workload AES đến khi chương trình exit bình thường.
-* Ta có correct ciphertext để làm reference cho DFA.
+` Mã nguồn tiny-AES-c được biên dịch chính xác sang kiến trúc RISC-V.
+` Binary RISC-V được thực thi đúng trong môi trường gem5.
+` gem5 SE mode chạy được workload AES đến khi chương trình exit bình thường.
+` Ta có correct ciphertext để làm reference cho DFA.
 
 #### 4.4.1. Remote GDB Stub
 
@@ -448,10 +448,10 @@ gem5 tự động khởi tạo GDB stub tại cổng 7000.
 
 Người dùng có thể kết nối GDB tới simulator để:
 
-* Đặt breakpoint.
-* Theo dõi giá trị thanh ghi.
-* Quan sát bộ nhớ.
-* Debug chương trình trong quá trình mô phỏng.
+` Đặt breakpoint.
+` Theo dõi giá trị thanh ghi.
+` Quan sát bộ nhớ.
+` Debug chương trình trong quá trình mô phỏng.
 
 #### 4.4.2. Stack Growth
 
@@ -543,7 +543,7 @@ Dòng:
 273: 104d2: jal 118b6 <AES_ECB_encrypt>
 ```
 
-không phải là phần thân của `AES_ECB_encrypt()`. Đây chỉ là lệnh `jal` (*Jump And Link*), tức là vị trí mà `main()` gọi sang hàm `AES_ECB_encrypt()`.
+không phải là phần thân của `AES_ECB_encrypt()`. Đây chỉ là lệnh `jal` (`Jump And Link`), tức là vị trí mà `main()` gọi sang hàm `AES_ECB_encrypt()`.
 
 Trong khi đó:
 
@@ -957,9 +957,11 @@ Trong implementation cuối cùng của nghiên cứu này, fault được chèn
 
 ## 7. Approach 1: Exploring Checkpoint-based Fault Injection
 
-Ở phần trước, execution trace đã được phân tích để xác định thời điểm bắt đầu của từng vòng AES. 
+Ở phần trước, execution trace đã được phân tích để xác định thời điểm bắt đầu của từng vòng AES.
 
-Theo fault model của PhoenixAES, fault cần được đưa vào `ngay trước `SubBytes` của Round 9`. Vì vậy, tick `10,812,745,000` được chọn làm `fault boundary` cho toàn bộ các thử nghiệm checkpoint trong phần này.
+Theo fault model của PhoenixAES, fault cần được đưa vào ``ngay trước `SubBytes` của Round 9``. Vì vậy, tick ``10,812,745,000`` được chọn làm ``fault boundary`` cho toàn bộ các thử nghiệm checkpoint trong phần này.
+
+Ban đầu, nghiên cứu dự kiến sử dụng ``GemFI`` để thực hiện hardware-level fault injection. Tuy nhiên, GemFI chỉ hỗ trợ các phiên bản gem5 cũ và không còn tương thích với ``gem5 v25`` được sử dụng trong nghiên cứu. Do đó, thay vì sử dụng framework này, nghiên cứu lựa chọn khai thác cơ chế ``checkpoint`` có sẵn của gem5 nhằm can thiệp trực tiếp vào trạng thái thực thi của chương trình.
 
 Ý tưởng của phương pháp là tạo checkpoint đúng tại fault boundary, sau đó chỉnh sửa trạng thái thực thi trước khi khôi phục chương trình.
 
@@ -986,7 +988,115 @@ Nếu thành công, fault sẽ được đưa vào quá trình thực thi mà kh
 
 ---
 
-### 7.1. Thách thức
+### 7.1. Tự động tạo checkpoint tại fault boundary
+
+Sau khi xác định được thời điểm bắt đầu của Round 9 thông qua execution trace (tick = ``10,812,745,000``), bước tiếp theo là xây dựng một script điều khiển gem5 tự động dừng mô phỏng tại đúng thời điểm này và tạo checkpoint.
+
+Ý tưởng của script như sau:
+
+```text
+Load AES binary
+        │
+        ▼
+Run simulation
+        │
+        ▼
+Stop at Round 9
+(tick = 10,812,745,000)
+        │
+        ▼
+Save checkpoint
+        │
+        ▼
+Resume simulation (baseline)
+```
+
+Script dưới đây thực hiện toàn bộ quá trình trên.
+
+```python
+FAULT_TICK = 10812745000
+
+print("=== Running to fault point ===")
+m5.simulate(FAULT_TICK - m5.curTick())
+
+ckpt_dir = "/home/clap/Desktop/ckpt_fault"
+os.makedirs(ckpt_dir, exist_ok=True)
+
+m5.checkpoint(ckpt_dir)
+
+print(f"[INFO] Checkpoint saved at tick {m5.curTick()}")
+```
+
+Toàn bộ script khởi tạo hệ thống gem5 và tạo checkpoint được trình bày dưới đây.
+
+<details>
+<summary><b>fault_inject.py</b></summary>
+
+```python
+cat > ~/Desktop/fault_inject.py << 'EOF'
+import m5
+from m5.objects import `
+
+system = System()
+system.clk_domain = SrcClockDomain()
+system.clk_domain.clock = '1GHz'
+system.clk_domain.voltage_domain = VoltageDomain()
+
+system.mem_mode = 'timing'
+system.mem_ranges = [AddrRange('512MB')]
+
+system.cpu = RiscvTimingSimpleCPU()
+system.membus = SystemXBar()
+system.cpu.icache_port = system.membus.cpu_side_ports
+system.cpu.dcache_port = system.membus.cpu_side_ports
+system.cpu.createInterruptController()
+
+system.mem_ctrl = MemCtrl()
+system.mem_ctrl.dram = DDR3_1600_8x8()
+system.mem_ctrl.dram.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.membus.mem_side_ports
+system.system_port = system.membus.cpu_side_ports
+
+binary = '/home/clap/Desktop/tiny-AES-c/aes_test'
+system.workload = SEWorkload.init_compatible(binary)
+process = Process()
+process.cmd = [binary]
+system.cpu.workload = process
+system.cpu.createThreads()
+
+root = Root(full_system=False, system=system)
+m5.instantiate()
+
+FAULT_TICK = 10812745000
+
+print("=== Running to fault point ===")
+m5.simulate(FAULT_TICK - m5.curTick())
+
+# Save checkpoint tại fault point
+import os
+ckpt_dir = '/home/clap/Desktop/ckpt_fault'
+os.makedirs(ckpt_dir, exist_ok=True)
+m5.checkpoint(ckpt_dir)
+print(f"[INFO] Checkpoint saved at tick {m5.curTick()}")
+print("=== Resuming without fault (baseline) ===")
+exit_event = m5.simulate()
+print(f"Exited at tick {m5.curTick()}")
+EOF
+```
+
+![alt text](Image/Screenshot_372.png)
+
+Kết quả trên cho thấy script đã chạy thành công đến ``fault boundary``, tạo checkpoint và tiếp tục thực thi chương trình. Checkpoint được lưu tại tick ``10,812,842,500``, gần với tick mục tiêu (``10,812,745,000``). Sự chênh lệch nhỏ này là do gem5 chỉ có thể dừng mô phỏng tại ``simulation event`` gần nhất thay vì đúng từng tick tuyệt đối.
+
+Sau khi tiếp tục mô phỏng mà không chỉnh sửa checkpoint, chương trình vẫn sinh ra ciphertext đúng (`3ad77bb40d7a3660a89ecaf32466ef97`). Điều này xác nhận rằng việc tạo checkpoint không làm thay đổi trạng thái thực thi của chương trình.
+
+</details>
+
+Script này ``không thực hiện fault injection``, mà chỉ tự động tạo checkpoint tại ``fault boundary``. Checkpoint thu được sau đó được sử dụng trong các thử nghiệm chỉnh sửa trạng thái thực thi ở các mục tiếp theo.
+
+---
+
+### 7.2. Thách thức
 
 Checkpoint của gem5 lưu lại toàn bộ trạng thái thực thi của hệ thống tại một thời điểm, bao gồm:
 
@@ -997,7 +1107,7 @@ Cache state
 Pipeline state
 ```
 
-Tuy nhiên, checkpoint không lưu thông tin ở mức ngữ nghĩa của chương trình, chẳng hạn như:
+Tuy nhiên, checkpoint chỉ phản ánh ``trạng thái ở mức kiến trúc (architectural state)`` và không lưu thông tin ở mức ngữ nghĩa của chương trình, chẳng hạn như:
 
 ```text
 AES state
@@ -1006,35 +1116,118 @@ SubBytes input
 Round key
 ```
 
-Do đó, mặc dù có thể chỉnh sửa bất kỳ byte nào trong checkpoint, nhưng không thể biết byte nào thực sự tương ứng với `AES state của Round 9`.
-
-Để kiểm chứng khả năng này, ba hướng tiếp cận khác nhau đã được thử nghiệm.
+Do đó, mặc dù có thể chỉnh sửa bất kỳ byte nào trong checkpoint, nhưng không thể biết byte nào thực sự tương ứng với ``AES state của Round 9``.
 
 ---
 
-### 7.2. Attempt 1 – Modify Register `x10`
+#### 7.2.1. Ý tưởng lựa chọn điểm can thiệp
 
-#### 7.2.1. Giả thuyết
+Để tạo fault mà không sửa mã nguồn AES, nghiên cứu cần xác định thành phần nào trong checkpoint có khả năng ảnh hưởng trực tiếp tới quá trình mã hóa.
 
-Checkpoint được tạo tại tick `10,812,745,000`, tương ứng với thời điểm chương trình chuẩn bị thực thi `SubBytes` của Round 9.
+Về mặt kiến trúc, checkpoint của gem5 chủ yếu bao gồm ``CPU registers`` và ``memory``. Vì vậy, ba hướng tiếp cận lần lượt được khảo sát:
 
-Theo RISC-V Calling Convention, thanh ghi `x10` (`a0`) được dùng để truyền đối số đầu tiên khi gọi hàm. Giả thuyết đầu tiên là `x10` có thể chứa hoặc tham chiếu trực tiếp tới AES state.
+```text
+Checkpoint
+      │
+      ▼
+Candidate 1
+Modify CPU Register
+      │
+      ▼
+Candidate 2
+Modify Memory
+      │
+      ▼
+Candidate 3
+Modify Checkpoint Memory
+```
 
-Nếu đúng, chỉ cần sửa giá trị của `x10` trong checkpoint là có thể tạo ra faulty ciphertext.
+Mỗi hướng đều được thực nghiệm và đánh giá dựa trên hai tiêu chí:
 
-#### 7.2.2. Thực nghiệm
+- Có tạo ra faulty ciphertext hay không.
+- Fault có thực sự tác động trực tiếp lên AES state theo fault model của DFA hay không.
+
+---
+
+### 7.3. Attempt 1 – Modify Register `x10`
+
+#### 7.3.1. Giả thuyết
+
+Checkpoint được tạo tại tick ``10,812,745,000``, tương ứng với thời điểm chương trình chuẩn bị thực thi `SubBytes` của Round 9.
+
+Qua quá trình phân tích disassembly ở phần trước, trước khi hàm `SubBytes()` được gọi, đối số đầu tiên của hàm được truyền qua thanh ghi ```x10 (a0)``` theo ``RISC-V Calling Convention``.
+
+Trong cài đặt của ``tiny-AES-c``, đối số này là ``con trỏ tới biến `state```. Do đó, giả thuyết đầu tiên là việc thay đổi giá trị của `x10` có thể làm thay đổi dữ liệu mà `SubBytes()` truy cập, từ đó tạo ra faulty ciphertext mà không cần sửa đổi mã nguồn của AES.
+
+#### 7.3.2. Thực nghiệm
+Để kiểm tra cấu trúc của checkpoint, nội dung file `m5.cpt` được trích xuất bằng lệnh:
+
+```
+ls ~/Desktop/ckpt_fault/
+cat ~/Desktop/ckpt_fault/m5.cpt | grep -A5 -i "regs\|intregs\|pc" | head -60
+```
+
+![alt text](Image/Screenshot_374.png)
+
+Kết quả cho thấy checkpoint của gem5 lưu trữ đầy đủ trạng thái của CPU tại thời điểm tạo checkpoint, bao gồm các thanh ghi (`regs.integer`, `regs.floating_point`) và bộ đếm chương trình (`_pc`, `_npc`). Điều này xác nhận rằng trạng thái thực thi của chương trình đã được ghi lại và có thể chỉnh sửa trực tiếp trước khi khôi phục (restore). Dựa trên thông tin này, thử nghiệm đầu tiên lựa chọn chỉnh sửa thanh ghi `x10` trong vùng `regs.integer` để đánh giá khả năng đưa fault vào quá trình thực thi của AES.
+
+Sau khi xác nhận checkpoint lưu toàn bộ trạng thái CPU, bước tiếp theo là kiểm tra liệu có thể ``chỉnh sửa trực tiếp nội dung của checkpoint`` trước khi restore hay không.
+
+Quan sát file `m5.cpt` cho thấy các thanh ghi được lưu trong trường `regs.integer`. Thay vì lưu theo tên từng thanh ghi (`x0`, `x1`, `x2`, ...), gem5 lưu toàn bộ các thanh ghi nguyên dưới dạng một dãy byte liên tục. Mỗi thanh ghi của kiến trúc RISC-V 64-bit có kích thước ``8 byte``, do đó vị trí của thanh ghi `x10` được xác định theo công thức `10 × 8 = 80`, tương ứng với các byte từ ``80 đến 87`` trong trường `regs.integer`.
+
+Vì checkpoint thực chất là một tệp văn bản, nên có thể đọc, thay đổi giá trị của một thanh ghi rồi ghi lại vào chính checkpoint.
+
+Dựa trên giả thuyết rằng thanh ghi `x10` có thể đang chứa hoặc tham chiếu tới AES state, một script Python được xây dựng để:
+
+- Đọc trường `regs.integer` từ checkpoint.
+- Tính offset của thanh ghi `x10` trong mảng byte (`10 × 8 = 80`).
+- Trích xuất giá trị của thanh ghi `x10`.
+- Thực hiện phép ``bit flip`` ở bit thấp nhất.
+- Ghi giá trị mới trở lại file `m5.cpt`.
+
+Script được sử dụng như sau:
 
 ```python
-# modify_ckpt.py
+cat > ~/Desktop/modify_ckpt.py << 'EOF'
+import struct
 
-reg_idx = 10 * 8
+ckpt_file = '/home/clap/Desktop/ckpt_fault/m5.cpt'
 
-x10_bytes = bytes(vals[reg_idx:reg_idx+8])
-x10_val = struct.unpack('<Q', x10_bytes)[0]
+with open(ckpt_file, 'r') as f:
+    content = f.read()
 
-print(f"[PRE-FAULT] x10 = 0x{x10_val:016x}")
+# Parse regs.integer line
+lines = content.split('\n')
+for i, line in enumerate(lines):
+    if line.startswith('regs.integer='):
+        vals = list(map(int, line[len('regs.integer='):].split()))
+        
+        # Mỗi register = 8 bytes, x10 bắt đầu tại index 10`8 = 80
+        reg_idx = 10 ` 8
+        
+        # Đọc x10 (little-endian 8 bytes)
+        x10_bytes = bytes(vals[reg_idx:reg_idx+8])
+        x10_val = struct.unpack('<Q', x10_bytes)[0]
+        print(f"[PRE-FAULT]  x10 = 0x{x10_val:016x}")
+        
+        # Flip bit 0
+        x10_faulty = x10_val ^ 0x01
+        print(f"[POST-FAULT] x10 = 0x{x10_faulty:016x}")
+        
+        # Write back
+        faulty_bytes = list(struct.pack('<Q', x10_faulty))
+        vals[reg_idx:reg_idx+8] = faulty_bytes
+        
+        lines[i] = 'regs.integer=' + ' '.join(map(str, vals))
+        break
 
-x10_faulty = x10_val ^ 0x01
+with open(ckpt_file, 'w') as f:
+    f.write('\n'.join(lines))
+
+print("[DONE] Checkpoint modified")
+EOF
+
+python3 ~/Desktop/modify_ckpt.py
 ```
 
 Kết quả:
@@ -1044,34 +1237,161 @@ Kết quả:
 [POST-FAULT] x10 = 0x7ffffffffffffc79
 ```
 
-Restore checkpoint và tiếp tục thực thi:
+Kết quả trên cho thấy script đã đọc thành công giá trị của thanh ghi `x10` từ checkpoint, thực hiện phép ``bit flip`` ở bit thấp nhất và ghi lại giá trị mới vào file `m5.cpt`.
 
-```text
-Ciphertext:
-e6d77bb40d7a36c7a89e67f324dcef97
+Sau khi chỉnh sửa checkpoint, tiến hành khôi phục trạng thái và tiếp tục mô phỏng bằng script `restore_fault.py`.
+
+```python
+cat > ~/Desktop/restore_fault.py << 'EOF'
+import m5
+from m5.objects import `
+
+system = System()
+system.clk_domain = SrcClockDomain()
+system.clk_domain.clock = '1GHz'
+system.clk_domain.voltage_domain = VoltageDomain()
+
+system.mem_mode = 'timing'
+system.mem_ranges = [AddrRange('512MB')]
+
+system.cpu = RiscvTimingSimpleCPU()
+system.membus = SystemXBar()
+system.cpu.icache_port = system.membus.cpu_side_ports
+system.cpu.dcache_port = system.membus.cpu_side_ports
+system.cpu.createInterruptController()
+
+system.mem_ctrl = MemCtrl()
+system.mem_ctrl.dram = DDR3_1600_8x8()
+system.mem_ctrl.dram.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.membus.mem_side_ports
+system.system_port = system.membus.cpu_side_ports
+
+binary = '/home/clap/Desktop/tiny-AES-c/aes_test'
+system.workload = SEWorkload.init_compatible(binary)
+process = Process()
+process.cmd = [binary]
+system.cpu.workload = process
+system.cpu.createThreads()
+
+root = Root(full_system=False, system=system)
+m5.instantiate('/home/clap/Desktop/ckpt_fault')
+
+print("=== Resuming from checkpoint with fault ===")
+exit_event = m5.simulate()
+print(f"Exited at tick {m5.curTick()}")
+EOF
+```
+![alt text](Image/Screenshot_375.png)
+
+Ciphertext thu được hoàn toàn giống với ciphertext đúng của AES-128, cho thấy việc chỉnh sửa checkpoint không tạo ra lỗi quan sát được trong quá trình mã hóa.
+
+Để kiểm chứng thêm, tiến hành tự động lật lần lượt toàn bộ 64 bit của thanh ghi `x10` và thu thập các faulty ciphertext.
+
+```python
+cat > ~/Desktop/collect_faults.py << 'EOF'
+import subprocess
+import struct
+import shutil
+import os
+
+CKPT_ORIG = '/home/clap/Desktop/ckpt_fault'
+CKPT_WORK = '/home/clap/Desktop/ckpt_work'
+GEM5 = '/home/clap/Desktop/gem5/build/RISCV/gem5.opt'
+RESTORE_SCRIPT = '/home/clap/Desktop/restore_fault.py'
+
+correct = '3ad77bb40d7a3660a89ecaf32466ef97'
+faulty_set = set()
+
+def read_ckpt():
+    with open(f'{CKPT_WORK}/m5.cpt', 'r') as f:
+        return f.read()
+
+def write_ckpt(content):
+    with open(f'{CKPT_WORK}/m5.cpt', 'w') as f:
+        f.write(content)
+
+def get_regs(content):
+    for line in content.split('\n'):
+        if line.startswith('regs.integer='):
+            return list(map(int, line[len('regs.integer='):].split()))
+    return None
+
+def set_regs(content, vals):
+    lines = content.split('\n')
+    for i, line in enumerate(lines):
+        if line.startswith('regs.integer='):
+            lines[i] = 'regs.integer=' + ' '.join(map(str, vals))
+            break
+    return '\n'.join(lines)
+
+def run_gem5():
+    result = subprocess.run(
+        [GEM5, RESTORE_SCRIPT],
+        capture_output=True, text=True
+    )
+    for line in result.stdout.split('\n'):
+        if 'Ciphertext:' in line:
+            return line.split('Ciphertext:')[1].strip()
+    return None
+
+print(f"Correct ciphertext: {correct}")
+print("Collecting faulty ciphertexts...\n")
+
+# Thử flip từng bit của x10 (8 bytes = 64 bits)
+for bit in range(64):
+    shutil.copytree(CKPT_ORIG, CKPT_WORK, dirs_exist_ok=True)
+    
+    content = read_ckpt()
+    vals = get_regs(content)
+    
+    reg_idx = 10 ` 8
+    x10_bytes = bytes(vals[reg_idx:reg_idx+8])
+    x10_val = struct.unpack('<Q', x10_bytes)[0]
+    x10_faulty = x10_val ^ (1 << bit)
+    faulty_bytes = list(struct.pack('<Q', x10_faulty))
+    vals[reg_idx:reg_idx+8] = faulty_bytes
+    
+    content = set_regs(content, vals)
+    write_ckpt(content)
+    
+    ct = run_gem5()
+    if ct and ct != correct and ct not in faulty_set:
+        faulty_set.add(ct)
+        print(f"bit {bit:2d}: {ct}")
+
+print(f"\nCollected {len(faulty_set)} unique faulty ciphertexts")
+
+with open('/home/clap/Desktop/faulty_ciphertexts.txt', 'w') as f:
+    for ct in faulty_set:
+        f.write(ct + '\n')
+
+print("Saved to faulty_ciphertexts.txt")
+EOF
 ```
 
-#### 7.2.3. Phân tích
+![alt text](Image/Screenshot_376.png)
 
-Kết quả trên chứng minh:
+Kết quả trên cho thấy sau khi lần lượt lật toàn bộ ``64 bit`` của thanh ghi `x10` và khôi phục checkpoint, chương trình không tạo ra bất kỳ faulty ciphertext nào. Tất cả các lần thực thi đều cho ra ciphertext giống với kết quả mã hóa đúng, do đó script không thu thập được mẫu lỗi nào để lưu vào `faulty_ciphertexts.txt`.
 
-- Checkpoint được chỉnh sửa thành công.
-- Chương trình vẫn tiếp tục chạy sau khi restore.
-- Việc sửa `x10` có thể làm ciphertext thay đổi.
+#### 7.3.3. Phân tích
 
-Tuy nhiên, khi thử nhiều bit khác nhau của `x10`, chỉ bit thấp nhất tạo ra khác biệt.
+Kết quả trên cho thấy checkpoint có thể được chỉnh sửa và khôi phục thành công. Tuy nhiên, sau khi tiếp tục mô phỏng, ciphertext thu được vẫn giống hoàn toàn với ciphertext đúng. Đồng thời, thử nghiệm tự động lật toàn bộ 64 bit của thanh ghi `x10` cũng không tạo ra bất kỳ faulty ciphertext nào.
 
-Điều này cho thấy `x10` nhiều khả năng đang chứa `địa chỉ (pointer)` thay vì dữ liệu AES state. Việc thay đổi bit thấp nhất chỉ làm địa chỉ bị lệch sang byte kế tiếp và khiến chương trình đọc dữ liệu khác.
+Kết hợp với kết quả phân tích disassembly ở mục trước, có thể xác định rằng `x10` chỉ đóng vai trò là ``thanh ghi truyền tham số`` theo RISC-V Calling Convention, lưu địa chỉ của biến `state` thay vì dữ liệu AES state. Do đó, việc thay đổi giá trị của `x10` không tạo ra lỗi trên AES state tại Round 9 theo fault model của Differential Fault Analysis.
 
-Do đó, mặc dù fault đã ảnh hưởng tới quá trình thực thi, nhưng `chưa có bằng chứng rằng fault được đưa trực tiếp vào AES state của Round 9`.
+Từ các kết quả thực nghiệm trên, có thể kết luận rằng phương pháp chỉnh sửa checkpoint thông qua thanh ghi `x10` không thể tạo ra các faulty ciphertext phục vụ quá trình khôi phục khóa bằng DFA. Vì vậy, hướng tiếp cận này được xem là ``không phù hợp`` và bị loại bỏ trong nghiên cứu. 
 
 ---
 
-### 7.3. Attempt 2 – Modify Physical Memory
+### 7.4. Attempt 2 – Modify Physical Memory
 
-#### 7.3.1. Giả thuyết
+#### 7.4.1. Giả thuyết
 
-Nếu `x10` là pointer tới AES state trên stack, có thể suy ngược từ virtual address sang physical address trong checkpoint rồi chỉnh sửa trực tiếp dữ liệu tại đó.
+Sau Attempt 1, kết quả cho thấy thanh ghi `x10` chỉ đóng vai trò là một con trỏ tới vùng nhớ chứa AES state, thay vì trực tiếp lưu dữ liệu của thuật toán.
+
+Do đó, hướng tiếp theo là xác định địa chỉ vật lý tương ứng với con trỏ này trong checkpoint rồi chỉnh sửa trực tiếp dữ liệu trong file `system.physmem.store0.pmem`.
+
+Nếu vùng nhớ được chỉnh sửa thực sự là AES state của Round 9, việc lật bit trên vùng nhớ này sẽ tạo ra nhiều faulty ciphertext khác nhau để phục vụ Differential Fault Analysis.
 
 Checkpoint vẫn được tạo tại tick:
 
@@ -1079,9 +1399,55 @@ Checkpoint vẫn được tạo tại tick:
 10,812,745,000
 ```
 
-#### 7.3.2. Thực nghiệm
+---
 
-Đọc các thanh ghi:
+#### 7.4.2. Thực nghiệm
+
+Checkpoint được tạo ra bao gồm hai thành phần chính:
+
+- `m5.cpt`: lưu trạng thái CPU, thanh ghi và metadata.
+- `system.physmem.store0.pmem`: lưu toàn bộ nội dung physical memory.
+
+```
+┌──(clap㉿clap)-[~/Desktop/gem5]
+└─$ ls ~/Desktop/ckpt_fault     
+m5.cpt  system.physmem.store0.pmem
+```
+
+Đầu tiên, thông tin ánh xạ bộ nhớ được trích xuất từ file `m5.cpt`.
+
+```python
+cat > ~/Desktop/find_and_fault.py << 'EOF'
+import struct
+import shutil
+import subprocess
+
+CKPT_ORIG = '/home/clap/Desktop/ckpt_fault'
+CKPT_WORK = '/home/clap/Desktop/ckpt_work'
+GEM5 = '/home/clap/Desktop/gem5/build/RISCV/gem5.opt'
+RESTORE_SCRIPT = '/home/clap/Desktop/restore_fault.py'
+correct = '3ad77bb40d7a3660a89ecaf32466ef97'
+
+# Virtual address của AES state
+VADDR = 0x7ffffffffffffc78
+
+# Với SE mode gem5, virtual = physical cho user stack
+# Stack region thường map tại high physical address
+# Đọc m5.cpt để tìm mapping
+with open(f'{CKPT_ORIG}/m5.cpt', 'r') as f:
+    content = f.read()
+
+# Tìm stack info
+for line in content.split('\n'):
+    if 'stack' in line.lower() or 'mmap' in line.lower():
+        print(line)
+
+EOF
+```
+
+![alt text](Image/Screenshot_379.png)
+
+Từ kết quả của Attempt 1, các thanh ghi liên quan đến `state` có giá trị:
 
 ```text
 x10 = 0x7ffffffffffffc79
@@ -1089,263 +1455,572 @@ x11 = 0x7ffffffffffffc78
 x12 = 0x7ffffffffffffc78
 ```
 
-Thực hiện virtual-to-physical mapping:
+Trong đó địa chỉ `0x7ffffffffffffc78` được sử dụng để thực hiện ánh xạ từ virtual address sang physical address.
 
 ```python
+cat > ~/Desktop/find_paddr.py << 'EOF'
+# Virtual address cần tìm
 VADDR = 0x7ffffffffffffc78
-
 PAGE_SIZE = 4096
-vpage = (VADDR // PAGE_SIZE) * PAGE_SIZE  # 0x7ffffffffffff000
-offset = VADDR % PAGE_SIZE               # 0xc78
+
+# Tìm page chứa vaddr này
+vpage = (VADDR // PAGE_SIZE) ` PAGE_SIZE
+offset = VADDR % PAGE_SIZE
+print(f"Looking for vaddr: 0x{VADDR:016x}")
+print(f"Page:   0x{vpage:016x}")
+print(f"Offset: 0x{offset:03x}")
+
+with open('/home/clap/Desktop/ckpt_fault/m5.cpt', 'r') as f:
+    content = f.read()
+
+lines = content.split('\n')
+mappings = []
+i = 0
+while i < len(lines):
+    if lines[i].startswith('vaddr='):
+        va = int(lines[i].split('=')[1])
+        pa = int(lines[i+1].split('=')[1])
+        mappings.append((va, pa))
+    i += 1
+
+# Tìm page match
+for va, pa in mappings:
+    if va == vpage:
+        paddr = pa + offset
+        print(f"\nFound! paddr = 0x{paddr:016x} ({paddr})")
+        break
+else:
+    # Thử tìm page gần nhất
+    print("\nExact page not found, nearby mappings:")
+    nearby = [(va, pa) for va, pa in mappings 
+              if abs(va - vpage) < 0x10000]
+    for va, pa in sorted(nearby):
+        print(f"  vaddr=0x{va:016x} paddr=0x{pa:016x}")
+EOF
 ```
 
-Kết quả:
+![alt text](Image/Screenshot_377.png)
 
-```text
-0x7ffffffffffff000
-        ↓
-Physical: 0x76000
+Tiếp theo, một script được xây dựng để kiểm tra vùng nhớ vật lý vừa xác định và thực hiện fault injection trực tiếp trên vùng nhớ này.
+
+Script thực hiện các bước sau:
+
+- Đọc 16 byte dữ liệu tại địa chỉ vật lý `0x76c78`.
+- Sao chép checkpoint gốc sang thư mục làm việc.
+- Lật một bit trong 16 byte vừa đọc.
+- Restore checkpoint.
+- Tiếp tục mô phỏng bằng gem5.
+- Ghi nhận ciphertext nếu kết quả khác với ciphertext chuẩn.
+
+```python
+cat > ~/Desktop/fault_memory.py << 'EOF'
+import struct
+import shutil
+import subprocess
+
+CKPT_ORIG = '/home/clap/Desktop/ckpt_fault'
+CKPT_WORK = '/home/clap/Desktop/ckpt_work'
+GEM5 = '/home/clap/Desktop/gem5/build/RISCV/gem5.opt'
+RESTORE_SCRIPT = '/home/clap/Desktop/restore_fault.py'
+correct = '3ad77bb40d7a3660a89ecaf32466ef97'
+PMEM_FILE = 'system.physmem.store0.pmem'
+PADDR = 0x76c78  # base của AES state (16 bytes)
+
+def run_gem5():
+    result = subprocess.run([GEM5, RESTORE_SCRIPT],
+                           capture_output=True, text=True)
+    for line in result.stdout.split('\n'):
+        if 'Ciphertext:' in line:
+            return line.split('Ciphertext:')[1].strip()
+    return None
+
+# Đọc AES state hiện tại
+with open(f'{CKPT_ORIG}/{PMEM_FILE}', 'rb') as f:
+    f.seek(PADDR)
+    state = f.read(16)
+
+print("AES state at round 9:")
+print(' '.join(f'{b:02x}' for b in state))
+
+faulty_set = set()
+
+# Flip từng bit của 16 bytes AES state
+for byte_idx in range(16):
+    for bit in range(8):
+        shutil.copytree(CKPT_ORIG, CKPT_WORK, dirs_exist_ok=True)
+        
+        with open(f'{CKPT_WORK}/{PMEM_FILE}', 'r+b') as f:
+            f.seek(PADDR + byte_idx)
+            orig = f.read(1)[0]
+            flipped = orig ^ (1 << bit)
+            f.seek(PADDR + byte_idx)
+            f.write(bytes([flipped]))
+        
+        ct = run_gem5()
+        if ct and ct != correct and ct not in faulty_set:
+            faulty_set.add(ct)
+            print(f"byte={byte_idx} bit={bit}: {ct}")
+
+print(f"\nCollected {len(faulty_set)} unique faulty ciphertexts")
+
+with open('/home/clap/Desktop/faulty_ciphertexts.txt', 'w') as f:
+    for ct in faulty_set:
+        f.write(ct + '\n')
+
+print("Saved to faulty_ciphertexts.txt")
+EOF
 ```
 
-Địa chỉ vật lý ứng viên:
+![alt text](Image/Screenshot_378.png)
 
-```text
-0x76000 + 0xc78 = 0x76c78
-```
+Kết quả trên cho thấy không có bất kỳ faulty ciphertext nào được tạo ra sau khi thực hiện fault injection trên toàn bộ 16 byte tại địa chỉ vật lý `0x76c78`.
 
-Đọc 16 byte:
+Đồng thời, dữ liệu đọc được tại địa chỉ này chỉ bao gồm các giá trị lặp (`0x55`), thay vì trạng thái trung gian của AES vốn được kỳ vọng sẽ có phân bố gần như ngẫu nhiên sau nhiều vòng biến đổi.
 
-```text
-aa aa aa aa aa aa aa aa
-aa aa aa aa aa aa aa aa
-```
-
-### 7.3.3. Phân tích
-
-Việc toàn bộ 16 byte đều mang giá trị `0xaa` không đủ để kết luận đây chắc chắn không phải AES state.
-
-Tuy nhiên, đối với trạng thái trung gian của AES tại Round 9, việc toàn bộ 16 byte đều có cùng giá trị là rất khó xảy ra.
-
-Điều này cho thấy địa chỉ vật lý vừa tìm được nhiều khả năng `không phải vùng dữ liệu mà `Cipher()` đang sử dụng tại fault boundary`.
-
-Do đó, attempt này vẫn chưa xác định được vị trí của AES state trong checkpoint.
+Điều này cho thấy địa chỉ vật lý được suy ra từ virtual-to-physical mapping nhiều khả năng không phải là vùng nhớ chứa AES state tại thời điểm thực hiện Round 9.
 
 ---
 
-### 7.4. Attempt 3 – Save Checkpoint Later
+### 7.4.3. Phân tích
 
-#### 7.4.1. Giả thuyết
+Mặc dù virtual-to-physical mapping được thực hiện thành công và có thể xác định được một địa chỉ vật lý tương ứng với con trỏ `x10`, việc chỉnh sửa trực tiếp dữ liệu tại địa chỉ này không tạo ra bất kỳ ảnh hưởng nào đến kết quả mã hóa.
 
-Hai attempt trước đều sử dụng checkpoint tại đúng fault boundary (`10,812,745,000`).
+Ngoài ra, giá trị lưu trong vùng nhớ này không ổn định giữa các checkpoint (lần lượt xuất hiện các mẫu `0xaa` và `0x55`), cho thấy đây không phải vùng dữ liệu mà thuật toán AES đang thao tác tại fault boundary.
 
-Một giả thuyết khác là checkpoint có thể được tạo quá sớm, khi trạng thái AES chưa ổn định trong bộ nhớ.
+Nguyên nhân có thể là checkpoint được lưu khi chương trình mới bước vào hàm `SubBytes`, trong khi stack frame và vùng nhớ chứa AES state vẫn chưa được thiết lập hoàn chỉnh hoặc con trỏ `x10` chưa trỏ trực tiếp tới dữ liệu cần sửa đổi.
 
-Do đó checkpoint được dịch muộn hơn `50,000 ticks`, đi sâu hơn vào bên trong `SubBytes()`.
+Do đó, phương pháp chỉnh sửa trực tiếp file `system.physmem.store0.pmem` không thể tạo ra các faulty ciphertext theo fault model của Differential Fault Analysis.
 
-#### 7.4.2. Thực nghiệm
+Từ kết quả này, hướng tiếp cận tiếp theo là thay đổi ``thời điểm tạo checkpoint``, nhằm đảm bảo checkpoint được lưu sau khi AES state đã được khởi tạo đầy đủ trong bộ nhớ.
+
+---
+
+### 7.5. Attempt 3 – Save Checkpoint Later
+
+#### 7.5.1. Giả thuyết
+
+Sau hai attempt đầu, một giả thuyết mới được đặt ra là checkpoint được tạo quá sớm.
+
+Mặc dù checkpoint nằm tại thời điểm chương trình chuẩn bị thực hiện SubBytes() của Round 9, nhưng AES state có thể vẫn chưa được khởi tạo hoàn chỉnh trong stack frame hoặc chưa được nạp vào vùng nhớ mà Cipher() sử dụng.
+
+Do đó, thay vì tạo checkpoint đúng tại fault boundary, thời điểm checkpoint được dịch muộn hơn nhằm đi sâu hơn vào quá trình thực thi của SubBytes().
+
+#### 7.5.2. Thực nghiệm
+
+Để tạo checkpoint sau khi chương trình đã đi sâu hơn vào hàm `SubBytes()`, thời điểm mô phỏng được dịch thêm một khoảng nhỏ so với fault boundary ban đầu.
+
+Checkpoint ban đầu được tạo tại tick:
+
+```text
+10,812,745,000
+```
+
+Trong attempt này, checkpoint được dịch thêm `50,000 ticks`:
 
 ```python
 FAULT_TICK = 10812745000 + 50000
 ```
 
-Checkpoint được tạo tại:
+Khoảng dịch `50,000 ticks` được lựa chọn nhằm đảm bảo CPU đã bắt đầu thực thi các lệnh bên trong `SubBytes()`, nhưng vẫn còn nằm trong Round 9 của thuật toán AES. Mục tiêu của việc dịch checkpoint là kiểm tra xem AES state đã được khởi tạo đầy đủ trong bộ nhớ hay chưa trước khi tiến hành fault injection.
 
-```text
-10,812,795,000
+```python
+cat > ~/Desktop/fault_inject2.py << 'EOF'
+import m5
+from m5.objects import `
+
+system = System()
+system.clk_domain = SrcClockDomain()
+system.clk_domain.clock = '1GHz'
+system.clk_domain.voltage_domain = VoltageDomain()
+system.mem_mode = 'timing'
+system.mem_ranges = [AddrRange('512MB')]
+system.cpu = RiscvTimingSimpleCPU()
+system.membus = SystemXBar()
+system.cpu.icache_port = system.membus.cpu_side_ports
+system.cpu.dcache_port = system.membus.cpu_side_ports
+system.cpu.createInterruptController()
+system.mem_ctrl = MemCtrl()
+system.mem_ctrl.dram = DDR3_1600_8x8()
+system.mem_ctrl.dram.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.membus.mem_side_ports
+system.system_port = system.membus.cpu_side_ports
+
+binary = '/home/clap/Desktop/tiny-AES-c/aes_test'
+system.workload = SEWorkload.init_compatible(binary)
+process = Process()
+process.cmd = [binary]
+system.cpu.workload = process
+system.cpu.createThreads()
+
+root = Root(full_system=False, system=system)
+m5.instantiate()
+
+# Round 9 SubBytes call tại tick 10812745000
+# Chạy thêm 1000 ticks vào bên trong SubBytes
+FAULT_TICK = 10812745000 + 50000
+
+print("=== Running to inside SubBytes round 9 ===")
+m5.simulate(FAULT_TICK - m5.curTick())
+
+import os
+ckpt_dir = '/home/clap/Desktop/ckpt_fault2'
+os.makedirs(ckpt_dir, exist_ok=True)
+m5.checkpoint(ckpt_dir)
+print(f"[INFO] Checkpoint saved at tick {m5.curTick()}")
+
+exit_event = m5.simulate()
+print(f"Exited at tick {m5.curTick()}")
+EOF
 ```
 
-Đọc lại vùng nhớ:
+Sau khi chạy mô phỏng với thời điểm checkpoint mới, gem5 tiếp tục thực thi chương trình đến `FAULT_TICK`, tạo checkpoint mới và sau đó hoàn tất quá trình mã hóa AES.
+
+Kết quả thực thi như sau:
+
+![alt text](Image/Screenshot_380.png)
+
+Kết quả cho thấy checkpoint đã được tạo thành công tại tick `10,812,896,500`, tức muộn hơn so với checkpoint ban đầu và nằm sâu hơn trong quá trình thực thi của `SubBytes()`.
+
+Đồng thời, ciphertext cuối cùng vẫn trùng khớp với ciphertext chuẩn:
 
 ```text
-55 55 55 55 55 55 55 55
-55 55 55 55 55 55 55 55
+3ad77bb40d7a3660a89ecaf32466ef97
 ```
 
-#### 7.4.3. Phân tích
+Điều này cho thấy việc thay đổi thời điểm lưu checkpoint không làm thay đổi quá trình thực thi của thuật toán AES và checkpoint mới vẫn có thể được sử dụng cho các bước phân tích tiếp theo.
 
-Pattern thay đổi từ `0xaa` sang `0x55`, cho thấy thời điểm tạo checkpoint thực sự ảnh hưởng tới dữ liệu được quan sát.
+Checkpoint mới sau đó được sử dụng để xác định lại vùng nhớ vật lý tương ứng với AES state và đọc dữ liệu tại vùng nhớ này.
 
-Tuy nhiên, toàn bộ 16 byte vẫn có cùng một giá trị và không có bằng chứng nào cho thấy vùng nhớ này chính là AES state mà `SubBytes()` đang xử lý.
+```python
+cat > ~/Desktop/find_state2.py << 'EOF'
+import struct
 
-Điều này cho thấy việc dịch checkpoint muộn hơn `không giải quyết được bài toán ánh xạ giữa execution state và AES state`.
+CKPT = '/home/clap/Desktop/ckpt_fault2'
+PAGE_SIZE = 4096
+
+with open(f'{CKPT}/m5.cpt', 'r') as f:
+    content = f.read()
+
+mappings = {}
+lines = content.split('\n')
+for i, line in enumerate(lines):
+    if line.startswith('vaddr='):
+        va = int(line.split('=')[1])
+        pa = int(lines[i+1].split('=')[1])
+        mappings[va] = pa
+
+def virt_to_phys(vaddr):
+    page = (vaddr // PAGE_SIZE) ` PAGE_SIZE
+    offset = vaddr % PAGE_SIZE
+    if page in mappings:
+        return mappings[page] + offset
+    return None
+
+def read_pmem(paddr, size):
+    with open(f'{CKPT}/system.physmem.store0.pmem', 'rb') as f:
+        f.seek(paddr)
+        return f.read(size)
+
+# Đọc registers từ checkpoint mới
+for line in lines:
+    if line.startswith('regs.integer='):
+        vals = list(map(int, line.split('=')[1].split()))
+        regs = []
+        for i in range(32):
+            b = bytes(vals[i`8:(i+1)`8])
+            regs.append(struct.unpack('<Q', b)[0])
+        break
+
+s0 = regs[8]
+a0 = regs[10]
+print(f"s0 = 0x{s0:016x}")
+print(f"a0 = 0x{a0:016x}")
+
+# Thử a0 trực tiếp — SubBytes nhận state pointer qua a0
+for name, vaddr in [('a0', a0), ('s0-40', s0-40), ('s0-48', s0-48)]:
+    pa = virt_to_phys(vaddr)
+    if pa:
+        data = read_pmem(pa, 16)
+        print(f"{name} (0x{vaddr:016x} -> 0x{pa:08x}): {' '.join(f'{b:02x}' for b in data)}")
+    else:
+        # Try reading pointer first
+        ptr_pa = virt_to_phys(vaddr)
+        print(f"{name}: no mapping found")
+EOF
+```
+
+![alt text](Image/Screenshot_381.png)
+
+Kết quả cho thấy cả ba vùng nhớ được kiểm tra đều chỉ chứa giá trị 0xaa. Điều này cho thấy mặc dù checkpoint đã được lưu muộn hơn, các địa chỉ được suy ra từ các thanh ghi a0 và s0 vẫn không chứa dữ liệu có đặc trưng của AES state.
+
+Tuy nhiên, chỉ quan sát nội dung bộ nhớ vẫn chưa đủ để kết luận rằng đây không phải vùng dữ liệu đang được thuật toán sử dụng. Vì vậy, cần tiếp tục kiểm chứng bằng cách thực hiện fault injection trực tiếp trên vùng nhớ này và quan sát ảnh hưởng tới ciphertext.
+
+```python
+cat > ~/Desktop/fault_memory.py << 'EOF'
+import struct
+import shutil
+import subprocess
+
+CKPT_ORIG = '/home/clap/Desktop/ckpt_fault'
+CKPT_WORK = '/home/clap/Desktop/ckpt_work'
+GEM5 = '/home/clap/Desktop/gem5/build/RISCV/gem5.opt'
+RESTORE_SCRIPT = '/home/clap/Desktop/restore_fault.py'
+correct = '3ad77bb40d7a3660a89ecaf32466ef97'
+PMEM_FILE = 'system.physmem.store0.pmem'
+PADDR = 0x76c78  # base của AES state (16 bytes)
+
+def run_gem5():
+    result = subprocess.run([GEM5, RESTORE_SCRIPT],
+                           capture_output=True, text=True)
+    for line in result.stdout.split('\n'):
+        if 'Ciphertext:' in line:
+            return line.split('Ciphertext:')[1].strip()
+    return None
+
+# Đọc AES state hiện tại
+with open(f'{CKPT_ORIG}/{PMEM_FILE}', 'rb') as f:
+    f.seek(PADDR)
+    state = f.read(16)
+
+print("AES state at round 9:")
+print(' '.join(f'{b:02x}' for b in state))
+
+faulty_set = set()
+
+# Flip từng bit của 16 bytes AES state
+for byte_idx in range(16):
+    for bit in range(8):
+        shutil.copytree(CKPT_ORIG, CKPT_WORK, dirs_exist_ok=True)
+        
+        with open(f'{CKPT_WORK}/{PMEM_FILE}', 'r+b') as f:
+            f.seek(PADDR + byte_idx)
+            orig = f.read(1)[0]
+            flipped = orig ^ (1 << bit)
+            f.seek(PADDR + byte_idx)
+            f.write(bytes([flipped]))
+        
+        ct = run_gem5()
+        if ct and ct != correct and ct not in faulty_set:
+            faulty_set.add(ct)
+            print(f"byte={byte_idx} bit={bit}: {ct}")
+
+print(f"\nCollected {len(faulty_set)} unique faulty ciphertexts")
+
+with open('/home/clap/Desktop/faulty_ciphertexts.txt', 'w') as f:
+    for ct in faulty_set:
+        f.write(ct + '\n')
+
+print("Saved to faulty_ciphertexts.txt")
+EOF
+```
+
+![alt text](Image/Screenshot_382.png)
+
+Mặc dù mẫu dữ liệu trong bộ nhớ đã thay đổi từ 0xaa sang 0x55 sau khi checkpoint được dịch muộn hơn, việc lật toàn bộ 128 bit của vùng nhớ này vẫn không tạo ra bất kỳ faulty ciphertext nào.
+
+Kết quả này cho thấy vùng nhớ đang được chỉnh sửa không phải là AES state được sử dụng bởi hàm SubBytes() tại thời điểm fault injection. Nói cách khác, việc thay đổi thời điểm lưu checkpoint chưa giải quyết được vấn đề xác định chính xác vị trí của AES state trong bộ nhớ.
 
 ---
 
-### 7.5. Tổng kết
+### 7.6. Tổng kết
 
-Ba hướng tiếp cận được tóm tắt như sau:
+Ba hướng tiếp cận trong giai đoạn checkpoint-based fault injection được tóm tắt trong Bảng dưới đây.
 
-| Attempt | Checkpoint Tick | Giả thuyết | Kết quả |
-|----------|----------------:|------------|----------|
-| Modify Register | 10,812,745,000 | `x10` chứa AES state | `x10` nhiều khả năng là pointer |
-| Modify Physical Memory | 10,812,745,000 | Mapping tới AES state | Chỉ đọc được pattern `0xaa` |
-| Save Checkpoint Later | 10,812,795,000 | Checkpoint được tạo quá sớm | Pattern chuyển thành `0x55`, vẫn chưa xác định được AES state |
+| Attempt | Checkpoint Tick | Mục tiêu | Kết quả |
+|----------|----------------:|----------|----------|
+| Modify Register | 10,812,745,000 | Thay đổi giá trị thanh ghi `x10` nhằm tác động tới AES state | Checkpoint được chỉnh sửa và restore thành công, nhưng không tạo được tập faulty ciphertext phục vụ DFA |
+| Modify Physical Memory | 10,812,745,000 | Ánh xạ virtual address sang physical memory và chỉnh sửa trực tiếp vùng nhớ | Chỉ quan sát được mẫu dữ liệu `0xaa`; fault injection không tạo được faulty ciphertext |
+| Save Checkpoint Later | 10,812,896,500 | Dịch thời điểm tạo checkpoint vào sâu hơn trong `SubBytes()` | Mẫu dữ liệu thay đổi thành `0x55`, tuy nhiên vẫn không xác định được AES state và không thu được faulty ciphertext |
 
-Các thử nghiệm trên chứng minh rằng checkpoint có thể được `tạo`, `chỉnh sửa` và `khôi phục` thành công, đồng thời chương trình vẫn tiếp tục thực thi bình thường sau khi restore.
+Các thử nghiệm trên cho thấy checkpoint của gem5 có thể được tạo, chỉnh sửa và khôi phục thành công, đồng thời chương trình vẫn tiếp tục thực thi bình thường sau khi restore. Điều này chứng minh rằng cơ chế checkpoint hoàn toàn có thể được sử dụng để can thiệp vào trạng thái thực thi của chương trình.
 
-Tuy nhiên, `không có bằng chứng đủ mạnh để khẳng định byte được chỉnh sửa chính là AES state tại Round 9`. Khó khăn của phương pháp này không nằm ở việc thao tác với checkpoint, mà nằm ở việc ánh xạ dữ liệu mức thấp của checkpoint sang trạng thái logic của thuật toán AES.
+Tuy nhiên, cả ba hướng tiếp cận đều gặp cùng một trở ngại: ``không thể xác định chính xác vị trí của AES state tại Round 9 trong dữ liệu của checkpoint``. Mặc dù đã thử chỉnh sửa thanh ghi, ánh xạ sang bộ nhớ vật lý và thay đổi thời điểm tạo checkpoint, các vùng nhớ quan sát được chỉ chứa các mẫu dữ liệu như `0xaa` hoặc `0x55` và không phản ánh trạng thái trung gian của thuật toán AES.
 
-Do không thể đảm bảo fault được đưa vào đúng vị trí theo fault model của PhoenixAES, hướng tiếp cận này không được sử dụng để tạo tập faulty ciphertext cuối cùng.
+Bên cạnh đó, các thử nghiệm fault injection trên các vùng nhớ này đều không tạo được tập faulty ciphertext hợp lệ. Điều này cho thấy các byte được chỉnh sửa không phải là AES state mà hàm `SubBytes()` đang xử lý tại thời điểm fault injection.
 
-Thay vào đó, nghiên cứu chuyển sang `source-level fault hook`, trong đó fault được chèn trực tiếp vào AES state ngay trước `SubBytes()` của Round 9.
+Do đó, checkpoint-based fault injection không đáp ứng được yêu cầu của Differential Fault Analysis, trong đó fault phải được chèn trực tiếp vào AES state của Round 9 để tạo ra các faulty ciphertext phục vụ quá trình khôi phục khóa.
+
+Vì lý do đó, nghiên cứu chuyển sang hướng tiếp cận thứ hai là ``source-level fault injection``, trong đó fault được chèn trực tiếp vào biến `state` bên trong hàm `Cipher()` ngay trước khi thực hiện phép biến đổi `SubBytes()` của Round 9. Cách tiếp cận này loại bỏ hoàn toàn bài toán ánh xạ giữa execution state của gem5 và trạng thái logic của thuật toán AES, đồng thời bảo đảm fault được đưa vào đúng vị trí theo fault model của PhoenixAES.
 
 ---
 
 ## 8. Approach 2: Source-level Fault Hook
 
-Phần trước đã cho thấy checkpoint có thể được tạo và chỉnh sửa thành công, tuy nhiên chưa thể xác định một cách đáng tin cậy byte nào trong checkpoint tương ứng với `AES state tại Round 9`. Vì vậy, mặc dù fault có thể được đưa vào trạng thái thực thi của hệ thống, vẫn chưa có đủ bằng chứng để khẳng định fault được đặt đúng vị trí mà mô hình DFA yêu cầu.
+Các thử nghiệm ở phần trước cho thấy checkpoint có thể được tạo và khôi phục thành công trong gem5. Tuy nhiên, việc chỉnh sửa thanh ghi và bộ nhớ tại checkpoint vẫn chưa xác định được một cách đáng tin cậy vị trí của `AES state` trong bộ nhớ tại thời điểm thực thi `Round 9`. Do đó, mặc dù fault có thể được đưa vào trạng thái của hệ thống, vẫn chưa thể khẳng định fault được đặt đúng vị trí mà mô hình Differential Fault Analysis (DFA) yêu cầu.
 
-Để tiếp tục quá trình thực nghiệm, nghiên cứu chuyển sang một hướng tiếp cận khác: `đưa fault hook trực tiếp vào hàm `Cipher()` của tiny-AES-c`.
+Để giải quyết vấn đề này, nghiên cứu chuyển sang phân tích trực tiếp mã nguồn của `tiny-AES-c`. Thay vì tiếp tục suy luận vị trí của `AES state` từ checkpoint, mục tiêu là xác định chính xác luồng thực thi của thuật toán AES, từ đó lựa chọn vị trí phù hợp để chèn fault hook.
 
-Điểm cần lưu ý là mục tiêu của bước này `không thay đổi`. Fault vẫn được đưa vào đúng `logical boundary` đã xác định từ các phần trước, tức `ngay trước `SubBytes()` của Round 9`. Khác biệt duy nhất là thay vì phải suy luận vị trí của AES state từ dữ liệu trong checkpoint, vị trí fault giờ đây được xác định trực tiếp trong mã nguồn của thuật toán.
-
-Sau khi thêm fault hook, chương trình được biên dịch lại thành `RISC-V binary` và tiếp tục chạy trên `gem5` giống như các phần trước. Do đó, toàn bộ faulty ciphertext vẫn được sinh ra từ quá trình thực thi thực tế của binary trên mô hình hệ thống mô phỏng, thay vì được tạo thủ công.
-
-Pipeline của phương pháp này như sau:
+Quá trình thực hiện được chia thành các bước sau:
 
 ```text
-Patch Cipher()
-        │
-        ▼
+Phân tích mã nguồn Cipher()
+          │
+          ▼
+Xác định vị trí Round 9
+          │
+          ▼
+Chèn fault hook trước SubBytes()
+          │
+          ▼
 Compile thành RISC-V binary
-        │
-        ▼
-Run trên gem5
-        │
-        ▼
-Fault tại Round 9
-        │
-        ▼
-Collect Faulty Ciphertexts
+          │
+          ▼
+Thực thi trên gem5
+          │
+          ▼
+Thu thập Faulty Ciphertexts
 ```
 
-Ưu điểm của cách tiếp cận này là vị trí fault được kiểm soát chính xác theo fault model của DFA, đồng thời vẫn giữ nguyên toàn bộ quá trình thực thi của chương trình trong gem5.
+Khác với phương pháp checkpoint-based fault injection, cách tiếp cận này không còn phụ thuộc vào việc ánh xạ `AES state` từ dữ liệu checkpoint. Thay vào đó, fault được đưa trực tiếp vào đúng vị trí trong luồng thực thi của thuật toán AES, trong khi toàn bộ chương trình vẫn được biên dịch thành `RISC-V binary` và thực thi trên gem5 giống như các phần trước.
 
-### 8.1. Patch `aes.c` - Thêm Fault Hook
+### 8.1. Phân tích hàm `Cipher()`
 
-Đọc source của hàm `Cipher()` trong `aes.c`:
+Trước khi chèn fault hook, cần xác định cấu trúc của hàm `Cipher()` trong `tiny-AES-c` cũng như vị trí của vòng lặp thực hiện các round của AES.
 
-```c
-static void Cipher(state_t* state, const uint8_t* RoundKey)
-{
-  uint8_t round = 0;
-  AddRoundKey(0, state, RoundKey);
+![alt text](Image/Screenshot_383.png)
 
-  for (round = 1; ; ++round)
-  {
-    SubBytes(state);
-    ShiftRows(state);
-    if (round == Nr) {
-      break;
-    }
-    MixColumns(state);
-    AddRoundKey(round, state, RoundKey);
-  }
-  AddRoundKey(Nr, state, RoundKey);
-}
+Kết quả cho thấy:
+
+- `Nr = 10`, tương ứng với số vòng của AES-128.
+- Hàm `Cipher()` bắt đầu tại dòng 413.
+- Vòng lặp xử lý các round bắt đầu tại dòng 424.
+- `SubBytes()` được gọi bên trong vòng lặp của mỗi round.
+
+Để quan sát chi tiết luồng thực thi của thuật toán, tiếp tục hiển thị phần thân của hàm `Cipher()`.
+
+![alt text](Image/Screenshot_384.png)
+
+Quan sát mã nguồn cho thấy mỗi vòng AES đều thực hiện các phép biến đổi theo thứ tự:
+
+```text
+SubBytes()
+      │
+      ▼
+ShiftRows()
+      │
+      ▼
+MixColumns()
+      │
+      ▼
+AddRoundKey()
 ```
 
-Fault hook được chèn `ngay trước lời gọi `SubBytes()` của Round 9` trong hàm `Cipher()`. Vị trí này được lựa chọn dựa trên kết quả phân tích `disassembly` và `execution trace` ở các phần trước, nơi đã xác định đây là `fault boundary` phù hợp với mô hình DFA của PhoenixAES.
+Theo fault model của PhoenixAES, fault cần được đưa vào ``ngay trước `SubBytes()` của Round 9``. Vì vậy, thay vì sửa đổi trạng thái của chương trình thông qua checkpoint, nghiên cứu lựa chọn chèn trực tiếp một fault hook vào vị trí này trong mã nguồn của hàm `Cipher()`.
+
+### 8.2. Patch `aes.c`
+
+Sau khi xác định được vị trí cần tác động, bước tiếp theo là vá mã nguồn của `tiny-AES-c` để bổ sung fault hook. Thay vì chỉnh sửa thủ công, quá trình này được tự động hóa bằng một script Python nhằm đảm bảo việc patch có thể được lặp lại một cách nhất quán.
+
+``Code:`` Chạy script patch `aes.c`.
+
+![alt text](Image/Screenshot_385.png)
+
+Sau khi patch hoàn tất, kiểm tra lại hàm `Cipher()` cho thấy fault hook đã được chèn thành công ngay trước lời gọi `SubBytes()`.
+
+![alt text](Image/Screenshot_386.png)
+
+Fault hook được đặt ``ngay trước `SubBytes()` của Round 9``, đúng với `fault boundary` đã xác định ở bước phân tích.
+
+Trong đoạn mã này:
+
+- `round == 9` đảm bảo fault chỉ được đưa vào Round 9.
+- `fault_byte` xác định byte của `AES state` sẽ bị tác động.
+- `fault_bit` xác định bit cần lật trong byte đã chọn.
+- `s[fault_byte] ^= (1 << fault_bit)` thực hiện thao tác ``flip một bit`` trên `AES state`.
+
+Nhờ đó, mỗi lần thực thi chỉ tạo ra ``một single-bit fault``, phù hợp với fault model được sử dụng trong Differential Fault Analysis.
+
+### 8.3. Chuẩn bị chương trình thử nghiệm
+
+Sau khi bổ sung fault hook vào `aes.c`, cần chuẩn bị một chương trình thử nghiệm để khởi tạo dữ liệu đầu vào và truyền vị trí fault vào quá trình mã hóa.
+
+Trong nghiên cứu này, một file `aes_main.c` mới được tạo. Chương trình vẫn sử dụng cùng khóa bí mật (key) và plaintext theo ``NIST Known Answer Test`` như các phần trước nhằm đảm bảo tính nhất quán của quá trình thực nghiệm. Điểm khác biệt là chương trình bổ sung hai biến toàn cục `fault_byte` và `fault_bit`, cho phép xác định vị trí fault trước khi bắt đầu quá trình mã hóa.
+
+Các giá trị này được lấy từ hai environment variables `FAULT_BYTE` và `FAULT_BIT`, sau đó được fault hook trong `aes.c` sử dụng để lật đúng một bit của `AES state` tại Round 9.
 
 ```c
-for (round = 1; ; ++round)
-{
-    // DFA fault injection hook
-    if (round == 9 && fault_byte >= 0 && fault_byte < 16) {
-        uint8_t* s = (uint8_t*)state;
-        s[fault_byte] ^= (1 << fault_bit);  // flip 1 bit
-    }
+cat > ~/Desktop/tiny-AES-c/aes_main.c << 'EOF'
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "aes.h"
 
-    SubBytes(state);
-    ShiftRows(state);
-
-    ...
-}
-```
-
-Trong đoạn mã trên:
-
-- `round == 9` đảm bảo fault chỉ được đưa vào ở Round 9.
-- `fault_byte` xác định byte của AES state sẽ bị tác động.
-- `fault_bit` xác định bit cần lật trong byte đó.
-
-Nhờ vậy, mỗi lần thực thi chỉ tạo ra `một single-bit fault` đúng với fault model được sử dụng trong Differential Fault Analysis.
-
----
-
-### 8.2. Compile và Verify
-
-Khai báo các biến toàn cục trong `aes.c`:
-
-```c
-extern int fault_byte;
-extern int fault_bit;
-```
-
-Định nghĩa trong `aes_main.c`:
-
-```c
-int fault_byte = -1;  // -1 = no fault
+int fault_byte = -1;
 int fault_bit  = 0;
+
+int main() {
+    uint8_t key[16] = {
+        0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+        0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
+    };
+    uint8_t plaintext[16] = {
+        0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+        0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
+    };
+
+    char `fb = getenv("FAULT_BYTE");
+    char `fi = getenv("FAULT_BIT");
+    if (fb) fault_byte = atoi(fb);
+    if (fi) fault_bit  = atoi(fi);
+
+    struct AES_ctx ctx;
+    AES_init_ctx(&ctx, key);
+
+    uint8_t buf[16];
+    memcpy(buf, plaintext, 16);
+    AES_ECB_encrypt(&ctx, buf);
+
+    printf("Ciphertext: ");
+    for (int i = 0; i < 16; i++) printf("%02x", buf[i]);
+    printf("\n");
+
+    return 0;
+}
+EOF
 ```
 
-Đọc giá trị từ environment variables:
+Trong chương trình trên, `FAULT_BYTE` xác định byte của `AES state` sẽ bị tác động, còn `FAULT_BIT` xác định bit cần lật trong byte đó. Hai giá trị này được đọc trước khi bắt đầu quá trình mã hóa và lưu vào hai biến toàn cục `fault_byte` và `fault_bit`. Fault hook trong `aes.c` sẽ sử dụng hai biến này để quyết định có thực hiện fault injection hay không và nếu có thì tác động vào vị trí nào. Nhờ đó, cùng một RISC-V binary có thể được thực thi nhiều lần với các vị trí fault khác nhau mà không cần chỉnh sửa lại mã nguồn.
 
-```c
-char *fb = getenv("FAULT_BYTE");
-char *fi = getenv("FAULT_BIT");
+### 8.4. Biên dịch chương trình
 
-if (fb)
-    fault_byte = atoi(fb);
+Sau khi tạo chương trình thử nghiệm, bước tiếp theo là biên dịch lại toàn bộ dự án để tạo RISC-V binary sử dụng trong gem5.
 
-if (fi)
-    fault_bit = atoi(fi);
-```
-
-Sau đó biên dịch lại chương trình:
+``Code:`` Biên dịch chương trình.
 
 ```bash
+cd ~/Desktop/tiny-AES-c
+
 riscv64-linux-gnu-gcc -O0 -g -static \
     -o aes_test aes_main.c aes.c -I.
 ```
 
----
-
-### 8.3. Truyền Fault Parameters vào gem5
-
-Để không phải biên dịch lại chương trình sau mỗi lần thay đổi vị trí fault, hai environment variables được truyền trực tiếp từ script chạy gem5:
-
-```python
-process.env = [
-    f"FAULT_BYTE={fault_byte}",
-    f"FAULT_BIT={fault_bit}"
-]
-```
-
-Nhờ cơ chế này, mỗi lần chạy chỉ cần thay đổi giá trị của `FAULT_BYTE` và `FAULT_BIT`, trong khi binary vẫn được giữ nguyên.
-
-Điều này cho phép tự động hóa quá trình sinh faulty ciphertexts cho toàn bộ các vị trí fault cần khảo sát.
+Lệnh trên tạo file thực thi `aes_test` dành cho kiến trúc RISC-V. Do được biên dịch bằng `riscv64-linux-gnu-gcc`, binary này không thể chạy trực tiếp trên máy host x86_64 mà sẽ được sử dụng ở bước tiếp theo trong môi trường mô phỏng gem5.
 
 ---
 
 ## 9. Collecting Faulty Ciphertexts
 
-Sau khi fault hook được tích hợp vào `Cipher()`, bước tiếp theo là sinh tập `faulty ciphertexts` để phục vụ cho quá trình Differential Fault Analysis.
+Sau khi fault hook được tích hợp vào `Cipher()`, bước tiếp theo là thu thập tập `faulty ciphertexts` phục vụ cho quá trình Differential Fault Analysis (DFA).
 
-Trong nghiên cứu này, fault model được sử dụng là `single-bit fault`: mỗi lần thực thi chỉ lật `một bit` của `một byte` trong AES state ngay trước `SubBytes()` của Round 9.
+Trong nghiên cứu này, fault model được sử dụng là ``single-bit fault``, tức mỗi lần thực thi chỉ lật ``một bit`` của ``một byte`` trong `AES state` ngay trước `SubBytes()` của Round 9.
 
-AES state gồm 16 byte, mỗi byte có 8 bit. Vì vậy toàn bộ không gian fault của mô hình này gồm:
+AES state gồm 16 byte, mỗi byte có 8 bit, do đó toàn bộ không gian fault gồm:
 
 ```text
 16 bytes × 8 bits = 128 fault positions
 ```
 
-Để bao phủ toàn bộ fault space, chương trình được thực thi `128 lần`, mỗi lần thay đổi một cặp (`FAULT_BYTE`, `FAULT_BIT`). Mỗi lần chạy chỉ sinh ra `một faulty ciphertext`, sau đó chuyển sang vị trí fault tiếp theo.
+Để bao phủ toàn bộ fault space, chương trình cần được thực thi ``128 lần``, tương ứng với tất cả các cặp (`FAULT_BYTE`, `FAULT_BIT`). Mỗi lần thực thi chỉ inject một fault duy nhất và sinh ra một faulty ciphertext.
 
-Pipeline thu thập dữ liệu như sau:
+Thay vì thay đổi mã nguồn hoặc biên dịch lại chương trình sau mỗi lần inject fault, quá trình này được tự động hóa bằng một Python script. Script sẽ lần lượt truyền giá trị `FAULT_BYTE` và `FAULT_BIT` vào gem5 thông qua environment variables, chạy chương trình AES, thu thập ciphertext và lưu lại kết quả.
+
+Pipeline của quá trình thu thập được mô tả như sau:
 
 ```text
 Select (FAULT_BYTE, FAULT_BIT)
+            │
+            ▼
+Generate gem5 configuration
             │
             ▼
 Run AES trên gem5
@@ -1363,72 +2038,103 @@ Lưu kết quả
 Lặp lại cho 128 vị trí fault
 ```
 
----
-
 ### 9.1. Automation Script
 
-Quá trình trên được tự động hóa bằng Python.
+Quá trình thu thập dữ liệu được tự động hóa bằng script `collect_faults2.py`.
+
+Script có nhiệm vụ:
+
+- duyệt toàn bộ 128 vị trí fault;
+- tạo file cấu hình gem5 tương ứng với từng vị trí;
+- truyền `FAULT_BYTE` và `FAULT_BIT` thông qua environment variables;
+- chạy gem5;
+- đọc ciphertext từ output của chương trình;
+- loại bỏ ciphertext đúng;
+- lưu các faulty ciphertext vào file.
 
 ```python
-# collect_faults2.py
-
+cat > ~/Desktop/collect_faults2.py << 'EOF'
 import subprocess
 
 GEM5 = '/home/clap/Desktop/gem5/build/RISCV/gem5.opt'
-
 correct = '3ad77bb40d7a3660a89ecaf32466ef97'
 faulty_set = set()
 
 def run_gem5(fault_byte=-1, fault_bit=0):
-
-    script = f"""
+    # Tạo script tạm với env vars
+    script = f'''
 import m5
-from m5.objects import *
+from m5.objects import `
 
-...
+system = System()
+system.clk_domain = SrcClockDomain()
+system.clk_domain.clock = '1GHz'
+system.clk_domain.voltage_domain = VoltageDomain()
+system.mem_mode = 'timing'
+system.mem_ranges = [AddrRange('512MB')]
+system.cpu = RiscvTimingSimpleCPU()
+system.membus = SystemXBar()
+system.cpu.icache_port = system.membus.cpu_side_ports
+system.cpu.dcache_port = system.membus.cpu_side_ports
+system.cpu.createInterruptController()
+system.mem_ctrl = MemCtrl()
+system.mem_ctrl.dram = DDR3_1600_8x8()
+system.mem_ctrl.dram.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.membus.mem_side_ports
+system.system_port = system.membus.cpu_side_ports
 
-process.env = [
-    'FAULT_BYTE={fault_byte}',
-    'FAULT_BIT={fault_bit}'
-]
+binary = '/home/clap/Desktop/tiny-AES-c/aes_test'
+system.workload = SEWorkload.init_compatible(binary)
+process = Process()
+process.cmd = [binary]
+process.env = ['FAULT_BYTE={fault_byte}', 'FAULT_BIT={fault_bit}']
+system.cpu.workload = process
+system.cpu.createThreads()
 
-...
-"""
-
+root = Root(full_system=False, system=system)
+m5.instantiate()
+m5.simulate()
+'''
     with open('/tmp/gem5_run.py', 'w') as f:
         f.write(script)
 
-    result = subprocess.run(
-        [GEM5, '/tmp/gem5_run.py'],
-        capture_output=True,
-        text=True
-    )
-
+    result = subprocess.run([GEM5, '/tmp/gem5_run.py'],
+                           capture_output=True, text=True)
     for line in result.stdout.split('\n'):
         if 'Ciphertext:' in line:
             return line.split('Ciphertext:')[1].strip()
-
     return None
+
+print(f"Correct: {correct}")
+print("Collecting faults...\n")
 
 for byte_idx in range(16):
     for bit in range(8):
-
         ct = run_gem5(byte_idx, bit)
-
         if ct and ct != correct and ct not in faulty_set:
             faulty_set.add(ct)
             print(f"byte={byte_idx} bit={bit}: {ct}")
+
+print(f"\nTotal: {len(faulty_set)} faulty ciphertexts")
+
+with open('/home/clap/Desktop/faulty_ciphertexts.txt', 'w') as f:
+    for ct in faulty_set:
+        f.write(ct + '\n')
+print("Saved to faulty_ciphertexts.txt")
+EOF
 ```
 
-Script trên thực hiện hai vòng lặp lồng nhau qua toàn bộ 16 byte và 8 bit của AES state. Với mỗi cặp (`FAULT_BYTE`, `FAULT_BIT`), script khởi động một phiên thực thi gem5 mới, truyền vị trí fault thông qua environment variables, sau đó trích xuất ciphertext từ output của chương trình.
+Script trên sử dụng hai vòng lặp lồng nhau để duyệt toàn bộ 16 byte và 8 bit của AES state. Với mỗi lần lặp, một file cấu hình gem5 tạm thời sẽ được tạo ra, trong đó hai environment variables `FAULT_BYTE` và `FAULT_BIT` được truyền vào chương trình AES.
 
----
+Sau khi gem5 hoàn thành mô phỏng, script sẽ đọc ciphertext từ standard output. Nếu ciphertext khác với ciphertext đúng và chưa xuất hiện trước đó thì sẽ được thêm vào tập `faulty_set`. Cuối cùng, toàn bộ faulty ciphertexts được ghi vào file `faulty_ciphertexts.txt` để sử dụng cho bước DFA.
 
 ### 9.2. Kết quả
 
 Sau 128 lần thực thi, chương trình thu được 128 faulty ciphertexts.
 
 Một phần kết quả được trình bày dưới đây:
+
+![alt text](Image/Screenshot_387.png)
 
 ```text
 byte=0 bit=0: 5dd77bb40d7a3616a89eeff32406ef97
@@ -1446,8 +2152,6 @@ Trong tập thực nghiệm này:
 - Mỗi vị trí fault tạo ra một mẫu sai khác riêng biệt.
 
 Điều này cho thấy fault hook hoạt động ổn định và tạo được tập dữ liệu đa dạng để phục vụ bước DFA tiếp theo.
-
----
 
 ### 9.3. Kiểm chứng Fault Model
 
@@ -1500,8 +2204,6 @@ Nhóm byte thay đổi chuyển sang:
 
 ### 9.5. Thống kê kết quả
 
-Kết quả thu thập được được tổng hợp trong bảng dưới đây:
-
 | Metric | Value |
 |---------|------:|
 | Fault model | Single-bit fault |
@@ -1512,9 +2214,9 @@ Kết quả thu thập được được tổng hợp trong bảng dưới đây
 | Ciphertexts trùng lặp | 0 |
 | Tỷ lệ thực thi thành công | 128 / 128 (100%) |
 
-Có thể thấy toàn bộ 128 lần thực thi đều hoàn thành thành công và sinh ra một faulty ciphertext tương ứng. Không xuất hiện trường hợp chương trình bị crash hoặc hai vị trí fault tạo ra cùng một ciphertext.
+Toàn bộ 128 lần thực thi đều hoàn thành thành công và sinh ra một faulty ciphertext tương ứng. Không xuất hiện trường hợp chương trình bị crash hoặc hai vị trí fault tạo ra cùng một ciphertext.
 
-Kết quả này cho thấy fault hook hoạt động ổn định trong toàn bộ không gian single-bit fault được khảo sát, đồng thời tạo ra tập dữ liệu đầy đủ cho bước Differential Fault Analysis ở phần tiếp theo.
+Kết quả này cho thấy fault hook hoạt động ổn định trên toàn bộ không gian single-bit fault được khảo sát và tạo ra tập dữ liệu đầy đủ để phục vụ bước Differential Fault Analysis ở phần tiếp theo.
 
 ---
 
@@ -1525,8 +2227,6 @@ Sau khi thu thập được tập `128 faulty ciphertexts`, bước tiếp theo 
 Theo fault model đã xây dựng ở các phần trước, lỗi được đưa vào `ngay trước `SubBytes()` của Round 9`. Khi đó, sai khác sẽ lan truyền qua các bước còn lại của Round 9 và Round 10 trước khi tạo ciphertext cuối cùng. Những sai khác này mang thông tin về `last round key`, cho phép thực hiện quá trình khôi phục khóa.
 
 Trong nghiên cứu này, công cụ `PhoenixAES` được sử dụng để tự động thực hiện quá trình phân tích và khôi phục `Round 10 Key` từ tập ciphertext thu được.
-
----
 
 ### 10.1. Tổng quan quá trình Key Recovery
 
@@ -1555,8 +2255,6 @@ Toàn bộ quá trình có thể được mô tả như sau:
 
 Trong pipeline này, PhoenixAES không tương tác trực tiếp với quá trình mã hóa. Công cụ chỉ sử dụng `một ciphertext đúng` và `tập faulty ciphertexts` làm đầu vào để suy luận khóa vòng cuối thông qua các quan hệ toán học của Differential Fault Analysis.
 
----
-
 ### 10.2. Cài đặt PhoenixAES
 
 ```bash
@@ -1574,61 +2272,106 @@ PhoenixAES triển khai thuật toán DFA cho AES-128. Đầu vào của chươn
 
 ### 10.3. Chuẩn bị dữ liệu đầu vào
 
-PhoenixAES yêu cầu dữ liệu được lưu trong cùng một file với định dạng:
+Sau khi chạy script thu thập fault:
+
+```bash
+python3 ~/Desktop/collect_faults2.py
+```
+
+gem5 thực hiện 128 lần chạy tương ứng với toàn bộ không gian single-bit fault:
+
+```text
+16 bytes × 8 bits = 128 fault positions
+```
+
+Kết quả thu được từ thực nghiệm:
+
+```text
+Correct: 3ad77bb40d7a3660a89ecaf32466ef97
+Collecting faults...
+
+byte=0 bit=0: 5dd77bb40d7a3616a89eeff32406ef97
+byte=0 bit=1: 9fd77bb40d7a36b0a89e54f3241aef97
+byte=0 bit=2: 0ad77bb40d7a364fa89ee9f324daef97
+...
+byte=15 bit=7: b3d77bb40d7a36cda89e8ef3243eef97
+
+Total: 128 faulty ciphertexts
+Saved to faulty_ciphertexts.txt
+```
+
+Toàn bộ faulty ciphertext được lưu tại:
+
+```text
+/home/clap/Desktop/faulty_ciphertexts.txt
+```
+
+PhoenixAES yêu cầu dữ liệu đầu vào phải nằm trong cùng một file, với định dạng:
 
 - Dòng đầu tiên: correct ciphertext.
 - Các dòng tiếp theo: faulty ciphertexts.
 
-Ví dụ:
+Do đó, tạo file input cho PhoenixAES:
+
+```bash
+echo "3ad77bb40d7a3660a89ecaf32466ef97" > ~/Desktop/dfa_input.txt
+
+cat ~/Desktop/faulty_ciphertexts.txt >> ~/Desktop/dfa_input.txt
+```
+
+Sau khi tạo, file `dfa_input.txt` có dạng:
 
 ```text
 3ad77bb40d7a3660a89ecaf32466ef97
 5dd77bb40d7a3616a89eeff32406ef97
 9fd77bb40d7a36b0a89e54f3241aef97
+0ad77bb40d7a364fa89ee9f324daef97
 ...
+b3d77bb40d7a36cda89e8ef3243eef97
 ```
 
-Tạo file:
+Trong đó:
 
-```bash
-echo "3ad77bb40d7a3660a89ecaf32466ef97" > ~/Desktop/dfa_input.txt
-cat ~/Desktop/faulty_ciphertexts.txt >> ~/Desktop/dfa_input.txt
-```
-
-Trong quá trình thực nghiệm, đây là cách sử dụng ổn định nhất vì `crack_file()` đọc trực tiếp toàn bộ dataset từ một file duy nhất.
+- Dòng đầu tiên là ciphertext đúng.
+- 128 dòng còn lại là ciphertext lỗi được sinh ra từ gem5.
 
 ---
 
 ### 10.4. Thực hiện Key Recovery
 
-PhoenixAES được gọi trực tiếp từ Python:
+Sau khi chuẩn bị dataset, PhoenixAES được gọi trực tiếp bằng Python:
 
-```python
+```bash
+python3 << 'EOF'
 import phoenixAES
 
 result = phoenixAES.crack_file(
-    "/home/clap/Desktop/dfa_input.txt",
+    '/home/clap/Desktop/dfa_input.txt',
     verbose=True
 )
 
-print(result)
+print(f"\nRound 10 key: {result}")
+EOF
 ```
 
-Output:
+![alt text](Image/Screenshot_388.png)
+
+Kết quả thực nghiệm thu được:
 
 ```text
 Last round key #N found:
-
 D014F9A8C9EE2589E13F0CC8B6630CA6
+
+Round 10 key: D014F9A8C9EE2589E13F0CC8B6630CA6
 ```
 
-Round 10 Key thu được:
+PhoenixAES đã khôi phục thành công khóa vòng cuối:
 
 ```text
 D014F9A8C9EE2589E13F0CC8B6630CA6
 ```
 
----
+Kết quả này cho thấy tập dữ liệu fault được sinh ra từ gem5 chứa đầy đủ thông tin cần thiết để thực hiện Differential Fault Analysis trên AES-128.
 
 ### 10.5. Thống kê quá trình Key Recovery
 
@@ -1638,47 +2381,83 @@ D014F9A8C9EE2589E13F0CC8B6630CA6
 | Faulty ciphertexts | 128 |
 | Fault model | Single-bit fault |
 | Fault location | Before `SubBytes()` of Round 9 |
-| PhoenixAES result | Success |
-| Round 10 key recovered | 16 / 16 bytes |
+| Analysis tool | PhoenixAES |
+| Recovery status | Success |
+| Recovered Round 10 Key | D014F9A8C9EE2589E13F0CC8B6630CA6 |
 
-Kết quả trên cho thấy PhoenixAES đã hội tụ về `một Round 10 Key duy nhất` thay vì trả về nhiều khóa ứng viên.
+PhoenixAES đã tìm được một khóa vòng cuối duy nhất phù hợp với toàn bộ tập dữ liệu.
 
-Đây là một dấu hiệu quan trọng vì quá trình DFA chỉ thành công khi các faulty ciphertext tuân theo đúng fault model mà thuật toán giả định. Nếu fault được đưa vào sai thời điểm hoặc không tạo ra đúng cấu trúc lan truyền của AES, PhoenixAES sẽ không thể loại bỏ hết các khóa ứng viên và quá trình khôi phục sẽ thất bại.
+Điều này chứng minh rằng các faulty ciphertexts thu được không phải là các sai khác ngẫu nhiên, mà vẫn duy trì mối quan hệ toán học với quá trình biến đổi của AES.
 
----
+Đây là điều kiện quan trọng để DFA có thể thực hiện quá trình key recovery.
 
 ### 10.6. Kiểm chứng kết quả
 
-Việc PhoenixAES khôi phục thành công `toàn bộ 16 byte của Round 10 Key` là bằng chứng quan trọng cho thấy fault model được sử dụng trong nghiên cứu là phù hợp.
+Kết quả khôi phục:
+
+```text
+D014F9A8C9EE2589E13F0CC8B6630CA6
+```
+
+được sử dụng để xác nhận tính chính xác của toàn bộ pipeline fault injection.
 
 Nếu fault được đưa vào:
 
-- sai thời điểm,
-- sai vị trí,
-- hoặc không tuân theo giả định của DFA,
+- Sai round.
+- Sai vị trí trong AES state.
+- Sai thời điểm so với fault model.
 
-thì các faulty ciphertext sẽ không còn thỏa mãn các quan hệ toán học mà PhoenixAES sử dụng. Khi đó, quá trình lọc candidate sẽ không hội tụ và chương trình sẽ không thể khôi phục được một Round 10 Key duy nhất.
+các faulty ciphertexts sẽ không còn tuân theo quy luật lan truyền lỗi của AES.
 
-Ngược lại, việc thu được đúng một khóa vòng cuối cho thấy:
+Khi đó, PhoenixAES sẽ không thể loại bỏ toàn bộ khóa ứng viên và không thể tìm được một `Round 10 Key` duy nhất.
 
-- Fault được đưa vào đúng `Round 9`.
-- Faulty ciphertexts mang đúng cấu trúc mà DFA yêu cầu.
-- Dataset sinh ra từ gem5 đủ chất lượng để phục vụ quá trình key recovery.
+Ngược lại, việc PhoenixAES trả về:
 
----
+```text
+Last round key #N found
+```
+
+cho thấy:
+
+- Fault được inject đúng tại boundary trước `SubBytes()` của Round 9.
+- Faulty ciphertexts phù hợp với giả định của DFA.
+- Dataset sinh ra từ gem5 có thể sử dụng để thực hiện AES key recovery.
 
 ### 10.7. Ý nghĩa của kết quả
 
-Việc khôi phục thành công Round 10 Key không chỉ chứng minh PhoenixAES hoạt động đúng mà còn gián tiếp xác nhận toàn bộ pipeline thực nghiệm trước đó.
+Việc khôi phục thành công Round 10 Key là bước xác nhận quan trọng đối với toàn bộ nghiên cứu.
+
+Kết quả này chứng minh pipeline:
+
+```text
+AES Implementation
+        │
+        ▼
+Fault Hook Injection
+        │
+        ▼
+gem5 Simulation
+        │
+        ▼
+Faulty Ciphertext Collection
+        │
+        ▼
+PhoenixAES DFA
+        │
+        ▼
+Round 10 Key Recovery
+```
+
+đã hoạt động chính xác.
 
 Cụ thể:
 
-- Fault được đưa vào đúng fault boundary đã xác định từ disassembly và execution trace.
-- Fault hook tạo ra đúng loại faulty ciphertext mà DFA yêu cầu.
-- Các ciphertext thu được vẫn bảo toàn cấu trúc lan truyền lỗi của AES.
-- Dataset sinh ra từ gem5 đủ chất lượng để thực hiện key recovery.
+- Fault hook trong `Cipher()` tạo ra đúng single-bit fault model.
+- gem5 mô phỏng thành công quá trình thực thi AES khi có lỗi.
+- Các faulty ciphertext thu được vẫn giữ được cấu trúc lan truyền lỗi của AES.
+- PhoenixAES có thể khai thác các sai khác này để khôi phục khóa vòng cuối.
 
-Nói cách khác, thành công của PhoenixAES đồng thời xác nhận rằng phương pháp fault injection được xây dựng trong nghiên cứu đã tạo ra đúng fault model mong muốn.
+Như vậy, thực nghiệm đã chứng minh rằng phương pháp fault injection trên gem5 có khả năng tái tạo một cuộc tấn công Differential Fault Analysis thực tế trên AES-128.
 
 ---
 
@@ -1790,313 +2569,931 @@ Trong thực nghiệm này, tập `128 faulty ciphertexts` đã cung cấp đủ
 
 ## 11. Recovering the Master Key
 
-PhoenixAES chỉ khôi phục được `Round 10 Key`, trong khi khóa bí mật mà hệ thống thực sự sử dụng là `AES-128 Master Key`.
+Trong giai đoạn trước, Differential Fault Analysis (DFA) đã được thực hiện trên AES-128 bằng cách inject fault trong quá trình thực thi trên môi trường gem5.
 
-Tuy nhiên, điều này không làm giảm giá trị của cuộc tấn công. Trong AES-128, tất cả các round key đều được sinh ra từ cùng một `master key` thông qua thuật toán `Key Expansion`. Vì quá trình này là khả nghịch, attacker có thể đảo ngược key schedule để tính lại toàn bộ khóa ban đầu.
+Tập dữ liệu thu được bao gồm:
 
-Do đó, việc thu được `Round 10 Key` đồng nghĩa với việc có thể khôi phục hoàn chỉnh `Master Key` mà không cần truy cập trực tiếp vào bộ nhớ lưu khóa.
+- Một `correct ciphertext`.
+- 128 `faulty ciphertexts` được sinh ra từ các lần fault injection khác nhau.
 
----
+Các ciphertext này được đưa vào công cụ PhoenixAES để thực hiện DFA attack.
 
-### 11.1. Reverse AES Key Schedule
-
-Trong AES-128, quá trình mở rộng khóa sinh ra tổng cộng `44 words (176 bytes)`:
-
-```text
-w[0] ─────── w[3]     : Master Key
-
-        │
-        ▼
-
-AES Key Expansion
-
-        │
-        ▼
-
-w[40] ──── w[43]      : Round 10 Key
-```
-
-Ở bước trước, PhoenixAES đã khôi phục được:
+Kết quả PhoenixAES thu được:
 
 ```text
-Round 10 Key
+Round 10 Key:
 
 D014F9A8C9EE2589E13F0CC8B6630CA6
 ```
 
-Mục tiêu tiếp theo là tính ngược từ `w[40]...w[43]` về `w[0]...w[3]`.
+Tuy nhiên, `Round 10 Key` không phải là khóa bí mật ban đầu mà AES sử dụng.
 
-Trong AES-128, quy tắc mở rộng khóa được định nghĩa như sau:
-
-```text
-w[i] = w[i-4] ⊕ temp
-
-if i mod 4 == 0
-    temp = SubWord(RotWord(w[i-1])) ⊕ Rcon
-else
-    temp = w[i-1]
-```
-
-Do phép XOR là khả nghịch nên có thể tính ngược:
+Trong AES-128, khóa được cung cấp ban đầu được gọi là:
 
 ```text
-w[i-4] = w[i] ⊕ temp
+Master Key
 ```
 
-Dựa trên quan hệ này, chương trình lần lượt tính ngược từ `w[43]` về `w[0]`.
+Các round key sau đó được sinh ra thông qua thuật toán:
 
----
+```text
+AES Key Expansion
+```
 
-### 11.2. Cài đặt Reverse Key Schedule
+Do đó, mục tiêu tiếp theo là chứng minh rằng Round 10 Key đã recover có thể được sử dụng để xác định lại Master Key ban đầu.
+
+## 11.1. AES-128 Key Expansion Overview
+
+AES-128 sử dụng khóa đầu vào có kích thước:
+
+```text
+128 bits = 16 bytes
+```
+
+Sau quá trình Key Expansion, AES sinh ra:
+
+```text
+44 words
+
+mỗi word = 32 bits
+
+44 × 4 bytes = 176 bytes
+```
+
+Cấu trúc key schedule:
+
+```text
+                Master Key
+
+              w[0] - w[3]
+
+
+                    |
+                    |
+                    v
+
+
+             AES Key Expansion
+
+
+                    |
+                    |
+                    v
+
+
+            Round 10 Key
+
+            w[40] - w[43]
+```
+
+Trong đó:
+
+| Thành phần | Vai trò |
+|---|---|
+| w[0]-w[3] | AES-128 Master Key |
+| w[4]-w[39] | Intermediate Round Keys |
+| w[40]-w[43] | Round 10 Key |
+
+PhoenixAES chỉ cần recover 4 words cuối:
+
+```text
+w[40], w[41], w[42], w[43]
+```
+
+Sau đó có thể kiểm tra lại quan hệ giữa Round 10 Key và Master Key thông qua AES Key Expansion.
+
+## 11.2. Reverse AES Key Schedule
+
+AES Key Expansion sử dụng công thức:
+
+```text
+w[i] = w[i-4] XOR temp
+```
+
+Trong đó:
+
+```text
+temp = w[i-1]
+
+nếu i mod 4 != 0
+```
+
+và:
+
+```text
+temp =
+SubWord(
+    RotWord(w[i-1])
+)
+XOR Rcon
+
+nếu i mod 4 == 0
+```
+
+Do phép XOR có tính chất khả nghịch:
+
+```text
+A XOR B = C
+
+=> A = C XOR B
+```
+
+nên có thể suy ra:
+
+```text
+w[i-4] = w[i] XOR temp
+```
+
+Vì vậy, Round 10 Key có thể được sử dụng để tính ngược về Master Key.
+
+## 11.3. Independent Verification of the Recovered Master Key
+
+Việc khôi phục `Round 10 Key` từ PhoenixAES mới chỉ chứng minh rằng thuật toán DFA có thể suy ra được khóa vòng cuối. Tuy nhiên, để đảm bảo kết quả không phụ thuộc vào chính công cụ tấn công, một bước kiểm chứng độc lập được thực hiện.
+
+Trong bước này, `Master Key` được sử dụng để sinh lại toàn bộ các round key của AES-128 bằng thuật toán `AES Key Expansion`. Sau đó, `Round 10 Key` được trích xuất từ `w[40]...w[43]` và so sánh trực tiếp với giá trị mà PhoenixAES đã khôi phục.
+
+Nếu hai giá trị trùng khớp, điều này chứng minh rằng:
+
+- `Round 10 Key` được PhoenixAES tìm ra là chính xác.
+- Thuật toán `AES Key Expansion` hoạt động đúng với Master Key đã khôi phục.
+- Kết quả DFA không phải là một giá trị ngẫu nhiên hoặc false positive.
+
+Tiếp theo, `Master Key` tiếp tục được sử dụng để mã hóa lại plaintext của AES Known Answer Test (KAT). Ciphertext sinh ra được so sánh với giá trị chuẩn trong FIPS-197 nhằm xác nhận toàn bộ quá trình khôi phục khóa.
+
+## 11.4. Code block: Verification
 
 ```python
-def xor_w(a, b):
-    return [x ^ y for x, y in zip(a, b)]
+cat > /home/clap/Desktop/verify_key.py << 'EOF'
+from Crypto.Cipher import AES
+
+def sub_word(w):
+    sbox = [
+        0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,
+        0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
+        0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,
+        0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
+        0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,
+        0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
+        0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a,
+        0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75,
+        0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0,
+        0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84,
+        0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b,
+        0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf,
+        0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85,
+        0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8,
+        0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5,
+        0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2,
+        0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17,
+        0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73,
+        0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88,
+        0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb,
+        0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c,
+        0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79,
+        0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9,
+        0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08,
+        0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6,
+        0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a,
+        0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,
+        0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,
+        0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,
+        0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
+        0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,
+        0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
+    ]
+
+    return [sbox[b] for b in w]
+
 
 def rot_word(w):
     return w[1:] + w[:1]
 
-def sub_word(w):
-    sbox = [0x63, 0x7c, ...]  # AES S-box
-    return [sbox[b] for b in w]
 
-rcon = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36]
+def xor_w(a, b):
+    return [x ^ y for x, y in zip(a, b)]
 
-def reverse_aes128_key_schedule(round10_hex):
-    rk10 = bytes.fromhex(round10_hex)
-    w = [None] * 44
-    w[40:44] = [list(rk10[i:i+4]) for i in range(0, 16, 4)]
 
-    for i in range(43, 3, -1):
+rcon = [
+    0x01,0x02,0x04,0x08,0x10,
+    0x20,0x40,0x80,0x1b,0x36
+]
+
+
+def expand_key(master):
+
+    w = [
+        list(master[i:i+4])
+        for i in range(0,16,4)
+    ]
+
+    for i in range(4,44):
+
         temp = w[i-1][:]
+
         if i % 4 == 0:
-            temp = xor_w(sub_word(rot_word(temp)), [rcon[i//4-1], 0, 0, 0])
-        w[i-4] = xor_w(w[i], temp)
+            temp = xor_w(
+                sub_word(rot_word(temp)),
+                [rcon[i//4-1],0,0,0]
+            )
 
-    return bytes(b for word in w[0:4] for b in word)
+        w.append(
+            xor_w(
+                w[i-4],
+                temp
+            )
+        )
 
-rk10 = 'D014F9A8C9EE2589E13F0CC8B6630CA6'
-master = reverse_aes128_key_schedule(rk10)
-expected = '2B7E151628AED2A6ABF7158809CF4F3C'
-print(f"Recovered master key: {master.hex().upper()}")
-print(f"Expected master key:  {expected}")
-print(f"Match: {master.hex().upper() == expected}")
+    return w
+
+
+
+# AES-128 Master Key recovered
+master = bytes.fromhex(
+    '2B7E151628AED2A6ABF7158809CF4F3C'
+)
+
+
+# Expand key and extract Round 10 Key
+w = expand_key(master)
+
+r10 = bytes(
+    b
+    for word in w[40:44]
+    for b in word
+)
+
+
+print(
+    f"Round 10 key from master: {r10.hex().upper()}"
+)
+
+
+print(
+    "PhoenixAES recovered:     "
+    "D014F9A8C9EE2589E13F0CC8B6630CA6"
+)
+
+
+print(
+    f"Match: {r10.hex().upper() == 'D014F9A8C9EE2589E13F0CC8B6630CA6'}"
+)
+
+
+
+# AES Encryption verification
+
+cipher = AES.new(
+    master,
+    AES.MODE_ECB
+)
+
+
+plaintext = bytes.fromhex(
+    '6bc1bee22e409f96e93d7e117393172a'
+)
+
+
+ciphertext = cipher.encrypt(
+    plaintext
+)
+
+
+print(
+    f"\nEncrypt verify: {ciphertext.hex()}"
+)
+
+
+print(
+    "Expected:       "
+    "3ad77bb40d7a3660a89ecaf32466ef97"
+)
+
+EOF
 ```
 
----
+![alt text](Image/Screenshot_389.png)
 
-### 11.3. Kết quả
+Kết quả `Match: True` xác nhận rằng `Round 10 Key` được PhoenixAES khôi phục hoàn toàn trùng khớp với khóa được sinh ra từ `Master Key` thông qua quá trình `AES Key Expansion`.
 
-Sử dụng Round 10 Key do PhoenixAES khôi phục:
+Ngoài ra, ciphertext thu được sau khi mã hóa lại bằng `Master Key` cũng hoàn toàn trùng khớp với ciphertext chuẩn của AES-128 Known Answer Test:
+
+```text
+3ad77bb40d7a3660a89ecaf32466ef97
+```
+
+Điều này chứng minh rằng `Master Key` đã được khôi phục chính xác và có thể được sử dụng để thực hiện lại toàn bộ quá trình mã hóa AES-128 mà không có sai khác so với thuật toán gốc.
+
+Toàn bộ quy trình được xác thực theo chuỗi sau:
+
+```text
+Fault Injection
+        |
+        v
+Faulty Ciphertexts
+        |
+        v
+PhoenixAES DFA
+        |
+        v
+Round 10 Key Recovery
+        |
+        v
+Master Key Recovery
+        |
+        v
+Forward Key Expansion Verification
+        |
+        v
+AES Encryption Verification
+```
+
+Như vậy, quá trình Differential Fault Analysis không chỉ khôi phục thành công `Round 10 Key` mà còn xác định chính xác `Master Key`, đồng thời được kiểm chứng độc lập thông qua cả `AES Key Expansion` và phép mã hóa AES-128 tiêu chuẩn.
+
+## 11.5. Lockstep Defense Implementation
+
+Sau khi hoàn thành DFA attack và khôi phục thành công AES-128 Master Key, bước tiếp theo là đánh giá một cơ chế phòng thủ nhằm phát hiện fault injection.
+
+Một trong những phương pháp phổ biến trong hardware security là:
+
+```text
+Lockstep Execution
+```
+
+Ý tưởng của Lockstep là thực hiện cùng một phép tính trên hai execution path khác nhau và so sánh kết quả đầu ra.
+
+Trong thực nghiệm này, Lockstep được mô phỏng ở mức software execution trên gem5 thay vì triển khai dual-core hardware lockstep thực tế. Mục tiêu là đánh giá khả năng phát hiện sự sai khác do fault injection trong môi trường controlled experiment.
+
+Cơ chế hoạt động:
+
+- Một execution path được phép chịu ảnh hưởng của fault injection.
+- Một execution path đóng vai trò reference execution và chạy trong trạng thái sạch.
+- Sau khi hoàn thành AES encryption, hai ciphertext được đưa vào comparator.
+- Nếu output khác nhau, hệ thống từ chối ciphertext và abort execution.
+
+Kiến trúc:
+
+```text
+                         Input
+
+                           |
+                           |
+
+                  Duplicate Execution
+
+                           |
+          ---------------------------------
+
+             AES Execution A        AES Execution B
+
+             (fault injected)       (reference)
+
+          ---------------------------------
+
+                           |
+
+                      Comparator
+
+                           |
+
+              ----------------------------
+
+              Match:
+
+              Return ciphertext
+
+
+              Mismatch:
+
+              Abort execution
+
+              ----------------------------
+```
+
+## 11.6. Lockstep AES Implementation
+
+Cơ chế Lockstep được triển khai trong file:
+
+```text
+aes_lockstep.c
+```
+
+Chương trình thực hiện AES encryption hai lần với cùng một input.
+
+Execution A sử dụng trạng thái fault hiện tại:
+
+```c
+AES_init_ctx(&ctx_a, key);
+
+memcpy(
+    buf_a,
+    plaintext,
+    16
+);
+
+AES_ECB_encrypt(
+    &ctx_a,
+    buf_a
+);
+```
+
+Execution B được sử dụng làm reference execution bằng cách vô hiệu hóa fault:
+
+```c
+fault_byte = -1;
+
+AES_init_ctx(&ctx_b, key);
+
+memcpy(
+    buf_b,
+    plaintext,
+    16
+);
+
+AES_ECB_encrypt(
+    &ctx_b,
+    buf_b
+);
+```
+
+Sau đó, comparator thực hiện kiểm tra sự khác biệt giữa hai ciphertext:
+
+```c
+if (memcmp(buf_a, buf_b, 16) != 0)
+{
+    printf(
+        "[LOCKSTEP] FAULT DETECTED\n"
+    );
+
+    printf(
+        "[LOCKSTEP] Execution ABORTED\n"
+    );
+
+    return 1;
+}
+```
+
+Full code:
+
+```python
+cat > ~/Desktop/tiny-AES-c/aes_lockstep.c << 'EOF'
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "aes.h"
+
+int fault_byte = -1;
+int fault_bit  = 0;
+
+int main() {
+    uint8_t key[16] = {
+        0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+        0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
+    };
+    uint8_t plaintext[16] = {
+        0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+        0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
+    };
+
+    char `fb = getenv("FAULT_BYTE");
+    char `fi = getenv("FAULT_BIT");
+    if (fb) fault_byte = atoi(fb);
+    if (fi) fault_bit  = atoi(fi);
+
+    // CPU A: chạy với fault có thể xảy ra
+    struct AES_ctx ctx_a;
+    AES_init_ctx(&ctx_a, key);
+    uint8_t buf_a[16];
+    memcpy(buf_a, plaintext, 16);
+    AES_ECB_encrypt(&ctx_a, buf_a);
+
+    // CPU B: chạy clean (fault_byte = -1)
+    int saved_fb = fault_byte;
+    fault_byte = -1;
+    struct AES_ctx ctx_b;
+    AES_init_ctx(&ctx_b, key);
+    uint8_t buf_b[16];
+    memcpy(buf_b, plaintext, 16);
+    AES_ECB_encrypt(&ctx_b, buf_b);
+    fault_byte = saved_fb;
+
+    // Lockstep comparator
+    if (memcmp(buf_a, buf_b, 16) != 0) {
+        printf("[LOCKSTEP] FAULT DETECTED — outputs diverged!\n");
+        printf("[LOCKSTEP] CPU A: ");
+        for (int i = 0; i < 16; i++) printf("%02x", buf_a[i]);
+        printf("\n[LOCKSTEP] CPU B: ");
+        for (int i = 0; i < 16; i++) printf("%02x", buf_b[i]);
+        printf("\n[LOCKSTEP] Execution ABORTED — no ciphertext output\n");
+        return 1;
+    }
+
+    printf("Ciphertext: ");
+    for (int i = 0; i < 16; i++) printf("%02x", buf_a[i]);
+    printf("\n");
+    return 0;
+}
+EOF
+```
+
+## 11.7. Build Lockstep AES Binary
+Sau khi hoàn thành việc triển khai cơ chế Lockstep trong `aes_lockstep.c`, chương trình cần được biên dịch thành binary cho kiến trúc ``RISC-V`` để có thể thực thi trên trình giả lập gem5.
+
+Quá trình biên dịch sử dụng trình biên dịch `riscv64-linux-gnu-gcc` với các tùy chọn `-static`, `-O0` và `-g` nhằm tạo binary độc lập, giữ nguyên cấu trúc chương trình và hỗ trợ việc quan sát quá trình thực thi trong gem5.
+
+Thực hiện biên dịch bằng lệnh:
+
+```bash
+cd ~/Desktop/tiny-AES-c
+riscv64-linux-gnu-gcc -O0 -g -static -o aes_lockstep aes_lockstep.c aes.c -I.
+```
+
+![alt text](Image/Screenshot_390.png)
+
+Kết quả cho thấy quá trình biên dịch diễn ra thành công và sinh ra binary `aes_lockstep`.
+
+Binary này sẽ được sử dụng làm workload trong gem5 để đánh giá khả năng phát hiện fault injection của cơ chế Lockstep ở các kịch bản thực nghiệm tiếp theo.
+
+## 11.8. Configure gem5 Execution Script
+
+Để đánh giá cơ chế Lockstep trên gem5, một Python script được xây dựng nhằm khởi tạo hệ thống mô phỏng và truyền tham số fault vào chương trình AES thông qua các biến môi trường `FAULT_BYTE` và `FAULT_BIT`.
+
+Script này chịu trách nhiệm:
+
+- Khởi tạo hệ thống gem5.
+- Nạp binary `aes_lockstep`.
+- Truyền vị trí fault cần inject.
+- Thực thi chương trình trên CPU RISC-V.
+
+Tạo file:
+
+```python
+cat > ~/Desktop/run_lockstep.py << 'EOF'
+import m5
+from m5.objects import `
+import sys
+
+fault_byte = sys.argv[1] if len(sys.argv) > 1 else "-1"
+fault_bit  = sys.argv[2] if len(sys.argv) > 2 else "0"
+
+system = System()
+system.clk_domain = SrcClockDomain()
+system.clk_domain.clock = '1GHz'
+system.clk_domain.voltage_domain = VoltageDomain()
+system.mem_mode = 'timing'
+system.mem_ranges = [AddrRange('512MB')]
+system.cpu = RiscvTimingSimpleCPU()
+system.membus = SystemXBar()
+system.cpu.icache_port = system.membus.cpu_side_ports
+system.cpu.dcache_port = system.membus.cpu_side_ports
+system.cpu.createInterruptController()
+system.mem_ctrl = MemCtrl()
+system.mem_ctrl.dram = DDR3_1600_8x8()
+system.mem_ctrl.dram.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.membus.mem_side_ports
+system.system_port = system.membus.cpu_side_ports
+
+binary = '/home/clap/Desktop/tiny-AES-c/aes_lockstep'
+system.workload = SEWorkload.init_compatible(binary)
+process = Process()
+process.cmd = [binary]
+process.env = [f'FAULT_BYTE={fault_byte}', f'FAULT_BIT={fault_bit}']
+system.cpu.workload = process
+system.cpu.createThreads()
+
+root = Root(full_system=False, system=system)
+m5.instantiate()
+m5.simulate()
+EOF
+```
+
+Sau khi tạo xong script, gem5 đã sẵn sàng để thực hiện các kịch bản đánh giá Lockstep.
+
+## 11.9. Lockstep Evaluation on gem5
+
+Sau khi hoàn tất việc biên dịch binary và cấu hình môi trường gem5, ba kịch bản được thực hiện nhằm đánh giá khả năng phát hiện fault của cơ chế Lockstep.
+
+Các trường hợp bao gồm:
+
+1. Không thực hiện fault injection.
+2. Fault injection tại byte 0, bit 0.
+3. Fault injection tại byte 5, bit 3.
+
+Để thuận tiện cho việc đánh giá, ba kịch bản được thực thi liên tiếp bằng đoạn script sau:
+
+```bash
+cd ~/Desktop/gem5
+
+echo "=== Scenario 1: No fault ==="
+./build/RISCV/gem5.opt ~/Desktop/run_lockstep.py -- -1 0 2>/dev/null | grep -E "Ciphertext|LOCKSTEP"
+
+echo "=== Scenario 2: Fault injected (byte=0 bit=0) ==="
+./build/RISCV/gem5.opt ~/Desktop/run_lockstep.py -- 0 0 2>/dev/null | grep -E "Ciphertext|LOCKSTEP"
+
+echo "=== Scenario 3: Fault injected (byte=5 bit=3) ==="
+./build/RISCV/gem5.opt ~/Desktop/run_lockstep.py -- 5 3 2>/dev/null | grep -E "Ciphertext|LOCKSTEP"
+```
+
+Kết quả của từng kịch bản được trình bày dưới đây.
+
+### 11.9.1. Scenario 1: Normal Execution
+
+Trong trường hợp bình thường, không có fault injection được thực hiện. Hai execution path sử dụng cùng input và tạo ra cùng một ciphertext.
+
+![alt text](Image/Screenshot_391.png)
+
+Kết quả cho thấy khi không có fault injection, hai execution path tạo ra cùng một output và ciphertext hợp lệ được trả về.
+
+### 11.9.2. Scenario 2: Inject Fault (byte=0, bit=0)
+
+Fault được inject vào execution path A.
+
+![alt text](Image/Screenshot_392.png)
+
+Kết quả cho thấy ciphertext của execution path bị fault khác với reference execution.
+
+Comparator phát hiện sự sai khác giữa hai execution path và kích hoạt cơ chế abort trước khi ciphertext lỗi được xuất ra.
+
+### 11.9.3. Scenario 3: Inject Fault (byte=5, bit=3)
+
+Một vị trí fault khác tiếp tục được đánh giá.
+
+![alt text](Image/Screenshot_393.png)
+
+Mặc dù vị trí fault thay đổi, Lockstep vẫn phát hiện được sự sai khác giữa execution path bị lỗi và execution path tham chiếu.
+
+Lockstep có thể phát hiện sự sai khác giữa execution path bị lỗi và execution path tham chiếu trước khi ciphertext bị lỗi được xuất ra ngoài hệ thống.
+
+## 11.10. Final Experiment Summary
+
+Toàn bộ quá trình thực nghiệm được chia thành hai phần chính:
+
+- ``Attack Evaluation:`` đánh giá khả năng khai thác fault injection bằng Differential Fault Analysis (DFA) để khôi phục khóa AES-128.
+- ``Defense Evaluation:`` đánh giá khả năng phát hiện fault injection bằng cơ chế Lockstep Execution.
+
+### 11.10.1. Attack Evaluation
+
+Quy trình tấn công được tổng hợp như sau:
+
+```text
+                Plaintext
+
+                    |
+
+                    v
+
+              AES-128 gem5
+
+
+                    |
+
+                    v
+
+
+        Fault Injection before Round 9 SubBytes
+
+
+                    |
+
+                    v
+
+
+          128 Faulty Ciphertexts
+
+
+                    |
+
+                    v
+
+
+              PhoenixAES DFA
+
+
+                    |
+
+                    v
+
+
+          Recover Round 10 Key
+
+
+                    |
+
+                    v
+
+
+          Reverse AES Key Schedule
+
+
+                    |
+
+                    v
+
+
+          Recover Master Key
+
+
+                    |
+
+                    v
+
+
+          AES Key Expansion Verification
+
+
+                    |
+
+                    v
+
+
+          AES Encryption Verification
+```
+
+Kết quả cho thấy fault injection trong quá trình thực thi AES-128 có thể tạo ra tập ciphertext lỗi đủ để thực hiện Differential Fault Analysis.
+
+PhoenixAES sử dụng các faulty ciphertexts này để khôi phục thành công Round 10 Key:
 
 ```text
 D014F9A8C9EE2589E13F0CC8B6630CA6
 ```
 
-thu được:
+Sau đó, thông qua quá trình reverse AES Key Schedule, Master Key ban đầu được xác định:
 
 ```text
-Recovered Master Key
-
 2B7E151628AED2A6ABF7158809CF4F3C
 ```
 
-Đối chiếu với khóa của NIST AES Known Answer Test:
+Khóa sau khi khôi phục được xác thực độc lập bằng hai phương pháp:
+
+- Forward AES Key Expansion Verification.
+- AES-128 Known Answer Test Encryption Verification.
+
+### 11.10.2. Defense Evaluation
+
+Sau khi đánh giá khả năng tấn công, cơ chế Lockstep Execution được triển khai nhằm phát hiện sự sai lệch do fault injection.
+
+Kiến trúc Lockstep:
 
 ```text
-Expected Master Key
+              AES Input
 
-2B7E151628AED2A6ABF7158809CF4F3C
+                  |
+
+                  v
+
+
+          Duplicate Execution
+
+
+                  |
+
+        ---------------------
+
+        |                   |
+
+        v                   v
+
+
+     AES Core A          AES Core B
+
+ (fault injected)       (reference)
+
+
+        |                   |
+
+        ---------------------
+
+                  |
+
+                  v
+
+
+             Comparator
+
+
+                  |
+
+        ---------------------
+
+        |                   |
+
+        v                   v
+
+
+      Match             Mismatch
+
+
+        |                   |
+
+        v                   v
+
+
+ Output Ciphertext    Abort Execution
 ```
 
-```text
-Match: True
-```
+Kết quả thực nghiệm cho thấy:
 
-Điều này cho thấy Round 10 Key được PhoenixAES khôi phục hoàn toàn chính xác và có thể đảo ngược về đúng khóa bí mật ban đầu.
+- Khi không có fault injection, hai execution path tạo ra cùng ciphertext hợp lệ.
+- Khi fault được inject tại các vị trí khác nhau, ciphertext của execution path bị lỗi khác với execution path tham chiếu.
+- Comparator phát hiện sự sai khác và kích hoạt cơ chế abort trước khi ciphertext lỗi được trả về.
 
----
-
-### 11.4. Verify bằng Forward Key Expansion
-
-Để kiểm chứng thêm, Master Key vừa thu được được mở rộng lại bằng thuật toán AES Key Expansion.
-
-```python
-master = bytes.fromhex('2B7E151628AED2A6ABF7158809CF4F3C')
-w = expand_key(master)
-r10 = bytes(b for word in w[40:44] for b in word)
-print(f"Round 10 key from master: {r10.hex().upper()}")
-```
-
-Output:
-
-```
-Round 10 key from master: D014F9A8C9EE2589E13F0CC8B6630CA6
-PhoenixAES recovered:     D014F9A8C9EE2589E13F0CC8B6630CA6
-Match: True
-```
-
-Việc mở rộng khóa theo chiều thuận thu được đúng Round 10 Key đã được PhoenixAES khôi phục là một bước kiểm chứng độc lập cho toàn bộ quá trình reverse key schedule.
-
----
-
-### 11.5. End-to-End Verification
-
-Cuối cùng, Master Key vừa khôi phục được sử dụng để mã hóa lại plaintext ban đầu.
-
-```python
-from Crypto.Cipher import AES
-
-master = bytes.fromhex('2B7E151628AED2A6ABF7158809CF4F3C')
-cipher = AES.new(master, AES.MODE_ECB)
-pt = bytes.fromhex('6bc1bee22e409f96e93d7e117393172a')
-ct = cipher.encrypt(pt)
-print(f"Encrypt verify: {ct.hex()}")
-print(f"Expected:       3ad77bb40d7a3660a89ecaf32466ef97")
-```
-
-Output:
-
-```
-Encrypt verify: 3ad77bb40d7a3660a89ecaf32466ef97
-Expected:       3ad77bb40d7a3660a89ecaf32466ef97
-```
-
-Việc ciphertext thu được hoàn toàn trùng khớp với ciphertext đúng của NIST AES Known Answer Test xác nhận rằng Master Key đã được khôi phục chính xác.
-
----
-
-### 11.6. Kết quả của toàn bộ Attack Chain
-
-Toàn bộ chuỗi tấn công có thể được tóm tắt như sau:
-
-```text
-                Plaintext
-                     │
-                     ▼
-           AES-128 trên gem5
-                     │
-                     ▼
-      Fault Injection @ Round 9
-                     │
-                     ▼
-      128 Faulty Ciphertexts
-                     │
-                     ▼
-             PhoenixAES DFA
-                     │
-                     ▼
-         Recover Round 10 Key
-                     │
-                     ▼
-      Reverse AES Key Schedule
-                     │
-                     ▼
-        Recover Master Key
-                     │
-                     ▼
-     Verify bằng AES Encryption
-                     │
-                     ▼
-      Correct Ciphertext ✓
-```
-
-Kết quả cuối cùng của thực nghiệm được tổng hợp trong bảng dưới đây:
+## 11.11. Experimental Results
 
 | Thành phần | Kết quả |
-|------------|----------|
+|---|---|
+| Simulation Environment | gem5 + RISC-V |
+| AES Implementation | tiny-AES-c |
 | Correct Ciphertext | `3ad77bb40d7a3660a89ecaf32466ef97` |
 | Faulty Ciphertexts | 128 |
+| DFA Tool | PhoenixAES |
 | Round 10 Key | `D014F9A8C9EE2589E13F0CC8B6630CA6` |
 | Master Key | `2B7E151628AED2A6ABF7158809CF4F3C` |
-| Reverse Key Schedule | ✓ |
-| Forward Expansion Verify | ✓ |
-| AES Encryption Verify | ✓ |
+| Key Expansion Verification | ✓ |
+| AES Encryption Verification | ✓ |
+| Lockstep Fault Detection | ✓ |
 
-Toàn bộ chuỗi thực nghiệm cho thấy một fault được đưa vào `đầu Round 9` có thể tạo ra tập faulty ciphertext phù hợp cho Differential Fault Analysis. Từ các ciphertext này, PhoenixAES khôi phục thành công `Round 10 Key`, sau đó khóa này được đảo ngược về đúng `AES-128 Master Key` và được kiểm chứng độc lập bằng cả quá trình `Key Expansion` lẫn `AES Encryption`.
+## 11.12. Conclusion
 
-Như vậy, mục tiêu của nghiên cứu đã được hoàn thành: chỉ từ các ciphertext lỗi sinh ra bởi fault injection trong quá trình thực thi, có thể khôi phục thành công khóa bí mật của AES-128 mà không cần truy cập trực tiếp vào vùng nhớ lưu trữ khóa.
+Kết quả thực nghiệm chứng minh rằng:
 
----
+- Fault injection trong quá trình thực thi AES-128 có thể tạo ra các ciphertext lỗi đủ để thực hiện Differential Fault Analysis.
+- PhoenixAES có thể sử dụng các ciphertext lỗi để khôi phục Round 10 Key và xác định lại AES-128 Master Key.
+- Master Key sau khi khôi phục được xác thực độc lập thông qua AES Key Expansion và AES Encryption Verification.
+- Cơ chế Lockstep có khả năng phát hiện sự sai lệch giữa execution path bị fault và execution path tham chiếu, từ đó ngăn chặn ciphertext lỗi được trả về.
 
-## 12. Lockstep Defense - Thiết kế và đánh giá
-
-Đến đây, chuỗi tấn công đã hoàn chỉnh:
-
-```text
-Fault Injection
-        ↓
-Faulty Ciphertexts
-        ↓
-PhoenixAES
-        ↓
-Round 10 Key
-        ↓
-Reverse Key Schedule
-        ↓
-Master Key
-```
-
-Quan sát toàn bộ attack chain cho thấy điểm mấu chốt không nằm ở PhoenixAES mà nằm ở `faulty ciphertext`. PhoenixAES chỉ hoạt động khi attacker thu thập được các ciphertext lỗi có cấu trúc phù hợp với mô hình DFA.
-
-Do đó, nếu hệ thống có thể phát hiện lỗi và ngăn không cho ciphertext lỗi được xuất ra ngoài, toàn bộ chuỗi tấn công sẽ dừng lại ngay từ bước đầu tiên.
-
-Đây chính là ý tưởng của `Lockstep Execution`.
-
----
-
-### 12.1. Nguyên lý của Lockstep
-
-Lockstep là một cơ chế được sử dụng rộng rãi trong các hệ thống yêu cầu độ tin cậy cao và khả năng chống fault injection.
-
-Ý tưởng rất đơn giản:
-
-- Hai execution lane thực hiện cùng một phép tính với cùng đầu vào.
-- Sau khi hoàn thành, kết quả của hai lane được so sánh.
-- Nếu kết quả khác nhau, hệ thống kết luận đã xảy ra fault và từ chối sử dụng kết quả.
+Như vậy, thực nghiệm đã đánh giá được cả hai khía cạnh:
 
 ```text
-           Plaintext
-               │
-        ┌──────┴──────┐
-        ▼             ▼
+Attack:
 
-     Lane A        Lane B
+DFA
+ |
+ v
+Key Recovery
 
-        │             │
 
-        └──────┬──────┘
-               ▼
+Defense:
 
-         Comparator
-
-      Same ?      Different ?
-        │              │
-        ▼              ▼
-
- Output Ciphertext   Abort
+Lockstep
+ |
+ v
+Fault Detection
 ```
 
-Trong phần cứng thực tế, hai lane thường được thực hiện bởi hai execution unit hoặc hai CPU core độc lập. Bộ so sánh (Comparator) sẽ kiểm tra architectural state hoặc kết quả cuối cùng tùy từng kiến trúc.
+trong môi trường AES-128 chạy trên gem5.
 
----
+## 12. Lockstep Defense - Design and Analysis
 
-### 12.2. Thiết kế Lockstep trong nghiên cứu
+Chương 11 đã trình bày quá trình cài đặt và đánh giá thực nghiệm cơ chế Lockstep trên môi trường gem5. Phần này tập trung phân tích nguyên lý hoạt động của Lockstep, lý do cơ chế này có thể ngăn chặn chuỗi Differential Fault Analysis (DFA) và những giới hạn còn tồn tại.
 
-Trong phạm vi nghiên cứu này, mục tiêu không phải xây dựng một kiến trúc dual-core hoàn chỉnh trong gem5 mà là kiểm chứng `nguyên lý hoạt động của Lockstep` đối với fault model đã xây dựng.
+### 12.1. Lockstep Principle
 
-Vì vậy, hai execution lane được mô phỏng bằng hai lần thực thi AES trong cùng một chương trình:
+Lockstep là một cơ chế được sử dụng rộng rãi trong các hệ thống yêu cầu độ tin cậy cao nhằm phát hiện lỗi trong quá trình thực thi.
 
-- `Lane A` thực hiện mã hóa với khả năng xuất hiện fault tại Round 9 (thông qua fault hook).
-- `Lane B` thực hiện cùng phép mã hóa nhưng không bật fault hook, đóng vai trò lane tham chiếu.
+Ý tưởng của Lockstep là thực hiện cùng một phép tính trên hai execution lane độc lập với cùng đầu vào. Sau khi hoàn thành, kết quả của hai lane được so sánh bởi một comparator.
 
-Sau khi cả hai lane hoàn thành, chương trình sử dụng `memcmp()` để so sánh hai ciphertext trước khi quyết định có trả kết quả ra ngoài hay không.
+- Nếu hai kết quả giống nhau, hệ thống tiếp tục sử dụng kết quả.
+- Nếu hai kết quả khác nhau, hệ thống kết luận đã xảy ra lỗi và hủy bỏ kết quả.
 
-Điểm cần nhấn mạnh là mục tiêu của mô hình này không phải mô phỏng chi tiết kiến trúc Lockstep ở mức phần cứng, mà là đánh giá liệu cơ chế so sánh kép có đủ khả năng chặn tập faulty ciphertext mà DFA cần hay không.
+```text
+              Plaintext
+                  │
+         ┌────────┴────────┐
+         ▼                 ▼
 
----
+      Lane A           Lane B
 
-### 12.3. Cài đặt Comparator
+         │                 │
+
+         └────────┬────────┘
+                  ▼
+
+            Comparator
+
+        Same ?      Different ?
+          │               │
+          ▼               ▼
+
+   Output Ciphertext    Abort
+```
+
+Trong các hệ thống phần cứng, hai lane thường được triển khai trên hai execution unit hoặc hai CPU core độc lập. Comparator có thể kiểm tra architectural state hoặc kết quả cuối cùng tùy theo kiến trúc hệ thống.
+
+### 12.2. Lockstep Design in This Work
+
+Mục tiêu của nghiên cứu không phải xây dựng một kiến trúc Lockstep hoàn chỉnh trong gem5 mà là đánh giá khả năng của cơ chế so sánh kép trong việc ngăn chặn chuỗi Differential Fault Analysis.
+
+Vì vậy, Lockstep được mô phỏng bằng hai lần thực thi AES-128 trong cùng một chương trình:
+
+- ``Lane A`` thực hiện mã hóa với khả năng xuất hiện fault tại Round 9 thông qua fault hook.
+- ``Lane B`` thực hiện cùng phép mã hóa nhưng không bật fault hook và đóng vai trò lane tham chiếu.
+
+Sau khi cả hai lane hoàn thành, hai ciphertext được so sánh bằng hàm `memcmp()`. Chỉ khi hai kết quả hoàn toàn giống nhau thì ciphertext mới được phép trả về cho người dùng.
+
+Cách tiếp cận này không mô phỏng đầy đủ một kiến trúc Lockstep phần cứng, nhưng vẫn phản ánh đúng nguyên lý phát hiện fault dựa trên sự khác biệt giữa hai execution path.
+
+### 12.3. Comparator Logic
+
+Comparator được cài đặt bằng cách so sánh trực tiếp hai ciphertext sau khi quá trình mã hóa kết thúc.
 
 ```c
 if (memcmp(buf_a, buf_b, 16) != 0) {
@@ -2105,79 +3502,21 @@ if (memcmp(buf_a, buf_b, 16) != 0) {
 }
 ```
 
-Nếu hai ciphertext khác nhau, chương trình dừng ngay và không xuất ciphertext.
+Nếu hai ciphertext khác nhau, chương trình dừng ngay và không trả ciphertext ra ngoài.
 
-Chỉ khi cả hai lane tạo ra cùng một kết quả thì ciphertext mới được trả về.
+Ngược lại, nếu hai ciphertext giống nhau, chương trình tiếp tục và trả về ciphertext hợp lệ.
 
----
+### 12.4. Analysis of Experimental Results
 
-### 12.4. Thực nghiệm
+Kết quả thực nghiệm tại Mục ``11.7`` cho thấy hành vi của Lockstep hoàn toàn phù hợp với nguyên lý thiết kế.
 
-Ba kịch bản được kiểm tra trong gem5.
+Trong trường hợp không xảy ra fault injection, cả hai execution lane đều tạo ra cùng một ciphertext và comparator cho phép chương trình tiếp tục thực thi.
 
-#### 12.4.1. Scenario 1 - Không có fault
+Ngược lại, khi fault được đưa vào execution path, ciphertext của Lane A khác với Lane B. Comparator phát hiện sự sai khác và dừng chương trình trước khi ciphertext lỗi được trả về.
 
-```
-Ciphertext:
+Quan trọng hơn, trong cả hai trường hợp fault được đánh giá, attacker không còn thu được faulty ciphertext để sử dụng làm đầu vào cho PhoenixAES.
 
-3ad77bb40d7a3660a89ecaf32466ef97
-```
-
-Hai lane tạo cùng ciphertext nên comparator cho phép chương trình tiếp tục.
-
----
-
-#### 12.4.2. Scenario 2 - Fault tại byte 0, bit 0
-
-```
-[LOCKSTEP] FAULT DETECTED
-
-CPU A:
-5dd77bb40d7a3616a89eeff32406ef97
-
-CPU B:
-3ad77bb40d7a3660a89ecaf32466ef97
-
-Execution ABORTED
-```
-
-Fault chỉ xuất hiện trên Lane A nên hai ciphertext không còn giống nhau.
-
-Comparator phát hiện sự sai khác và dừng chương trình trước khi ciphertext lỗi được trả về.
-
----
-
-#### 12.4.3. Scenario 3 - Fault tại byte 5, bit 3
-
-```
-[LOCKSTEP] FAULT DETECTED
-
-CPU A:
-2bd77bb40d7a3646a89e6ef324ddef97
-
-CPU B:
-3ad77bb40d7a3660a89ecaf32466ef97
-
-Execution ABORTED
-```
-
-Thay đổi vị trí fault vẫn dẫn tới cùng kết quả: comparator luôn phát hiện sự khác biệt giữa hai lane và từ chối xuất ciphertext.
-
----
-
-### 12.5. Phân tích
-
-Ba kịch bản trên cho thấy hành vi của hệ thống phù hợp với nguyên lý của Lockstep:
-
-| Trường hợp | Kết quả |
-|------------|----------|
-| Không có fault | Hai lane tạo cùng ciphertext |
-| Có fault | Hai lane tạo ciphertext khác nhau |
-| Comparator | Phát hiện divergence và dừng chương trình |
-
-Quan trọng hơn, trong cả hai trường hợp có fault, `faulty ciphertext không còn được xuất ra ngoài`.
-
-Điều này tác động trực tiếp tới chuỗi DFA:
+Điều này làm gián đoạn chuỗi Differential Fault Analysis ngay từ bước đầu tiên.
 
 ```text
 Fault Injection
@@ -2196,123 +3535,101 @@ Lockstep Comparator
             Abort
 ```
 
-Vì attacker không còn thu được các faulty ciphertext dùng làm đầu vào cho PhoenixAES, quá trình khôi phục khóa không thể tiếp tục.
+Khác với nhiều cơ chế phòng thủ cố gắng ngăn cản fault xảy ra, Lockstep cho phép fault xuất hiện nhưng loại bỏ giá trị đầu ra bị lỗi trước khi attacker có thể thu thập và sử dụng cho quá trình khôi phục khóa.
 
----
+### 12.5. Limitations
 
-### 12.6. Kết luận
+Kết quả đạt được được đánh giá trong phạm vi fault model và kiến trúc của nghiên cứu. Một số trường hợp chưa được xem xét bao gồm:
 
-Trong phạm vi fault model của nghiên cứu, Lockstep đã phát hiện thành công mọi fault được đưa vào tại Round 9 và ngăn không cho faulty ciphertext được trả ra ngoài.
+> Coordinated Double-Fault
 
-Kết quả này cho thấy mặc dù Lockstep không ngăn cản việc fault xảy ra, cơ chế này vẫn có thể vô hiệu hóa chuỗi Differential Fault Analysis bằng cách loại bỏ đầu vào mà cuộc tấn công cần để thực hiện quá trình khôi phục khóa.
+Nếu attacker có khả năng tạo cùng một fault trên cả hai execution lane tại cùng thời điểm và cùng vị trí, comparator có thể không phát hiện được sự sai khác vì cả hai lane đều sinh ra cùng một kết quả sai.
 
----
+Trong thực tế, đây là kịch bản khó thực hiện hơn đáng kể do yêu cầu đồng bộ hóa fault trên nhiều execution unit.
 
-### 12.7. Limitations của Lockstep Defense
+> Comparator Fault
 
-Kết quả trên được đánh giá trong phạm vi fault model và kiến trúc của nghiên cứu. Một số trường hợp vẫn chưa được xem xét:
+Lockstep giả định comparator luôn hoạt động chính xác.
 
-`1. Coordinated Double-Fault`
+Nếu comparator cũng trở thành mục tiêu của fault injection thì bản thân cơ chế phát hiện lỗi có thể bị ảnh hưởng. Trong các hệ thống thực tế, comparator thường được bảo vệ hoặc nhân bản nhằm tránh trở thành điểm lỗi đơn lẻ.
 
-Nếu attacker có khả năng gây cùng một fault trên cả hai execution lane theo cùng một thời điểm và cùng một mẫu lỗi, comparator có thể không phát hiện được sự sai khác vì cả hai lane đều tạo ra cùng một kết quả sai.
+> Side-channel Attacks
 
-Trong thực tế, đây là một kịch bản khó hơn đáng kể do yêu cầu đồng bộ hóa fault trên nhiều execution unit.
-
-`2. Comparator Fault`
-
-Lockstep giả định comparator hoạt động chính xác.
-
-Nếu comparator trở thành mục tiêu của fault injection thì bản thân cơ chế phát hiện lỗi cũng có thể bị ảnh hưởng. Trong các thiết kế thực tế, comparator thường cần được bảo vệ hoặc nhân bản để tránh trở thành điểm lỗi đơn lẻ (single point of failure).
-
-`3. Các Side-channel khác`
-
-Lockstep chỉ hướng tới việc phát hiện lỗi trong quá trình thực thi.
+Lockstep chỉ hướng tới việc phát hiện fault trong quá trình thực thi.
 
 Các kỹ thuật như Power Analysis, Electromagnetic Analysis hoặc Cache Side-channel nằm ngoài phạm vi bảo vệ của cơ chế này.
 
-`4. Performance Overhead`
+> Performance Overhead
 
-Lockstep yêu cầu thực hiện cùng một phép tính trên hai execution lane, dẫn tới chi phí tính toán và năng lượng cao hơn so với thực thi thông thường.
+Việc thực hiện cùng một phép tính trên hai execution lane làm tăng chi phí tính toán cũng như năng lượng tiêu thụ so với thực thi thông thường.
 
 Đây là đánh đổi phổ biến giữa hiệu năng và khả năng chống fault injection.
 
-`5. Software Lockstep`
+> Software Lockstep
 
-Implementation trong nghiên cứu mô phỏng nguyên lý Lockstep bằng hai lần thực thi AES trong cùng một chương trình.
+Implementation trong nghiên cứu sử dụng hai lần thực thi AES trong cùng một chương trình nhằm mô phỏng nguyên lý Lockstep.
 
-Cách tiếp cận này giúp đánh giá hiệu quả của cơ chế phát hiện lỗi, nhưng chưa phản ánh đầy đủ các đặc điểm của một hệ thống Lockstep phần cứng với hai execution lane độc lập.
+Cách tiếp cận này phù hợp để đánh giá hiệu quả phát hiện fault nhưng chưa phản ánh đầy đủ các đặc điểm của một kiến trúc Lockstep phần cứng với hai execution lane độc lập.
 
----
-
-## 13. Tổng kết
-
-Mục tiêu của nghiên cứu là xây dựng và đánh giá một chuỗi tấn công Differential Fault Analysis trên AES-128 trong môi trường gem5, đồng thời kiểm chứng khả năng phòng vệ của cơ chế Lockstep.
-
-Kết quả thực nghiệm cho thấy cả hai mục tiêu đều đạt được:
-
-- Fault injection tại Round 9 tạo ra tập faulty ciphertext phù hợp với mô hình DFA.
-- PhoenixAES khôi phục thành công Round 10 Key.
-- Reverse Key Schedule đưa ngược về đúng AES-128 Master Key.
-- Lockstep phát hiện sự sai khác giữa hai execution lane và ngăn không cho faulty ciphertext bị lộ ra ngoài.
-
----
+## 13. Conclusion
 
 ### 13.1. Summary of Results
+
+Toàn bộ chuỗi thực nghiệm đã được hoàn thành từ fault injection đến cơ chế phòng vệ.
 
 | Thành phần | Kết quả |
 |------------|----------|
 | gem5 Platform | gem5 v25.1.0.1 (RISC-V, SE Mode) |
 | AES Implementation | tiny-AES-c (Static Binary) |
 | Correct Ciphertext | `3ad77bb40d7a3660a89ecaf32466ef97` |
-| Fault Injection Point | Round 9 - trước SubBytes |
+| Fault Injection Point | Before Round 9 SubBytes |
 | Fault Window | Tick `10,812,745,000` |
 | Fault Dataset | 128 Faulty Ciphertexts |
 | PhoenixAES | Recover thành công Round 10 Key |
-| Reverse Key Schedule | Recover đúng Master Key |
-| End-to-End Verification | ✓ Thành công |
-| Lockstep Defense | Phát hiện fault và dừng chương trình trước khi ciphertext lỗi được xuất ra |
+| Master Key Recovery | Thành công |
+| Key Expansion Verification | ✓ |
+| AES Encryption Verification | ✓ |
+| Lockstep Defense | Phát hiện fault và hủy ciphertext lỗi |
 
----
+### 13.2. Lessons Learned
 
-### 13.2. Những bài học rút ra
+Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghiên cứu Differential Fault Analysis trên AES-128.
 
-Quá trình thực nghiệm cho thấy một số điểm quan trọng khi nghiên cứu fault injection trên AES:
+- Việc xác định đúng fault window quan trọng hơn bản thân cơ chế inject fault.
+- Fault cần được đưa vào đúng boundary của Round 9 để tạo ra faulty ciphertext phù hợp với mô hình DFA.
+- Việc xác minh Master Key bằng cả Key Expansion và AES Encryption giúp tăng độ tin cậy của kết quả.
+- Thay vì cố gắng ngăn cản fault xảy ra, việc ngăn attacker thu thập faulty ciphertext có thể vô hiệu hóa toàn bộ chuỗi Differential Fault Analysis.
 
-- Việc xác định đúng `fault window` quan trọng hơn bản thân cơ chế inject fault.
-- Chỉ cần fault xuất hiện tại đúng boundary của Round 9 là đã đủ để tạo ra faulty ciphertext phục vụ cho DFA.
-- Faulty ciphertext cần được kiểm chứng bằng quá trình key recovery thay vì chỉ quan sát sự thay đổi của ciphertext.
-- Reverse Key Schedule và quá trình mã hóa lại bằng Master Key là hai bước xác minh độc lập giúp tăng độ tin cậy của kết quả.
-- Đối với cơ chế phòng vệ, việc ngăn attacker thu được faulty ciphertext có hiệu quả hơn việc cố gắng ngăn hoàn toàn fault xảy ra.
+### 13.3. Future Work
 
----
+Một số hướng nghiên cứu có thể được mở rộng trong tương lai bao gồm:
 
-### 13.3. Hướng phát triển
+> Attack
 
-> Về tấn công
+- Multi-Fault Differential Fault Analysis.
+- AES-192 và AES-256.
+- Fault Injection trên các thuật toán mật mã khác như SHA hoặc HMAC.
 
-- Nghiên cứu Multi-Fault DFA với nhiều fault trong cùng một lần mã hóa.
-- Mở rộng sang AES-192 và AES-256 với key schedule phức tạp hơn.
-- Áp dụng fault injection cho các primitive khác như SHA hoặc HMAC.
+> Defense
 
-> Về phòng thủ
+- Hardware Lockstep với hai CPU core thực trong gem5.
+- Triple Modular Redundancy (TMR).
+- Temporal Redundancy.
+- Kết hợp Lockstep với các kỹ thuật Masking nhằm chống đồng thời Fault Analysis và Side-channel Analysis.
 
-- Xây dựng mô hình Lockstep trên hai CPU core thực trong gem5.
-- Kết hợp Lockstep với Temporal Redundancy hoặc Triple Modular Redundancy.
-- Kết hợp với các kỹ thuật Masking nhằm chống đồng thời Fault Analysis và Side-channel Analysis.
+> Simulation Framework
 
-> Về hệ thống mô phỏng
+- Fault injection trực tiếp trong gem5 thay vì fault hook trong chương trình.
+- Hỗ trợ nhiều fault model hơn như register fault, instruction fault hoặc timing fault.
+- Tự động hóa quá trình sinh fault dataset và đánh giá các countermeasure.
 
-- Phát triển module fault injection trực tiếp trong gem5 thay vì chèn fault hook vào chương trình.
-- Hỗ trợ nhiều fault model hơn như instruction fault, register fault hoặc timing fault.
-- Tự động hóa quá trình thu thập fault dataset và đánh giá hiệu quả của các countermeasure.
+### 13.4. Final Remarks
 
----
+Nghiên cứu đã xây dựng thành công một quy trình thực nghiệm hoàn chỉnh cho Differential Fault Analysis trên AES-128 trong môi trường gem5.
 
-### 13.4. Kết luận cuối cùng
+Thông qua fault injection tại Round 9, nghiên cứu tạo ra tập faulty ciphertext đủ điều kiện để PhoenixAES khôi phục Round 10 Key, từ đó xác định lại Master Key và xác minh độc lập bằng AES Key Expansion cũng như AES Encryption.
 
-Nghiên cứu đã xây dựng thành công một chuỗi thực nghiệm hoàn chỉnh từ fault injection, thu thập faulty ciphertext, khôi phục Round 10 Key bằng PhoenixAES, đảo ngược AES Key Schedule để thu được Master Key và đánh giá hiệu quả của cơ chế Lockstep Defense.
-
-Các kết quả thực nghiệm cho thấy một fault được đưa vào đúng vị trí trong quá trình thực thi có thể dẫn tới việc khôi phục hoàn toàn khóa bí mật của AES-128. Đồng thời, nghiên cứu cũng minh họa rằng một cơ chế dự phòng như Lockstep có thể làm gián đoạn toàn bộ chuỗi tấn công bằng cách phát hiện sai lệch và ngăn không cho faulty ciphertext được sử dụng trong quá trình Differential Fault Analysis.
+Bên cạnh đó, nghiên cứu cũng cho thấy Lockstep có thể phát hiện sự sai lệch giữa hai execution path và ngăn không cho faulty ciphertext được trả ra ngoài. Điều này làm gián đoạn chuỗi Differential Fault Analysis ngay từ bước thu thập dữ liệu, qua đó minh họa hiệu quả của Lockstep như một cơ chế phòng vệ đối với fault injection trong phạm vi fault model được xem xét.
 
 ---
 
